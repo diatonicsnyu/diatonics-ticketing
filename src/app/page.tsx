@@ -43,7 +43,7 @@ export default async function HomePage() {
       {next && (
         <section className="mt-8 flex flex-col overflow-hidden rounded-sm border border-line bg-panel sm:flex-row" aria-label="Next show">
           <EventThumb imagePath={next.image_path} className="h-48 w-full sm:h-auto sm:min-h-64 sm:w-64" />
-          <div className="flex-1 p-6 text-center">
+          <div className="flex flex-1 flex-col items-start justify-center p-6 sm:p-8">
             <p className="text-sm font-semibold uppercase tracking-wide text-burgundy">Next show</p>
             <h2 className="font-display mt-1 text-4xl font-black">{next.name}</h2>
             <p className="mt-2 text-lg">{formatShort(next.starts_at)}</p>

@@ -4,6 +4,8 @@ import { SiteChrome } from "@/components/SiteChrome";
 import { getPublicEventBySlug, salesOpen, eventImageUrl, ticketsRemaining } from "@/lib/events";
 import { startTicketCheckout } from "@/app/checkout/actions";
 import { BuyForm } from "./BuyForm";
+import { Flyer } from "@/components/Flyer";
+import { isDemo } from "@/lib/demo";
 import { formatDate, formatTime } from "@/lib/time";
 import { allInCents, allInLabel, formatCents } from "@/lib/money";
 
@@ -25,6 +27,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
   if (!event) notFound();
 
   const img = eventImageUrl(event.image_path);
+  const flyer = img ?? (isDemo() ? "/sample-flyer.svg" : null);
   const open = salesOpen(event);
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue)}`;
   const left = ticketsRemaining(event);
@@ -35,11 +38,6 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
       {/* Phone: one column. Laptop: details on the left (2/5), tickets on the right (3/5). */}
       <article className="grid gap-8 lg:grid-cols-5 lg:items-start">
         <div className="lg:col-span-2">
-        {img && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={img} alt="" className="mb-6 aspect-video w-full rounded-sm object-cover" />
-        )}
-
         <h1 className="font-display text-4xl font-black sm:text-5xl">{event.name}</h1>
 
         <dl className="mt-4 space-y-1 text-lg">
@@ -68,6 +66,13 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
           <p className="mt-6 whitespace-pre-line text-muted">{event.description}</p>
         )}
 
+        {/* Flyer fills the space under the details. Demo mode shows a sample flyer
+            when none is uploaded; real events show nothing until one is uploaded. */}
+        {flyer && (
+          <div className="mt-6">
+            <Flyer src={flyer} eventName={event.name} sample={!img} />
+          </div>
+        )}
         </div>
 
         <section className="rounded-sm border border-line bg-panel p-5 sm:p-8 lg:col-span-3" aria-label="Tickets">
@@ -138,9 +143,9 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
 function InfoBox({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {
   return (
     <div className="rounded-sm border border-line bg-page p-4">
-      <p className="text-sm font-bold uppercase tracking-wider text-muted">{label}</p>
-      <p className={`mt-1 text-2xl font-bold tabular-nums ${accent ? "text-burgundy" : ""}`}>{value}</p>
-      {sub && <p className="mt-1 text-base text-muted">{sub}</p>}
+      <p className="text-lg font-bold uppercase tracking-wider text-muted">{label}</p>
+      <p className={`mt-1 text-xl font-bold tabular-nums ${accent ? "text-burgundy" : ""}`}>{value}</p>
+      {sub && <p className="mt-0.5 text-sm text-muted">{sub}</p>}
     </div>
   );
 }

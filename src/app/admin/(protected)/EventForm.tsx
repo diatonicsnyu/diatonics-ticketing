@@ -63,13 +63,13 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
           <textarea name="description" rows={4} defaultValue={defaults.description} className={input} />
         </label>
         <label className="block">
-          <span className={label}>Image (optional)</span>
+          <span className={label}>Flyer (optional)</span>
           {defaults.image_url && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={defaults.image_url} alt="Current event image" className="mb-2 max-h-40 rounded-sm" />
           )}
           <input name="image" type="file" accept="image/*" className="block text-sm" />
-          <span className={hint}>JPG or PNG, under 5 MB. Wide images look best.</span>
+          <span className={hint}>JPG or PNG, under 5 MB. A tall (portrait) flyer looks best. Buyers can tap it to see it full size.</span>
         </label>
         {defaults.image_url && (
           <label className="flex items-center gap-2">

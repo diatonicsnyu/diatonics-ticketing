@@ -52,7 +52,7 @@ _Status: draft · Started 2026-11-15 · Last updated 2026-11-15_
 | D31 | **Door sales (Venmo or cash, ~$7–8) happen outside this system.** The site doesn't sell, track, or count them. It only **displays a notice** on the event page, e.g. "Online $5.50 · At the door $8 (Venmo or cash)." The higher door price pushes people to buy online and keeps the door line fast. The door price is a per-event text/number field in admin, shown only. |
 | D32 | **Door-sale counter (count only).** The door app has a simple **+ / −** counter where volunteers record how many at-door purchases they processed. Nothing else: no payment method, no amount, no names. Totals sync across devices and show in admin. |
 | D30 | **Cash App Pay is on** in Stripe Checkout (US, same 2.9% + 30¢, no extra code: enable it in Stripe's payment method settings). Checkout offers cards, Apple Pay, Google Pay, and Cash App Pay. |
-| D28 | **Branding:** logo at `assets/diatonics-logo.png`; group colors are **light sky blue** and **dark red/burgundy**. See §11. |
+| D28 | **Branding:** logo at `assets/diatonics-logo.png` (original) and `assets/diatonics-logo-round.png` (cleaned-up version the site uses); group colors are **light sky blue** and **dark red/burgundy**. **Light mode only, never a black/dark background.** See §11. |
 
 ---
 
@@ -88,6 +88,7 @@ A small, low-cost web platform for Diatonics a cappella concerts. People buy tic
 2. Pick quantity (max 10, D5) per ticket type.
 3. Optional "Add a donation": $5 / $10 / $25 / custom (D10).
 4. Name + email (required), phone (optional) (D6).
+   (Steps 2–4 are three fold-open sections on the event page, opened one after another. See §12 Event page.)
 5. Stripe hosted checkout (cards, Apple Pay, Google Pay, Cash App Pay).
 6. Stripe's webhook confirms payment, then the order and tickets are created and the email is sent.
 7. Confirmation page shows the tickets plus a link to view them later.
@@ -219,7 +220,7 @@ The group absorbs them: a $5 donation nets ~$4.55, $10 nets ~$9.41, and $25 nets
 
 ## 6. Data model (draft) **[assumed]**
 - **DoorSaleCount**: event_id, device_id, delta (+1 / −1), created_at (the sum = door sales)
-- **Event**: id, name, slug, description, venue, starts_at, doors_at, capacity, door_price_cents (display only, nullable), sales_close_at, door_pin_hash, status (draft / on_sale / closed / cancelled / rescheduled)
+- **Event**: id, name, slug, description, venue, starts_at, doors_at, capacity (**blank = unlimited**), door_price_cents (display only, nullable), sales_close_at, door_pin_hash, image_path, status (draft / on_sale / closed / cancelled). A reschedule just changes starts_at, so there's no separate "rescheduled" status **[assumed]**
 - **TicketType**: id, event_id, name, price_cents, quantity_limit
 - **Order**: id, event_id (null for standalone donations), buyer_name, buyer_email, buyer_phone, tickets_subtotal_cents, service_fee_cents, donation_cents, total_cents, stripe_fee_cents, status (pending / paid / refunded / comp), payment_method (stripe / comp), stripe_session_id (nullable), created_at
 - **Ticket**: id, order_id, ticket_type_id, short_code, status (valid / checked_in / void), checked_in_at, checked_in_device
@@ -236,6 +237,8 @@ The group absorbs them: a $5 donation nets ~$4.55, $10 nets ~$9.41, and $25 nets
 | Database | Supabase free, group account (D25) | $0. Pauses after ~1 week idle, so it needs a keep-alive ping |
 | Hosting | Vercel, `diatonics-ticketing.vercel.app` (D26) | $0 |
 | Domain | **[pending]** leadership | ~$10–20/year |
+
+⚠️ **For go-live (Step 9):** Vercel's free Hobby plan is for non-commercial use only, and its fair-use guidelines list taking payments from site visitors as commercial use. Testing on Hobby through Step 8 is fine. Before real sales, either upgrade to Vercel Pro ($20/month) or move to a free host that allows payments (e.g. Cloudflare). The code avoids Vercel-only features so the move stays small.
 
 ### 7.1 ⚠️ Email needs a domain
 Resend only sends to **other people's** inboxes from a domain you own and verify. You **can't verify a `.vercel.app` address**, so without a domain Resend can only send test emails to your own inbox.
@@ -261,7 +264,10 @@ The site itself works fine on `.vercel.app`; it's only email that needs this.
 - Admin login is a magic link sent to `ADMIN_EMAIL`. Supabase sign-ups are off, so no one else can make an account.
 - Door PIN is 4–8 digits and only a hash of it is stored.
 - Every time is entered and shown in New York time.
-- **Demo mode:** until the Supabase keys are added, the site runs on sample shows with a "Preview" banner, and saving is turned off.
+- **Demo mode:** until the Supabase keys are added, the site runs on sample shows with a "Preview" banner, and saving is turned off. Built so the group can see the idea before the account setup. It switches off by itself once the keys are in, and the `/demo/...` pages then return "not found":
+  - Buying tickets: real quantity picker, donation add-on and buyer info on the event page → **demo checkout** page (clearly labeled "no card is charged"; deliberately *not* styled like Stripe; the test card is shown read-only) → "You're going! 🎉" confirmation with real scannable QR codes + short codes.
+  - Ticket email preview (`/demo/email`), donation thank-you + receipt (`/demo/thanks`), and a door-scanner mock (`/demo/door`) with pretend Good / Used / Fake scans, full-screen green/yellow/red results, Get help and See history.
+  - Sample shows and "sold" counts are placeholders. The supporters list shows only real people (just "Moona" for now).
 
 ## 9. Open items
 1. **[pending]** General only vs. General + Student (group vote).
@@ -272,6 +278,7 @@ The site itself works fine on `.vercel.app`; it's only email that needs this.
 ## 11. Branding (D28)
 
 **Logo:** `assets/diatonics-logo.png`. It's a black circle with a cream outline, "DIATONICS" in a cream serif font over a blue soundwave, a cream eighth note, and a reddish glow.
+- **Cleaned-up version (your request):** `assets/diatonics-logo-round.png`. The white background is removed (transparent outside the circle) and the circle is centered in a square image, so there's no awkward white space. The site, browser-tab icon and placeholder pictures all use this one. The original file is kept unchanged.
 
 **Colors**
 | Role | Color | Hex **[assumed, adjust to taste]** |
@@ -284,11 +291,16 @@ The site itself works fine on `.vercel.app`; it's only email that needs this.
 
 **Guidelines [assumed]**
 - **Not a dark theme, but pretty** (your decision): a **soft sky-blue** look. Pale sky-blue/cream backgrounds, **burgundy buttons**, dark text. The logo (a dark circle) is the centerpiece and stands out against the light background.
+- **Light mode only, always (your rule):** no black or dark page backgrounds anywhere, including the door scanner's idle screen. Cards are white on the pale-blue page.
+- **Links are burgundy** (sky-blue text is too faint on a light background).
+- **Small corners only (your decision):** 4px corners on buttons, inputs, cards and badges. No pill-shaped buttons or big rounded cards, because they look "vibe coded".
+- **Wide layout (your request):** content goes up to ~1150px wide on a laptop (not a narrow column), so the ticketing part takes up more of the screen. Phones are single-column.
 - **Fonts follow the logo's lettering style** (your decision): a bold, high-contrast serif with flared, wedge-shaped serifs, in all caps.
   - **Headings / titles / buttons:** a free Google Font close to the logo. First pick: **Cinzel** (weights 700–900); alternatives: **Marcellus SC**, **Playfair Display SC** (bold). Use all caps with slightly wide letter spacing, like the logo. **[assumed: final font chosen side by side against the logo]**
   - If whoever designed the logo knows the exact font, use that (if its license allows web use). Otherwise, upload the logo to a font identifier like WhatTheFont to find it.
   - **Body text:** a plain sans-serif for readability: **Figtree** (chosen 2026-11-15, replacing Inter). The logo font is for headings only, since it's hard to read in long text and small sizes.
   - The door scanner's result text uses the plain sans-serif at a large size, for speed.
+  - **Headings are large (your request):** page titles are 36px on phones and 48px on laptops, section headings 24px, and "Diatonics" in the top bar 20px. Admin page titles are 30px.
 - Use the logo on the home page, event pages, emails (header), the door app icon, and the browser tab icon.
 - **The door scanner keeps green / yellow / red for results**, not brand colors, so burgundy never gets confused with 🟥 "invalid."
 - Emails use the same light colors.
@@ -300,13 +312,24 @@ The site itself works fine on `.vercel.app`; it's only email that needs this.
 
 ### Home page
 Your answer: no preference. **[assumed]** The next show is big at the top (flyer, date, Buy button), then a Donate section, then the group's social links.
+- As built: big logo + "Diatonics A Cappella" heading → **"Next show" tile** with a "Get tickets · $5.50" button → **"More shows"** tiles → Donate section. (Social links are still to come, once you send the links.)
+- **Every show tile has a picture on the left (your request).** It uses the event's uploaded flyer/image, and **the logo as the default placeholder** when there isn't one. On a phone, the "Next show" picture sits on top of the tile instead.
 
 ### Event page
-- **Poster/flyer image** at the top.
+- **Layout (your request: ticketing wider):** on a laptop, show details are on the left (about 40%) and the **ticket box is on the right, taking the larger share (about 60%)**. On a phone, details come first, then tickets, full width.
+- **Flyer (your request):** sits in the left column under the show details, filling the empty space beside the tall ticket box (on a phone it comes after the details, before tickets). **Tap it to see it full size** (a pop-up viewer with a Close button; Esc or tapping outside also closes it). Uploaded per event in admin as "Flyer"; a tall (portrait) image looks best. **Demo mode shows a placeholder** (`public/sample-flyer.svg`, labeled "SAMPLE FLYER"); real events with no flyer show nothing there.
 - Date, time, venue, all-in price, plus the door-price notice (D31).
 - **"General admission: first come, first served"** shown clearly near the price.
 - **Setlist or description** text.
 - **Map + directions** (embedded map or a link).
+- **Key facts in boxes (your request):** at the top of the ticket box, side-by-side boxes for **Seating** (General admission / First come, first served), **Price** (Online $5.50 / At the door $8, Venmo or cash) and **Tickets left**. Each box has a large, gray, all-caps label on top ("SEATING", "PRICE") with the bold value under it.
+- **"Tickets" heading** is extra large (bigger than the other section headings).
+- **Buying happens in 3 fold-open steps (your request)**, each in its own box:
+  1. **Tickets**: one box per ticket type, with a large name, the all-in price and big − / + buttons. A **Continue** button opens step 2.
+  2. **Add a donation (optional)**: closed until step 1 is done, so it never looks bigger than the ticket part. Smaller amount buttons ("No thanks" / $5 / $10 / $25 / Custom). The button always says **Continue** (never "Skip").
+  3. **Your info**: name, email, phone, the order total, the no-refunds line, and the "Continue to payment" button.
+  - A finished step folds up and shows a one-line summary ("2 × General · $11.00", "No donation"); tap it to reopen and change it.
+- **"No refunds. All sales final."** is small, regular weight and gray (your request: not bold, not big), but always shown before payment (D8).
 - **Tickets-left count**, shown as just the number ("143 left"), no total. Always the true number, never padded. Hidden ("On sale now") until 10% of capacity has sold, so early buyers don't see a full count **[assumed: 10%]**. Admin always shows real numbers.
 
 ### Confirmation page (after buying)
@@ -326,8 +349,8 @@ Your answer: no preference. **[assumed]** The next show is big at the top (flyer
 
 ### Donate page
 - Amounts ($5 / $10 / $25 / custom) + thank-you.
-- **"Why donate"** section: what donations pay for (venues, competitions, etc.). You write the text.
-- **Supporters list** of opt-in donor names (D12) shown on the page.
+- **"Why donate"** section (your request): **large and centered**, right under the page title and above the donation form. Formal wording: the Diatonics are independent, **not a recognized NYU Steinhardt student organization, so they get no university funding**; members are there for the love of the music and pay for everything themselves. Then a "Your donation helps cover" list as compact boxes that wrap across a wide (~1000px) row, so the section stays short: uniforms, venue rentals, rehearsal space, mics/sound equipment, competition fees, travel, recording, sheet music/arrangement licensing, posters/printing, event supplies. **[assumed: you check the list and remove anything the group doesn't really pay for]** (list is `FUNDING_NEEDS` in `src/app/donate/page.tsx`). Never says "tax-deductible."
+- **Supporters list** of opt-in donor names (D12) shown on the page. **No made-up names (your rule).** Demo mode shows only "Moona" (a real friend); real donors replace it once donations are live.
 - No goal progress bar.
 
 ### Admin (works equally well on **laptop and phone**)

@@ -95,5 +95,5 @@ export const DEMO_SOLD: Record<string, number> = {
   "00000000-0000-4000-8000-000000000001": 57,
 };
 
-/** Sample opt-in supporters for the Donate page (made-up names). */
-export const DEMO_SUPPORTERS = ["The Okafor Family", "Jamie L.", "Priya & Sam", "A proud alum", "Marcus T."];
+/** Supporters shown on the Donate page in demo mode. Real people only, no made-up names (user's rule). */
+export const DEMO_SUPPORTERS = ["Moona"];
