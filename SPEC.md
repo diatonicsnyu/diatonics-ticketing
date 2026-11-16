@@ -14,11 +14,11 @@ _Status: draft · Started 2026-11-15 · Last updated 2026-11-15_
 | D3 | **Service fee: $0.50 flat per ticket**, paid by the buyer. |
 | D4 | **All-in price display**, e.g. "$5.50 (includes $0.50 service fee)". Required by NY ticket law (2022) and the FTC fee rule (2025). |
 | D5 | **Max 10 tickets per order.** |
-| D6 | **Buyer info:** name + email required, phone optional. |
+| D6 | **Buyer info:** **first name + last name (two separate boxes)** and email required, phone optional (your request). The email box sits under a "Where to send your tickets" heading (no extra note next to "Email"). |
 | D7 | **Online sales stay open until 30 minutes after show start** (e.g. 7:30pm for a 7pm show). Configurable per event. |
 | D8 | **No refunds.** The only exception is a cancelled show (D20). |
 | D9 | **Donations:** optional add-on at checkout **and** a standalone donate button that's always on the site, even when no event is listed. |
-| D10 | **Donation amounts:** $5 / $10 / $25 + custom. |
+| D10 | **Donation amounts:** Donate page: $5 / $10 / $25 + custom. **Ticket checkout add-on: $2 / $5 / $10 / $25 + custom** (your request). The add-on has no "No thanks" button: **$2 is picked by default**, and a custom amount of $0 (or blank) means no donation. Otherwise custom is $1–$1,000. |
 | D11 | **The group absorbs Stripe fees on donations** (the donor pays exactly what they pick). |
 | D12 | **Donor recognition:** opt-in, with a "name to display" field. |
 
@@ -87,7 +87,7 @@ A small, low-cost web platform for Diatonics a cappella concerts. People buy tic
 1. Event page: title, date/time, venue, description, tickets remaining. Prices shown **all-in** (D4). Includes the door-price notice: "Or pay $X at the door (Venmo or cash)." Online buying is the highlighted option (D31).
 2. Pick quantity (max 10, D5) per ticket type.
 3. Optional "Add a donation": $5 / $10 / $25 / custom (D10).
-4. Name + email (required), phone (optional) (D6).
+4. First + last name and email (required), phone (optional) (D6).
    (Steps 2–4 are three fold-open sections on the event page, opened one after another. See §12 Event page.)
 5. Stripe hosted checkout (cards, Apple Pay, Google Pay, Cash App Pay).
 6. Stripe's webhook confirms payment, then the order and tickets are created and the email is sent.
@@ -156,7 +156,7 @@ A small, low-cost web platform for Diatonics a cappella concerts. People buy tic
 - Admin dashboard shows: scanned check-ins, door sales count, and **total attendance** (both added together).
 
 **Manual lookup (D14)**
-- Small button: search by name, email, or short code, then tap to check in.
+- Small button: search by name, email, **order number** (e.g. `KM47`) or ticket short code, then tap to check in.
 
 **Get help (D17)**
 - A "?" button opens a one-screen plain-language guide: what each color means, what to do about a dead phone, "not found," or "already used."
@@ -184,6 +184,7 @@ A small, low-cost web platform for Diatonics a cappella concerts. People buy tic
 - The QR code holds a **signed** token (HMAC), so forged codes are rejected even offline.
 - The server is the source of truth; check-ins are recorded atomically when online.
 - Short code: 8–10 characters, no look-alike characters (0/O, 1/I).
+- **Order number (your request):** simple, **2 letters + 2 digits, e.g. `KM47`** (no I/O, no 0/1). 36,864 combinations, plenty for this group; the database keeps it unique and picks again on a clash. Shown on the confirmation page, on every ticket, in the email and on the downloaded ticket image. Door volunteers can look people up by it. It is not a secret and never unlocks tickets by itself.
 
 ## 5. Payments, fees & tax
 
@@ -222,7 +223,7 @@ The group absorbs them: a $5 donation nets ~$4.55, $10 nets ~$9.41, and $25 nets
 - **DoorSaleCount**: event_id, device_id, delta (+1 / −1), created_at (the sum = door sales)
 - **Event**: id, name, slug, description, venue, starts_at, doors_at, capacity (**blank = unlimited**), door_price_cents (display only, nullable), sales_close_at, door_pin_hash, image_path, status (draft / on_sale / closed / cancelled). A reschedule just changes starts_at, so there's no separate "rescheduled" status **[assumed]**
 - **TicketType**: id, event_id, name, price_cents, quantity_limit
-- **Order**: id, event_id (null for standalone donations), buyer_name, buyer_email, buyer_phone, tickets_subtotal_cents, service_fee_cents, donation_cents, total_cents, stripe_fee_cents, status (pending / paid / refunded / comp), payment_method (stripe / comp), stripe_session_id (nullable), created_at
+- **Order**: id, event_id (null for standalone donations), order_no (unique, e.g. KM47), buyer_first_name, buyer_last_name, buyer_email, buyer_phone, tickets_subtotal_cents, service_fee_cents, donation_cents, total_cents, stripe_fee_cents, status (pending / paid / refunded / comp), payment_method (stripe / comp), stripe_session_id (nullable), created_at
 - **Ticket**: id, order_id, ticket_type_id, short_code, status (valid / checked_in / void), checked_in_at, checked_in_device
 - **Donation**: id, order_id, amount_cents, recognize (bool), display_name, created_at
 - **CheckInLog**: ticket_id, device_id, action (check_in / undo), timestamp, synced_at, conflict (bool)
@@ -293,6 +294,7 @@ The site itself works fine on `.vercel.app`; it's only email that needs this.
 - **Not a dark theme, but pretty** (your decision): a **soft sky-blue** look. Pale sky-blue/cream backgrounds, **burgundy buttons**, dark text. The logo (a dark circle) is the centerpiece and stands out against the light background.
 - **Light mode only, always (your rule):** no black or dark page backgrounds anywhere, including the door scanner's idle screen. Cards are white on the pale-blue page.
 - **Links are burgundy** (sky-blue text is too faint on a light background).
+- **No short dangling last lines (your request):** headings wrap into even lines and paragraphs avoid a lone word or two on the last line (CSS `text-wrap: balance` / `pretty`, site-wide).
 - **Small corners only (your decision):** 4px corners on buttons, inputs, cards and badges. No pill-shaped buttons or big rounded cards, because they look "vibe coded".
 - **Wide layout (your request):** content goes up to ~1150px wide on a laptop (not a narrow column), so the ticketing part takes up more of the screen. Phones are single-column.
 - **Fonts follow the logo's lettering style** (your decision): a bold, high-contrast serif with flared, wedge-shaped serifs, in all caps.
@@ -322,18 +324,20 @@ Your answer: no preference. **[assumed]** The next show is big at the top (flyer
 - **"General admission: first come, first served"** shown clearly near the price.
 - **Setlist or description** text.
 - **Map + directions** (embedded map or a link).
-- **Key facts in boxes (your request):** at the top of the ticket box, side-by-side boxes for **Seating** (General admission / First come, first served), **Price** (Online $5.50 / At the door $8, Venmo or cash) and **Tickets left**. Each box has a large, gray, all-caps label on top ("SEATING", "PRICE") with the bold value under it.
+- **Key facts in boxes (your request):** at the top of the ticket box, side-by-side boxes for **Seating** (General admission / First come, first served), **Price** (Online $5.50 / At the door $8, Venmo or cash) and **Tickets left**. Each box has a large, gray, all-caps label on top ("SEATING", "PRICE") with the bold value under it. **All the values are burgundy** (your request: consistent, not just "General admission").
 - **"Tickets" heading** is extra large (bigger than the other section headings).
 - **Buying happens in 3 fold-open steps (your request)**, each in its own box:
   1. **Tickets**: one box per ticket type, with a large name, the all-in price and big − / + buttons. A **Continue** button opens step 2.
-  2. **Add a donation (optional)**: closed until step 1 is done, so it never looks bigger than the ticket part. Smaller amount buttons ("No thanks" / $5 / $10 / $25 / Custom). The button always says **Continue** (never "Skip").
+  2. **Add a donation (optional)**: closed until step 1 is done, so it never looks bigger than the ticket part. Smaller amount buttons ($2 / $5 / $10 / $25 / Custom; Custom $0 = no donation). **$2 is picked by default** (your request; it shows in the step summary and as its own line in the total). Next to the Continue button is a small **"Thank me by name on our supporters list"** checkbox (greyed out when there is no donation, so nothing moves around); it uses their first + last name from step 3, with no separate box (D12). The button always says **Continue** (never "Skip").
   3. **Your info**: name, email, phone, the order total, the no-refunds line, and the "Continue to payment" button.
   - A finished step folds up and shows a one-line summary ("2 × General · $11.00", "No donation"); tap it to reopen and change it.
 - **"No refunds. All sales final."** is small, regular weight and gray (your request: not bold, not big), but always shown before payment (D8).
 - **Tickets-left count**, shown as just the number ("143 left"), no total. Always the true number, never padded. Hidden ("On sale now") until 10% of capacity has sold, so early buyers don't see a full count **[assumed: 10%]**. Admin always shows real numbers.
 
 ### Confirmation page (after buying)
-- **Celebratory:** "You're going! 🎉" with the tickets (QR + short code) shown right on the page, plus "We also emailed them to you."
+- **Celebratory:** "You're going! 🎉" with the tickets (QR + short code + **order number**) shown right on the page, plus "We also emailed them to you."
+- **If they donated:** a **big thank-you box, full page width so it stays short** ("Thank you for your $10 donation! 💛", what it pays for, and "We'll add <name> to our supporters list" if they opted in). Your request: bigger than a single line.
+- **Each ticket has "Download" and "Text / share" buttons (your request).** Download saves a PNG of the ticket (show, date, QR, short code, ticket type, name, order number, GA line) so it works with no signal. Text / share opens the phone's share sheet (Messages, WhatsApp, AirDrop, Save Image). Both are free and need no SMS service. Sending tickets **by text automatically** would need a paid SMS service (e.g. Twilio) and US carrier registration **[open question: not built]**. The email has no buttons (emails can't run them).
 - "General admission: first come, first served" on each ticket.
 
 ### Ticket email

@@ -64,8 +64,8 @@ export async function startTicketCheckout(
 
   // Opt-in name recognition for the donation add-on (spec D12), same rules as the Donate page.
   const recognize = order.donationCents > 0 && formData.get("recognize") === "on";
-  const displayName = recognize ? String(formData.get("display_name") ?? "").trim().slice(0, 60) : "";
-  if (recognize && !displayName) return { error: "Enter the name you'd like us to display, or uncheck the box." };
+  // Ticket checkout has no separate "name to display" box: we show the buyer's first + last name.
+  const displayName = recognize ? buyer.name.slice(0, 60) : "";
 
   if (!isDemo()) {
     // Step 2 replaces this with: hold the tickets, create a Stripe Checkout

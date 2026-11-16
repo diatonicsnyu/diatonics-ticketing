@@ -89,7 +89,7 @@ export function DoorDemo() {
       {/* bottom: small fallbacks */}
       <footer className="flex justify-center gap-3 border-t border-line bg-white px-4 py-3">
         <button onClick={() => setShowHistory(true)} className="rounded-sm border border-line px-4 py-2 text-sm font-semibold">See history</button>
-        <button onClick={() => alert("Manual lookup: search by name, email, or short code (built in Step 4).")}
+        <button onClick={() => alert("Manual lookup: search by name, email, order number (like KM47), or ticket code (built in Step 4).")}
           className="rounded-sm border border-line px-4 py-2 text-sm font-semibold">Manual lookup</button>
       </footer>
 
@@ -141,7 +141,7 @@ export function DoorDemo() {
             <p><span className="rounded-sm bg-green-600 px-2 font-bold text-white">GREEN ✓</span> Good ticket. Let them in.</p>
             <p><span className="rounded-sm bg-yellow-400 px-2 font-bold">YELLOW !</span> Already used. It shows when and where. If it&apos;s the same person coming back, let them in. If not, ask them to find the group leader.</p>
             <p><span className="rounded-sm bg-red-600 px-2 font-bold text-white">RED ✕</span> Not a ticket for this show. Ask them to show their email, or send them to the group leader.</p>
-            <p><strong>Phone dead / no QR?</strong> Tap <em>Manual lookup</em> and search their name or email.</p>
+            <p><strong>Phone dead / no QR?</strong> Tap <em>Manual lookup</em> and search their name, email or order number.</p>
             <p><strong>&ldquo;Not found&rdquo;?</strong> They may have just bought. Try manual lookup once you have signal.</p>
             <button onClick={() => setHelp(false)} className="w-full rounded-sm bg-burgundy px-6 py-4 font-bold text-white">Got it</button>
           </div>

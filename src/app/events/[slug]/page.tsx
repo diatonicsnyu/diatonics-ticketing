@@ -84,7 +84,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
             <>
               {/* Key facts, each in its own box. GA must sit near the price (spec §12). */}
               <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-3">
-                <InfoBox label="Seating" value="General admission" sub="First come, first served" accent />
+                <InfoBox label="Seating" value="General admission" sub="First come, first served" />
                 {Number.isFinite(cheapest) && (
                   <InfoBox
                     label="Price"
@@ -140,11 +140,11 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
   );
 }
 
-function InfoBox({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {
+function InfoBox({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="rounded-sm border border-line bg-page p-4">
       <p className="text-lg font-bold uppercase tracking-wider text-muted">{label}</p>
-      <p className={`mt-1 text-xl font-bold tabular-nums ${accent ? "text-burgundy" : ""}`}>{value}</p>
+      <p className="mt-1 text-xl font-bold tabular-nums text-burgundy">{value}</p>
       {sub && <p className="mt-0.5 text-sm text-muted">{sub}</p>}
     </div>
   );

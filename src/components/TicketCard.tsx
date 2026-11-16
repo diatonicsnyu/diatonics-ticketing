@@ -18,6 +18,7 @@ export async function TicketCard({
   index,
   count,
   actions = false,
+  orderNo,
 }: {
   qrText: string;
   code: string;
@@ -30,6 +31,8 @@ export async function TicketCard({
   count: number;
   /** Show Download / Text-share buttons (web pages only; emails can't run them). */
   actions?: boolean;
+  /** Order number (e.g. "KM47"), shown on the ticket and the saved image; door volunteers can look it up. */
+  orderNo?: string;
 }) {
   const colors = { dark: "#1a1a1f", light: "#ffffff" };
   // SVG generated from our own text; no user HTML goes into it.
@@ -48,7 +51,7 @@ export async function TicketCard({
       <div className="flex flex-col items-center gap-3 p-5 sm:flex-row sm:items-start">
         <div className="w-44 shrink-0" aria-label={`QR code for ticket ${code}`} role="img" dangerouslySetInnerHTML={{ __html: svg }} />
         <div className="space-y-1 text-center sm:text-left">
-          <p className="text-sm text-muted">Ticket {index} of {count} · {typeName}</p>
+          <p className="text-sm text-muted">Ticket {index} of {count} · {typeName}{orderNo && <> · Order <strong className="text-ink">{orderNo}</strong></>}</p>
           <p className="font-mono text-2xl font-bold tracking-wider">{code}</p>
           <p className="text-sm">{holder}</p>
           <p className="text-sm text-muted">{venue}</p>
@@ -61,7 +64,7 @@ export async function TicketCard({
               code={code}
               eventName={eventName}
               dateLine={`${formatDate(startsAt)} · ${formatTime(startsAt)}`}
-              detailLine={`${typeName} · ${holder}`}
+              detailLine={`${typeName} · ${holder}${orderNo ? ` · Order ${orderNo}` : ""}`}
             />
           )}
         </div>

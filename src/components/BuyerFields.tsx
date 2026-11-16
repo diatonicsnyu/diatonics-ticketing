@@ -11,8 +11,17 @@ export function BuyerFields({ showPhone = true }: { showPhone?: boolean }) {
         <span className="mb-1 block font-semibold">Last name</span>
         <input name="last_name" required autoComplete="family-name" maxLength={50} className={input} />
       </label>
+      {showPhone && (
+        <p className="mt-2 border-t border-line pt-4 font-display text-lg font-bold sm:col-span-2">
+          Where to send your tickets
+        </p>
+      )}
       <label className="block sm:col-span-2">
-        <span className="mb-1 block font-semibold">Email</span>
+        <span className="mb-1 block font-semibold">
+          Email
+          {/* Ticket form: the "Where to send your tickets" heading already says it. */}
+          {!showPhone && <span className="font-normal text-muted"> (for your receipt)</span>}
+        </span>
         <input name="email" type="email" required autoComplete="email" className={`${input} sm:max-w-md`} />
       </label>
       {showPhone && (

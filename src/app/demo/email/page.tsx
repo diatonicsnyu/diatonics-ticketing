@@ -37,7 +37,7 @@ export default async function DemoEmailPage(props: PageProps<"/demo/email">) {
         </div>
 
         <div className="space-y-4 px-6 py-6">
-          <p className="text-lg">Hi {order.buyer.name.split(" ")[0]}, you&apos;re going! 🎉</p>
+          <p className="text-lg">Hi {order.buyer.firstName || order.buyer.name.split(" ")[0]}, you&apos;re going! 🎉</p>
           <div className="rounded-sm bg-page p-4 text-sm">
             <p className="font-bold">{ev.name}</p>
             <p>{formatDate(ev.startsAt)} · Show {formatTime(ev.startsAt)}{ev.doorsAt && ` · Doors ${formatTime(ev.doorsAt)}`}</p>
@@ -47,7 +47,7 @@ export default async function DemoEmailPage(props: PageProps<"/demo/email">) {
 
           {order.tickets.map((t, i) => (
             <TicketCard key={t.code} qrText={`DEMO ${t.code}`} code={t.code} typeName={t.typeName}
-              eventName={ev.name} startsAt={ev.startsAt} venue={ev.venue} holder={order.buyer.name}
+              eventName={ev.name} startsAt={ev.startsAt} venue={ev.venue} holder={order.buyer.name} orderNo={order.orderNo}
               index={i + 1} count={order.tickets.length} />
           ))}
 

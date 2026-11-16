@@ -48,3 +48,12 @@ body {
 :root {
   color-scheme: light;
 }
+
+/* No short dangling last lines: headings split into even lines, and
+   paragraphs avoid leaving one or two words alone on the last line. */
+h1, h2, h3, .font-display {
+  text-wrap: balance;
+}
+p, li, dd, label {
+  text-wrap: pretty;
+}

@@ -26,7 +26,19 @@ export default async function DemoConfirmationPage(props: PageProps<"/demo/confi
           Order {order.orderNo} · We also emailed your tickets to <strong className="text-ink">{order.buyer.email}</strong>.
         </p>
         {order.donationCents > 0 && (
-          <p className="mt-2">Thank you for your {formatCents(order.donationCents)} donation! 💛</p>
+          <div className="mt-6 rounded-sm border border-burgundy bg-white px-6 py-4">
+            <p className="font-display text-2xl font-black text-burgundy">
+              Thank you for your {formatCents(order.donationCents)} donation! 💛
+            </p>
+            <p className="mt-1 text-balance text-lg">
+              It goes straight to our uniforms, venues, mics and everything else that keeps the Diatonics singing.
+            </p>
+            {order.recognize && order.displayName && (
+              <p className="mt-2 text-muted">
+                We&apos;ll add <strong className="text-ink">{order.displayName}</strong> to our supporters list.
+              </p>
+            )}
+          </div>
         )}
       </div>
 
@@ -44,6 +56,7 @@ export default async function DemoConfirmationPage(props: PageProps<"/demo/confi
             index={i + 1}
             count={order.tickets.length}
             actions
+            orderNo={order.orderNo}
           />
         ))}
       </div>

@@ -28,7 +28,8 @@ export function BuyForm({
   const [qty, setQty] = useState<Record<string, number>>(() =>
     Object.fromEntries(types.map((t, i) => [t.id, i === 0 ? 1 : 0])),
   );
-  const [donation, setDonation] = useState({ choice: "none", custom: "" });
+  // $2 is picked by default (user's request). It's shown in step 2 and itemized in the total.
+  const [donation, setDonation] = useState({ choice: "200", custom: "" });
   const [recognize, setRecognize] = useState(false);
   const [open, setOpen] = useState<StepNo>(1);
   const [reached, setReached] = useState<StepNo>(1);
@@ -105,25 +106,17 @@ export function BuyForm({
         <p className="mb-3 text-sm text-muted">Helps cover venues and competitions. Totally up to you.</p>
         <DonationPicker presets={ADDON_DONATION_PRESETS_CENTS} compact choice={donation.choice} custom={donation.custom}
           onChange={(choice, custom) => setDonation({ choice, custom })} />
-        {/* Opt-in name recognition (spec D12), only once there's a donation. */}
-        {donationCents > 0 && (
-          <div className="mt-4 rounded-sm bg-page p-4">
-            <label className="flex items-start gap-3">
-              <input type="checkbox" name="recognize" checked={recognize} onChange={(e) => setRecognize(e.target.checked)} className="mt-1 h-5 w-5" />
-              <span>
-                <span className="font-semibold">Thank me by name</span>
-                <span className="block text-sm text-muted">Add me to the supporters list on our Donate page.</span>
-              </span>
-            </label>
-            {recognize && (
-              <label className="mt-3 block">
-                <span className="mb-1 block text-sm font-semibold">Name to display</span>
-                <input name="display_name" maxLength={60} placeholder="e.g. The Chen Family" className="w-full rounded-sm border border-line bg-white px-3 py-2.5" />
-              </label>
-            )}
-          </div>
-        )}
-        <NextButton onClick={() => goTo(3)}>Continue</NextButton>
+        {/* Continue + a small opt-in recognition checkbox on one row (spec D12). It's always
+            there (greyed out with no donation), so nothing jumps around when an amount is picked.
+            The name shown is the first + last name from step 3. */}
+        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
+          <NextButton className="" onClick={() => goTo(3)}>Continue</NextButton>
+          <label className={`flex items-center gap-2 text-sm ${donationCents > 0 ? "cursor-pointer" : "opacity-50"}`}>
+            <input type="checkbox" name="recognize" checked={recognize && donationCents > 0} disabled={donationCents === 0}
+              onChange={(e) => setRecognize(e.target.checked)} className="h-4 w-4 accent-burgundy" />
+            Thank me by name on our supporters list
+          </label>
+        </div>
       </Step>
 
       {/* ---- 3. who + pay ---- */}
@@ -212,10 +205,10 @@ function Step({
   );
 }
 
-function NextButton({ onClick, disabled, children }: { onClick: () => void; disabled?: boolean; children: ReactNode }) {
+function NextButton({ onClick, disabled, children, className = "mt-4" }: { onClick: () => void; disabled?: boolean; children: ReactNode; className?: string }) {
   return (
     <button type="button" onClick={onClick} disabled={disabled}
-      className="font-display mt-4 w-full rounded-sm bg-burgundy px-6 py-3 font-bold text-white hover:bg-burgundy-bright disabled:opacity-50 sm:w-auto">
+      className={`font-display w-full rounded-sm bg-burgundy px-6 py-3 font-bold text-white hover:bg-burgundy-bright disabled:opacity-50 sm:w-auto ${className}`}>
       {children}
     </button>
   );
