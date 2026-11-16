@@ -15,7 +15,7 @@ export default async function HomePage() {
   return (
     <SiteChrome>
       <section className="flex flex-col items-center gap-4 text-center">
-        <Image src={logo} alt="Diatonics logo" width={180} height={167} priority />
+        <Image src={logo} alt="Diatonics logo" width={180} height={180} priority />
         <h1 className="font-display text-3xl font-black sm:text-4xl">Upcoming Shows</h1>
       </section>
 
