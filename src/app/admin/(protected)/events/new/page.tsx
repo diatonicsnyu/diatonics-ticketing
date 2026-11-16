@@ -10,7 +10,7 @@ export default async function NewEventPage() {
   return (
     <>
       <Link href="/admin" className="text-sm text-link hover:underline">← All events</Link>
-      <h1 className="font-display mb-6 mt-2 text-2xl font-black">New event</h1>
+      <h1 className="font-display mb-6 mt-2 text-3xl font-black">New event</h1>
       <EventForm
         action={saveEvent.bind(null, null)}
         submitLabel="Create event"

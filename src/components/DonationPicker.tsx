@@ -14,11 +14,14 @@ export function DonationPicker({
   custom,
   onChange,
   allowNone,
+  compact = false,
 }: {
   choice: string;
   custom: string;
   onChange: (choice: string, custom: string) => void;
   allowNone: boolean;
+  /** Smaller chips, for the optional add-on at ticket checkout. */
+  compact?: boolean;
 }) {
   const options = [
     ...(allowNone ? [{ value: "none", label: "No thanks" }] : []),
@@ -32,7 +35,7 @@ export function DonationPicker({
         {options.map((o) => (
           <label
             key={o.value}
-            className={`cursor-pointer rounded-sm border px-4 py-2 font-semibold transition ${
+            className={`cursor-pointer rounded-sm border font-semibold transition ${compact ? "px-3 py-1.5 text-sm" : "px-4 py-2"} ${
               choice === o.value ? "border-burgundy bg-burgundy text-white" : "border-line bg-white hover:border-burgundy"
             }`}
           >

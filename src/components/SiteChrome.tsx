@@ -22,7 +22,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3">
           <Link href="/" className="flex items-center gap-3" aria-label="Diatonics home">
             <Image src={logo} alt="" width={48} height={48} priority />
-            <span className="font-display text-lg font-bold">Diatonics</span>
+            <span className="font-display text-xl font-bold">Diatonics</span>
           </Link>
           <DonateButton small />
         </div>

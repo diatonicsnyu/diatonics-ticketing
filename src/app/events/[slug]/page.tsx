@@ -35,7 +35,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
           <img src={img} alt="" className="mb-6 aspect-video w-full rounded-sm object-cover" />
         )}
 
-        <h1 className="font-display text-3xl font-black sm:text-4xl">{event.name}</h1>
+        <h1 className="font-display text-4xl font-black sm:text-5xl">{event.name}</h1>
 
         <dl className="mt-4 space-y-1 text-lg">
           <div>
@@ -64,24 +64,31 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
         )}
 
         <section className="mt-8 rounded-sm border border-line bg-panel p-5" aria-label="Tickets">
-          <h2 className="font-display text-xl font-bold">Tickets</h2>
+          <h2 className="font-display text-3xl font-black">Tickets</h2>
 
           {event.status === "cancelled" ? (
             <p className="mt-3">This show has been cancelled.</p>
           ) : (
             <>
-              <p className="mt-2 font-semibold text-burgundy">General admission: first come, first served</p>
-              {left != null && open && (
-                <p className="mt-1 text-sm text-muted">{left === 0 ? "Sold out online" : `${left} left`}</p>
-              )}
-
-              {/* Display only. The site never sells or tracks door tickets (D31). */}
-              {event.door_price_cents != null && Number.isFinite(cheapest) && (
-                <p className="mt-1 text-sm text-muted">
-                  Online {formatCents(allInCents(cheapest))} · At the door{" "}
-                  {formatCents(event.door_price_cents)}, Venmo or cash
-                </p>
-              )}
+              {/* Key facts, each in its own box. GA must sit near the price (spec §12). */}
+              <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-3">
+                <InfoBox label="Seating" value="General admission" sub="First come, first served" accent />
+                {Number.isFinite(cheapest) && (
+                  <InfoBox
+                    label="Price"
+                    value={`${event.ticket_types.length > 1 ? "From" : "Online"} ${formatCents(allInCents(cheapest))}`}
+                    // Door price is display only. The site never sells or tracks door tickets (D31).
+                    sub={
+                      event.door_price_cents != null
+                        ? `At the door ${formatCents(event.door_price_cents)}, Venmo or cash`
+                        : "Includes the service fee"
+                    }
+                  />
+                )}
+                {left != null && open && (
+                  <InfoBox label="Tickets left" value={left === 0 ? "Sold out online" : String(left)} />
+                )}
+              </div>
 
               {open && left !== 0 ? (
                 <BuyForm
@@ -91,11 +98,11 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
                 />
               ) : (
                 <>
-                  <ul className="mt-3 divide-y divide-line">
+                  <ul className="mt-4 space-y-3">
                     {event.ticket_types.map((t) => (
-                      <li key={t.id} className="flex flex-wrap justify-between gap-2 py-3">
-                        <span className="font-semibold">{t.name}</span>
-                        <span>{allInLabel(t.price_cents)}</span>
+                      <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 rounded-sm border border-line bg-page p-4">
+                        <span className="text-lg font-semibold">{t.name}</span>
+                        <span className="text-muted">{allInLabel(t.price_cents)}</span>
                       </li>
                     ))}
                   </ul>
@@ -110,5 +117,15 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
         </section>
       </article>
     </SiteChrome>
+  );
+}
+
+function InfoBox({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {
+  return (
+    <div className="rounded-sm border border-line bg-page p-4">
+      <p className="text-sm font-bold uppercase tracking-wider text-muted">{label}</p>
+      <p className={`mt-1 text-2xl font-bold tabular-nums ${accent ? "text-burgundy" : ""}`}>{value}</p>
+      {sub && <p className="mt-1 text-base text-muted">{sub}</p>}
+    </div>
   );
 }

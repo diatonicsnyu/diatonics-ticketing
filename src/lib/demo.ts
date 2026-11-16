@@ -9,7 +9,9 @@
  * and the real database is used. Safe to delete this file once the site is
  * live (and remove the isDemo() checks).
  */
+import { TZDate } from "@date-fns/tz";
 import type { AdminEventRow } from "@/lib/events";
+import { TIME_ZONE } from "@/lib/time";
 
 export function isDemo(): boolean {
   return !process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -17,12 +19,10 @@ export function isDemo(): boolean {
 
 // Sample shows, placed a few weeks/months from "now" so they always look upcoming.
 function daysFromNowAt(days: number, hour: number, minute = 0): string {
-  const d = new Date();
-  d.setUTCDate(d.getUTCDate() + days);
-  // hour is New York time; NY is UTC-5 in winter / UTC-4 in summer. Close
-  // enough for sample data (real events use the proper time zone code).
-  d.setUTCHours(hour + 5, minute, 0, 0);
-  return d.toISOString();
+  // hour/minute are New York time (daylight saving handled by TZDate).
+  const today = new TZDate(Date.now(), TIME_ZONE);
+  const d = new TZDate(today.getFullYear(), today.getMonth(), today.getDate() + days, hour, minute, TIME_ZONE);
+  return new Date(d.getTime()).toISOString();
 }
 
 function demoEvent(

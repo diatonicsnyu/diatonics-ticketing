@@ -18,7 +18,7 @@ export default async function HomePage() {
     <SiteChrome>
       <section className="flex flex-col items-center gap-4 text-center">
         <Image src={logo} alt="Diatonics logo" width={180} height={180} priority />
-        <h1 className="font-display text-3xl font-black sm:text-4xl">Diatonics A Cappella</h1>
+        <h1 className="font-display text-4xl font-black sm:text-5xl">Diatonics A Cappella</h1>
       </section>
 
       {/* The next show, big, with a Buy button (spec §12). */}
@@ -30,7 +30,7 @@ export default async function HomePage() {
           )}
           <div className="p-6 text-center">
             <p className="text-sm font-semibold uppercase tracking-wide text-burgundy">Next show</p>
-            <h2 className="font-display mt-1 text-3xl font-black">{next.name}</h2>
+            <h2 className="font-display mt-1 text-4xl font-black">{next.name}</h2>
             <p className="mt-2 text-lg">{formatShort(next.starts_at)}</p>
             <p className="text-muted">{next.venue}</p>
             {salesOpen(next) ? (
@@ -45,7 +45,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {later.length > 0 && <h2 className="font-display mt-10 text-xl font-bold">More shows</h2>}
+      {later.length > 0 && <h2 className="font-display mt-10 text-2xl font-bold">More shows</h2>}
       <section className="mt-4 space-y-4" aria-label="Events">
         {events.length === 0 ? (
           <p className="rounded-sm border border-line bg-panel p-6 text-center text-muted">
@@ -67,7 +67,7 @@ export default async function HomePage() {
                   <img src={img} alt="" className="hidden w-36 shrink-0 object-cover sm:block" />
                 )}
                 <div className="flex-1 p-5">
-                  <h2 className="font-display text-xl font-bold">{e.name}</h2>
+                  <h2 className="font-display text-2xl font-bold">{e.name}</h2>
                   <p className="mt-1 text-muted">{formatShort(e.starts_at)} · {e.venue}</p>
                   <p className="mt-3 text-sm font-semibold text-link">
                     {open
@@ -84,7 +84,7 @@ export default async function HomePage() {
       </section>
 
       <section className="mt-12 rounded-sm border border-line bg-panel p-6 text-center">
-        <h2 className="font-display text-xl font-bold">Support the Diatonics</h2>
+        <h2 className="font-display text-2xl font-bold">Support the Diatonics</h2>
         <p className="mt-2 text-muted">Every bit helps us keep singing.</p>
         <div className="mt-4">
           <DonateButton />

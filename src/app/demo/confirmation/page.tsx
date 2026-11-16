@@ -21,7 +21,7 @@ export default async function DemoConfirmationPage(props: PageProps<"/demo/confi
     <SiteChrome>
       <div className="text-center">
         <p className="text-5xl" aria-hidden>🎉</p>
-        <h1 className="font-display mt-2 text-3xl font-black sm:text-4xl">You&apos;re going!</h1>
+        <h1 className="font-display mt-2 text-4xl font-black sm:text-5xl">You&apos;re going!</h1>
         <p className="mt-2 text-muted">
           Order {order.orderNo} · We also emailed your tickets to <strong className="text-ink">{order.buyer.email}</strong>.
         </p>

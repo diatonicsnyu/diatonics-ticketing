@@ -17,7 +17,7 @@ export default async function AdminEventsPage(props: PageProps<"/admin">) {
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-display text-2xl font-black">Events</h1>
+        <h1 className="font-display text-3xl font-black">Events</h1>
         <Link href="/admin/events/new" className="font-display rounded-sm bg-burgundy px-5 py-2.5 font-bold text-white hover:bg-burgundy-bright">
           + New event
         </Link>

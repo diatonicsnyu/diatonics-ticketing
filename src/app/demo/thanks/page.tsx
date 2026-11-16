@@ -20,7 +20,7 @@ export default async function DemoThanksPage(props: PageProps<"/demo/thanks">) {
     <SiteChrome>
       <div className="text-center">
         <p className="text-5xl" aria-hidden>💛</p>
-        <h1 className="font-display mt-2 text-3xl font-black">Thank you!</h1>
+        <h1 className="font-display mt-2 text-4xl font-black">Thank you!</h1>
         <p className="mt-2 text-lg">Your {formatCents(order.donationCents)} donation is music to our ears. 🎶</p>
         {order.recognize && (
           <p className="mt-2 text-muted">We&apos;ll thank you as <strong className="text-ink">{order.displayName}</strong> on our supporters list.</p>

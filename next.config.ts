@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Hide the little "N" dev badge in the corner (nicer for demos).
+  devIndicators: false,
   // Cache Components is off on purpose: every page reads live data from
   // Supabase (ticket counts, sales cutoffs), so plain request-time rendering
   // is simpler and easier to reason about.

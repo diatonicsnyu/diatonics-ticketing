@@ -11,7 +11,7 @@ export default function DonatePage() {
 
   return (
     <SiteChrome>
-      <h1 className="font-display text-3xl font-black sm:text-4xl">Support the Diatonics</h1>
+      <h1 className="font-display text-4xl font-black sm:text-5xl">Support the Diatonics</h1>
       <p className="mt-2 text-lg text-muted">Help us keep the music going. 🎶</p>
 
       <div className="mt-8 grid gap-8 md:grid-cols-[1fr_16rem]">
@@ -21,7 +21,7 @@ export default function DonatePage() {
 
         <aside className="space-y-6">
           <section>
-            <h2 className="font-display text-lg font-bold">Why donate</h2>
+            <h2 className="font-display text-xl font-bold">Why donate</h2>
             {/* PLACEHOLDER TEXT: replace with the group's own words (spec §12). */}
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
               <li>Renting rehearsal and performance spaces</li>
@@ -32,7 +32,7 @@ export default function DonatePage() {
 
           {supporters.length > 0 && (
             <section>
-              <h2 className="font-display text-lg font-bold">Our supporters</h2>
+              <h2 className="font-display text-xl font-bold">Our supporters</h2>
               <ul className="mt-2 space-y-1 text-sm">
                 {supporters.map((n) => <li key={n}>💛 {n}</li>)}
               </ul>

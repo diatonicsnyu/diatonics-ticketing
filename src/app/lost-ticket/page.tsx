@@ -6,7 +6,7 @@ export const metadata = { title: "Lost your ticket?" };
 export default function LostTicketPage() {
   return (
     <SiteChrome>
-      <h1 className="font-display text-3xl font-black">Lost your ticket?</h1>
+      <h1 className="font-display text-4xl font-black">Lost your ticket?</h1>
       <p className="mt-4 text-muted">Self-service ticket re-sending is coming soon.</p>
     </SiteChrome>
   );
