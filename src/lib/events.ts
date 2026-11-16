@@ -1,7 +1,7 @@
 import "server-only";
 import { publicDb, adminDb } from "@/lib/supabase/clients";
 import { env } from "@/lib/env";
-import { isDemo, DEMO_EVENTS } from "@/lib/demo";
+import { isDemo, DEMO_EVENTS, DEMO_SOLD } from "@/lib/demo";
 
 // ---------- types (mirror supabase/migrations/0001_events.sql) ----------
 
@@ -116,4 +116,15 @@ export async function getEventForAdmin(id: string): Promise<AdminEventRow | null
     .maybeSingle();
   if (error) throw error;
   return data ? sortTypes(data as AdminEventRow) : null;
+}
+
+/**
+ * Tickets still available online, or null if the event has no capacity
+ * (unlimited). Step 2 will subtract real sold + held tickets from the
+ * database; until then only demo mode has "sold" numbers.
+ */
+export function ticketsRemaining(event: Pick<EventRow, "id" | "capacity">): number | null {
+  if (event.capacity == null) return null;
+  const sold = isDemo() ? (DEMO_SOLD[event.id] ?? 0) : 0;
+  return Math.max(0, event.capacity - sold);
 }

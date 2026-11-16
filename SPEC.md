@@ -287,7 +287,7 @@ The site itself works fine on `.vercel.app`; it's only email that needs this.
 - **Fonts follow the logo's lettering style** (your decision): a bold, high-contrast serif with flared, wedge-shaped serifs, in all caps.
   - **Headings / titles / buttons:** a free Google Font close to the logo. First pick: **Cinzel** (weights 700–900); alternatives: **Marcellus SC**, **Playfair Display SC** (bold). Use all caps with slightly wide letter spacing, like the logo. **[assumed: final font chosen side by side against the logo]**
   - If whoever designed the logo knows the exact font, use that (if its license allows web use). Otherwise, upload the logo to a font identifier like WhatTheFont to find it.
-  - **Body text:** a plain sans-serif for readability (e.g. **Inter**). The logo font is for headings only, since it's hard to read in long text and small sizes.
+  - **Body text:** a plain sans-serif for readability: **Figtree** (chosen 2026-11-15, replacing Inter). The logo font is for headings only, since it's hard to read in long text and small sizes.
   - The door scanner's result text uses the plain sans-serif at a large size, for speed.
 - Use the logo on the home page, event pages, emails (header), the door app icon, and the browser tab icon.
 - **The door scanner keeps green / yellow / red for results**, not brand colors, so burgundy never gets confused with 🟥 "invalid."

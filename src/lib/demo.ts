@@ -89,3 +89,11 @@ export const DEMO_EVENTS: AdminEventRow[] = [
     [{ name: "General", price_cents: 500 }],
   ),
 ];
+
+/** Pretend "already sold" counts so the tickets-left number looks real. */
+export const DEMO_SOLD: Record<string, number> = {
+  "00000000-0000-4000-8000-000000000001": 57,
+};
+
+/** Sample opt-in supporters for the Donate page (made-up names). */
+export const DEMO_SUPPORTERS = ["The Okafor Family", "Jamie L.", "Priya & Sam", "A proud alum", "Marcus T."];

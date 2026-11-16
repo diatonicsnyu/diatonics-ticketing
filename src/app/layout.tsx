@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Cinzel, Inter } from "next/font/google";
+import { Cinzel, Figtree } from "next/font/google";
 import "./globals.css";
 
 // Cinzel echoes the logo's flared serif caps (headings only).
-// Inter is the plain, readable body font.
+// Figtree is the plain, friendly body font.
 const cinzel = Cinzel({ variable: "--font-cinzel", subsets: ["latin"], weight: ["700", "900"] });
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
+const figtree = Figtree({ variable: "--font-figtree", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: { default: "Diatonics Tickets", template: "%s · Diatonics" },
@@ -20,7 +20,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${cinzel.variable} ${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${cinzel.variable} ${figtree.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

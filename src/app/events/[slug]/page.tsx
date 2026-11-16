@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SiteChrome } from "@/components/SiteChrome";
-import { getPublicEventBySlug, salesOpen, eventImageUrl } from "@/lib/events";
+import { getPublicEventBySlug, salesOpen, eventImageUrl, ticketsRemaining } from "@/lib/events";
+import { startTicketCheckout } from "@/app/checkout/actions";
+import { BuyForm } from "./BuyForm";
 import { formatDate, formatTime } from "@/lib/time";
 import { allInCents, allInLabel, formatCents } from "@/lib/money";
 
@@ -22,6 +24,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
   const img = eventImageUrl(event.image_path);
   const open = salesOpen(event);
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue)}`;
+  const left = ticketsRemaining(event);
   const cheapest = Math.min(...event.ticket_types.map((t) => t.price_cents));
 
   return (
@@ -67,38 +70,41 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
             <p className="mt-3">This show has been cancelled.</p>
           ) : (
             <>
-              <ul className="mt-3 divide-y divide-line">
-                {event.ticket_types.map((t) => (
-                  <li key={t.id} className="flex flex-wrap justify-between gap-2 py-3">
-                    <span className="font-semibold">{t.name}</span>
-                    {/* All-in price, required by NY law + FTC rule (spec D4). */}
-                    <span>{allInLabel(t.price_cents)}</span>
-                  </li>
-                ))}
-              </ul>
+              <p className="mt-2 font-semibold text-burgundy">General admission: first come, first served</p>
+              {left != null && open && (
+                <p className="mt-1 text-sm text-muted">{left === 0 ? "Sold out online" : `${left} left`}</p>
+              )}
 
-              {/* Display only. The site never sells or tracks door tickets. */}
+              {/* Display only. The site never sells or tracks door tickets (D31). */}
               {event.door_price_cents != null && Number.isFinite(cheapest) && (
-                <p className="mt-3 text-sm text-muted">
+                <p className="mt-1 text-sm text-muted">
                   Online {formatCents(allInCents(cheapest))} · At the door{" "}
                   {formatCents(event.door_price_cents)}, Venmo or cash
                 </p>
               )}
 
-              {open ? (
-                // Step 2 replaces this with quantity pickers + Stripe Checkout.
-                <button
-                  type="button"
-                  disabled
-                  className="font-display mt-5 w-full rounded-full bg-burgundy px-6 py-3 font-bold text-white opacity-60"
-                >
-                  Buy tickets (coming in Step 2)
-                </button>
+              {open && left !== 0 ? (
+                <BuyForm
+                  types={event.ticket_types}
+                  remaining={left}
+                  action={startTicketCheckout.bind(null, event.slug)}
+                />
               ) : (
-                <p className="mt-5 font-semibold">Online sales are closed for this show.</p>
+                <>
+                  <ul className="mt-3 divide-y divide-line">
+                    {event.ticket_types.map((t) => (
+                      <li key={t.id} className="flex flex-wrap justify-between gap-2 py-3">
+                        <span className="font-semibold">{t.name}</span>
+                        <span>{allInLabel(t.price_cents)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-5 font-semibold">
+                    {left === 0 ? "Sold out online." : "Online sales are closed for this show."}
+                  </p>
+                  <p className="mt-2 text-sm text-muted">No refunds. All sales final.</p>
+                </>
               )}
-
-              <p className="mt-4 text-sm text-muted">No refunds. All sales final.</p>
             </>
           )}
         </section>
