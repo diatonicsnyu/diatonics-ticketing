@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+/*
+ * Diatonics brand colors (SPEC.md §11). Use them in Tailwind classes,
+ * e.g. bg-ink, text-cream, bg-sky, bg-burgundy.
+ *
+ * Contrast rules: cream on ink and ink on sky are fine. Burgundy is too dark
+ * for text on black, so only use it as a FILL with cream text on top.
+ */
+@theme {
+  --color-sky: #a9d6f5;          /* primary accent: buttons, links */
+  --color-sky-dim: #8cc3ea;      /* hover state for sky buttons */
+  --color-burgundy: #7b1e2e;     /* secondary accent: Donate, highlights */
+  --color-burgundy-bright: #962639;
+  --color-ink: #0b0b0d;          /* page background (matches the logo) */
+  --color-panel: #16161a;        /* cards on top of the background */
+  --color-line: #2a2a30;         /* borders */
+  --color-cream: #ede1db;        /* main text */
+  --color-cream-dim: #b9aea8;    /* secondary text (still AA contrast on ink) */
+
+  --font-display: var(--font-cinzel), Georgia, serif; /* headings, all caps */
+  --font-sans: var(--font-inter), system-ui, sans-serif; /* body text */
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+}
+
+/* Headings echo the logo lettering: bold flared serif, caps, wide spacing. */
+.font-display {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Visible keyboard focus everywhere (accessibility). */
+:focus-visible {
+  outline: 2px solid var(--color-sky);
+  outline-offset: 2px;
+}
+
+/* Make native date pickers / selects match the dark theme. */
+:root {
+  color-scheme: dark;
+}

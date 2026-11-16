@@ -3,7 +3,9 @@ node_modules/
 .env*.local
 .env
 .vercel/
-.wrangler/
-.open-next/
 .DS_Store
 Thumbs.db
+*.tsbuildinfo
+next-env.d.ts
+/coverage
+npm-debug.log*

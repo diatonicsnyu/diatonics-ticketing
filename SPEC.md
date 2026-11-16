@@ -48,6 +48,10 @@ _Status: draft · Started 2026-11-15 · Last updated 2026-11-15_
 | D25 | **Supabase: a new account under a group email.** Use the same group email for Stripe, Resend, Vercel and the domain. |
 | D26 | **URL: `diatonics-ticketing.vercel.app` (and localhost) during development.** If the build is good, you'll buy **`diatonics.com`** yourself (it's available) and use **`ticketing.diatonics.com`** (free subdomain, set up with a DNS record pointing to Vercel). Resend verifies the same domain for email, e.g. `tickets@diatonics.com`. ⚠️ Until then, email only reaches your own inbox, see §7.1. |
 | D27 | **Location: New York City; not school-registered.** |
+| D29 | **No Venmo on the site.** Stripe doesn't offer it (checked Stripe's payment-method docs 2026-11-15). Online payments are Stripe only. |
+| D31 | **Door sales (Venmo or cash, ~$7–8) happen outside this system.** The site doesn't sell, track, or count them. It only **displays a notice** on the event page, e.g. "Online $5.50 · At the door $8 (Venmo or cash)." The higher door price pushes people to buy online and keeps the door line fast. The door price is a per-event text/number field in admin, shown only. |
+| D32 | **Door-sale counter (count only).** The door app has a simple **+ / −** counter where volunteers record how many at-door purchases they processed. Nothing else: no payment method, no amount, no names. Totals sync across devices and show in admin. |
+| D30 | **Cash App Pay is on** in Stripe Checkout (US, same 2.9% + 30¢, no extra code: enable it in Stripe's payment method settings). Checkout offers cards, Apple Pay, Google Pay, and Cash App Pay. |
 | D28 | **Branding:** logo at `assets/diatonics-logo.png`; group colors are **light sky blue** and **dark red/burgundy**. See §11. |
 
 ---
@@ -80,16 +84,16 @@ A small, low-cost web platform for Diatonics a cappella concerts. People buy tic
 - "Lost your ticket?" link (D22).
 
 ### 3.2 Ticket purchase
-1. Event page: title, date/time, venue, description, tickets remaining. Prices shown **all-in** (D4).
+1. Event page: title, date/time, venue, description, tickets remaining. Prices shown **all-in** (D4). Includes the door-price notice: "Or pay $X at the door (Venmo or cash)." Online buying is the highlighted option (D31).
 2. Pick quantity (max 10, D5) per ticket type.
 3. Optional "Add a donation": $5 / $10 / $25 / custom (D10).
 4. Name + email (required), phone (optional) (D6).
-5. Stripe hosted checkout (cards, Apple Pay, Google Pay).
+5. Stripe hosted checkout (cards, Apple Pay, Google Pay, Cash App Pay).
 6. Stripe's webhook confirms payment, then the order and tickets are created and the email is sent.
 7. Confirmation page shows the tickets plus a link to view them later.
 
 **Rules**
-- Inventory held 10 minutes during checkout **[assumed]**.
+- Inventory held **30 minutes** during checkout (Stripe Checkout's minimum session length; you OK'd this). Only matters if an event has a capacity.
 - Sales close 30 minutes after show start by default (D7).
 - "No refunds, all sales final" is shown on the event page and at checkout (D8).
 
@@ -143,6 +147,12 @@ A small, low-cost web platform for Diatonics a cappella concerts. People buy tic
 - ⚠️ **Limitation:** if two devices are offline at the same time, the same ticket could get in once at each. The server flags these as duplicate check-ins after sync. The fix is to keep scanners online when possible and use offline as a backup.
 - People who bought tickets after the list was downloaded: their tickets show as "not found offline, check online / manual lookup." The app refreshes the list automatically whenever it has signal.
 
+**Door-sale counter (D32)**
+- A small "Door sales: 12  [−] [+]" control on the scanner screen. Each tap = one person who paid at the door.
+- Count only. It doesn't touch tickets, doesn't change online capacity, and records no payment details.
+- Works offline; the counts from all devices are added up when they sync.
+- Admin dashboard shows: scanned check-ins, door sales count, and **total attendance** (both added together).
+
 **Manual lookup (D14)**
 - Small button: search by name, email, or short code, then tap to check in.
 
@@ -158,7 +168,7 @@ A small, low-cost web platform for Diatonics a cappella concerts. People buy tic
 - **Events:** create/edit name, date/time, venue, description, image, capacity, ticket types + prices, sales close time (default show start + 30 min), door PIN.
 - **Dashboard:** tickets sold per type, donations, gross, service fees, Stripe fees, net, live check-in count.
 - **Master list:** every order, with buyer name, email, phone, purchase time, quantity per type, amounts (tickets / service fee / donation / total), check-in status per ticket, donor display name. Searchable and sortable. Everything except card info (we never have it).
-- **Comp tickets:** issue free tickets to a name + email; emailed like normal tickets.
+- **Comp tickets:** issue free tickets to a name + email; emailed like normal tickets; count against capacity.
 - **CSV export:** orders, tickets, donations, donor-recognition list.
 - **Reminders:** preview and send/schedule (§3.6).
 - **Undo a check-in.**
@@ -207,9 +217,10 @@ The group absorbs them: a $5 donation nets ~$4.55, $10 nets ~$9.41, and $25 nets
 - Donations: no sales tax.
 
 ## 6. Data model (draft) **[assumed]**
-- **Event**: id, name, slug, description, venue, starts_at, doors_at, capacity, sales_close_at, door_pin_hash, status (draft / on_sale / closed / cancelled / rescheduled)
+- **DoorSaleCount**: event_id, device_id, delta (+1 / −1), created_at (the sum = door sales)
+- **Event**: id, name, slug, description, venue, starts_at, doors_at, capacity, door_price_cents (display only, nullable), sales_close_at, door_pin_hash, status (draft / on_sale / closed / cancelled / rescheduled)
 - **TicketType**: id, event_id, name, price_cents, quantity_limit
-- **Order**: id, event_id (null for standalone donations), buyer_name, buyer_email, buyer_phone, tickets_subtotal_cents, service_fee_cents, donation_cents, total_cents, stripe_fee_cents, status (pending / paid / refunded / comp), stripe_session_id, created_at
+- **Order**: id, event_id (null for standalone donations), buyer_name, buyer_email, buyer_phone, tickets_subtotal_cents, service_fee_cents, donation_cents, total_cents, stripe_fee_cents, status (pending / paid / refunded / comp), payment_method (stripe / comp), stripe_session_id (nullable), created_at
 - **Ticket**: id, order_id, ticket_type_id, short_code, status (valid / checked_in / void), checked_in_at, checked_in_device
 - **Donation**: id, order_id, amount_cents, recognize (bool), display_name, created_at
 - **CheckInLog**: ticket_id, device_id, action (check_in / undo), timestamp, synced_at, conflict (bool)
@@ -244,6 +255,12 @@ The site itself works fine on `.vercel.app`; it's only email that needs this.
 - **Privacy:** collect only name, email, optional phone; simple privacy note; never share or sell data.
 - **Accessibility:** good contrast, screen-reader friendly.
 - **Handoff:** you're the only technical member, so keep a short `ADMIN-GUIDE.md` for whoever takes over someday.
+
+### 6.1 Step 1 defaults **[assumed]**
+- Admin login is a magic link sent to `ADMIN_EMAIL`. Supabase sign-ups are off, so no one else can make an account.
+- Door PIN is 4–8 digits and only a hash of it is stored.
+- Every time is entered and shown in New York time.
+- **Demo mode:** until the Supabase keys are added, the site runs on sample shows with a "Preview" banner, and saving is turned off.
 
 ## 9. Open items
 1. **[pending]** General only vs. General + Student (group vote).
@@ -296,6 +313,7 @@ Project setup, Supabase (group account), your admin login, event create/edit, pu
 Event page → quantity → name/email/phone → Stripe Checkout → confirmation page.
 - [ ] Prices show all-in: "$5.50 (includes $0.50 service fee)", on the event page and in Stripe
 - [ ] Test card `4242 4242 4242 4242` completes a purchase; a declined test card does not create an order
+- [ ] Cash App Pay shows as an option in checkout, and a test-mode Cash App payment creates the order the same way
 - [ ] You can't buy more than 10, or more than the tickets left
 - [ ] Buying is blocked after the sales cutoff (show start + 30 min)
 - [ ] "All sales final" is shown before payment
@@ -317,6 +335,7 @@ Deployed to `diatonics-ticketing.vercel.app` (phones need https for the camera).
 - [ ] A made-up / edited QR → 🟥
 - [ ] Manual lookup by name or short code works
 - [ ] Get help opens a one-screen guide
+- [ ] The door-sale counter +/− works, can't go below 0, and the totals from two phones add up correctly in admin
 - [ ] **Volunteer test:** hand it to someone who has never seen it; they check in a ticket without your help
 
 ### Step 5: Offline mode
@@ -332,6 +351,7 @@ Dashboard, master list, CSV export, comps, undo check-in.
 - [ ] The master list shows every order: name, email, phone, time, quantities, amounts, check-in status. Search and sort work
 - [ ] The CSV opens cleanly in Google Sheets / Excel
 - [ ] A comp ticket gets emailed and scans 🟩
+- [ ] Comp tickets can't exceed the remaining capacity
 - [ ] Undoing a check-in lets the ticket scan 🟩 again
 
 ### Step 7: Donations
