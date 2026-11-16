@@ -19,7 +19,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
         </p>
       )}
       <header className="border-b border-line">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
           <Link href="/" className="flex items-center gap-3" aria-label="Diatonics home">
             <Image src={logo} alt="" width={48} height={48} priority />
             <span className="font-display text-xl font-bold">Diatonics</span>
@@ -28,10 +28,10 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
 
       <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-3xl flex-wrap justify-between gap-3 px-4 py-6 text-sm text-muted">
+        <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-3 px-4 py-6 text-sm text-muted">
           <Link href="/lost-ticket" className="underline-offset-4 hover:underline">
             Lost your ticket?
           </Link>

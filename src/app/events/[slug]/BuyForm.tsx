@@ -104,7 +104,7 @@ export function BuyForm({
         <p className="mb-3 text-sm text-muted">Helps cover venues and competitions. Totally up to you.</p>
         <DonationPicker allowNone compact choice={donation.choice} custom={donation.custom}
           onChange={(choice, custom) => setDonation({ choice, custom })} />
-        <NextButton onClick={() => goTo(3)}>{donationCents > 0 ? "Continue" : "Skip"}</NextButton>
+        <NextButton onClick={() => goTo(3)}>Continue</NextButton>
       </Step>
 
       {/* ---- 3. who + pay ---- */}

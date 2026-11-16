@@ -9,6 +9,9 @@ import { allInCents, allInLabel, formatCents } from "@/lib/money";
 
 export const dynamic = "force-dynamic";
 
+/** Show the "X / Y left" count only once this share of capacity has sold [assumed: 10%]. */
+const SHOW_COUNT_AFTER_SOLD = 0.1;
+
 export async function generateMetadata(props: PageProps<"/events/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
   const event = await getPublicEventBySlug(slug);
@@ -29,7 +32,9 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
 
   return (
     <SiteChrome>
-      <article>
+      {/* Phone: one column. Laptop: details on the left (2/5), tickets on the right (3/5). */}
+      <article className="grid gap-8 lg:grid-cols-5 lg:items-start">
+        <div className="lg:col-span-2">
         {img && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={img} alt="" className="mb-6 aspect-video w-full rounded-sm object-cover" />
@@ -63,7 +68,9 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
           <p className="mt-6 whitespace-pre-line text-muted">{event.description}</p>
         )}
 
-        <section className="mt-8 rounded-sm border border-line bg-panel p-5" aria-label="Tickets">
+        </div>
+
+        <section className="rounded-sm border border-line bg-panel p-5 sm:p-8 lg:col-span-3" aria-label="Tickets">
           <h2 className="font-display text-3xl font-black">Tickets</h2>
 
           {event.status === "cancelled" ? (
@@ -85,8 +92,16 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
                     }
                   />
                 )}
-                {left != null && open && (
-                  <InfoBox label="Tickets left" value={left === 0 ? "Sold out online" : String(left)} />
+                {/* Always the true count (no padding). It stays hidden until 10% have sold,
+                    so early buyers don't see a full count. Admin always sees real numbers. */}
+                {left != null && event.capacity != null && open && (
+                  left === 0 ? (
+                    <InfoBox label="Tickets left" value="Sold out online" />
+                  ) : event.capacity - left >= Math.ceil(event.capacity * SHOW_COUNT_AFTER_SOLD) ? (
+                    <InfoBox label="Tickets left" value={String(left)} />
+                  ) : (
+                    <InfoBox label="Tickets" value="On sale now" sub="Grab yours early" />
+                  )
                 )}
               </div>
 

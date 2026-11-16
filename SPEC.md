@@ -307,7 +307,7 @@ Your answer: no preference. **[assumed]** The next show is big at the top (flyer
 - **"General admission: first come, first served"** shown clearly near the price.
 - **Setlist or description** text.
 - **Map + directions** (embedded map or a link).
-- **Tickets-left count** (e.g. "23 left").
+- **Tickets-left count**, shown as just the number ("143 left"), no total. Always the true number, never padded. Hidden ("On sale now") until 10% of capacity has sold, so early buyers don't see a full count **[assumed: 10%]**. Admin always shows real numbers.
 
 ### Confirmation page (after buying)
 - **Celebratory:** "You're going! 🎉" with the tickets (QR + short code) shown right on the page, plus "We also emailed them to you."
