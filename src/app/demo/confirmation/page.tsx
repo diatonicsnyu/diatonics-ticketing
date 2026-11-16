@@ -43,12 +43,14 @@ export default async function DemoConfirmationPage(props: PageProps<"/demo/confi
             holder={order.buyer.name}
             index={i + 1}
             count={order.tickets.length}
+            actions
           />
         ))}
       </div>
 
       <div className="mt-8 rounded-sm border border-line bg-white p-5 text-sm">
         <p>📱 <strong>At the door:</strong> turn your screen brightness up and show the QR code. Each ticket gets one person in.</p>
+        <p className="mt-2">Tip: tap <strong>Download</strong> to keep your ticket on your phone, in case there&apos;s no signal at the venue.</p>
         <p className="mt-2 text-muted">Lost this page? Use &ldquo;Lost your ticket?&rdquo; at the bottom of the site to get your tickets re-sent.</p>
       </div>
 

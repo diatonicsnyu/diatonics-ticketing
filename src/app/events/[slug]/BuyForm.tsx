@@ -2,7 +2,7 @@
 
 import { startTransition, useActionState, useState, type ReactNode } from "react";
 import { allInCents, allInLabel, formatCents, SERVICE_FEE_CENTS } from "@/lib/money";
-import { MAX_TICKETS_PER_ORDER } from "@/lib/order";
+import { ADDON_DONATION_PRESETS_CENTS, MAX_TICKETS_PER_ORDER } from "@/lib/order";
 import { DonationPicker, donationPreviewCents } from "@/components/DonationPicker";
 import { BuyerFields } from "@/components/BuyerFields";
 import type { CheckoutState } from "@/app/checkout/actions";
@@ -29,6 +29,7 @@ export function BuyForm({
     Object.fromEntries(types.map((t, i) => [t.id, i === 0 ? 1 : 0])),
   );
   const [donation, setDonation] = useState({ choice: "none", custom: "" });
+  const [recognize, setRecognize] = useState(false);
   const [open, setOpen] = useState<StepNo>(1);
   const [reached, setReached] = useState<StepNo>(1);
 
@@ -102,8 +103,26 @@ export function BuyForm({
       <Step n={2} title="Add a donation" note="optional" open={open} reached={reached}
         summary={reached > 2 || open !== 2 ? donationSummary : undefined} onOpen={setOpen}>
         <p className="mb-3 text-sm text-muted">Helps cover venues and competitions. Totally up to you.</p>
-        <DonationPicker allowNone compact choice={donation.choice} custom={donation.custom}
+        <DonationPicker presets={ADDON_DONATION_PRESETS_CENTS} compact choice={donation.choice} custom={donation.custom}
           onChange={(choice, custom) => setDonation({ choice, custom })} />
+        {/* Opt-in name recognition (spec D12), only once there's a donation. */}
+        {donationCents > 0 && (
+          <div className="mt-4 rounded-sm bg-page p-4">
+            <label className="flex items-start gap-3">
+              <input type="checkbox" name="recognize" checked={recognize} onChange={(e) => setRecognize(e.target.checked)} className="mt-1 h-5 w-5" />
+              <span>
+                <span className="font-semibold">Thank me by name</span>
+                <span className="block text-sm text-muted">Add me to the supporters list on our Donate page.</span>
+              </span>
+            </label>
+            {recognize && (
+              <label className="mt-3 block">
+                <span className="mb-1 block text-sm font-semibold">Name to display</span>
+                <input name="display_name" maxLength={60} placeholder="e.g. The Chen Family" className="w-full rounded-sm border border-line bg-white px-3 py-2.5" />
+              </label>
+            )}
+          </div>
+        )}
         <NextButton onClick={() => goTo(3)}>Continue</NextButton>
       </Step>
 

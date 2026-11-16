@@ -15,7 +15,15 @@ export function newShortCode(): string {
   return `DIA-${randomChars(4)}-${randomChars(2)}`;
 }
 
-/** Human-friendly order number, e.g. "D-48K2QX". */
+/**
+ * Simple order number: 2 letters + 2 digits, e.g. "KM47" (user's request).
+ * No I/O and no 0/1, so it reads cleanly aloud. 24 x 24 x 8 x 8 = 36,864 combos:
+ * plenty for this group, but the orders table (Step 2) must keep order_no
+ * UNIQUE and pick again on a clash. Not a secret: it never unlocks tickets.
+ */
 export function newOrderNumber(): string {
-  return `D-${randomChars(6)}`;
+  const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const digits = "23456789";
+  const b = crypto.getRandomValues(new Uint8Array(4));
+  return letters[b[0] % 24] + letters[b[1] % 24] + digits[b[2] % 8] + digits[b[3] % 8];
 }

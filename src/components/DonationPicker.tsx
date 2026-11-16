@@ -13,19 +13,20 @@ export function DonationPicker({
   choice,
   custom,
   onChange,
-  allowNone,
+  presets = DONATION_PRESETS_CENTS,
   compact = false,
 }: {
   choice: string;
   custom: string;
   onChange: (choice: string, custom: string) => void;
-  allowNone: boolean;
+  /** Preset amounts in cents. The ticket add-on passes ADDON_DONATION_PRESETS_CENTS ($2 / $5 / $10 / $25). */
+  presets?: number[];
   /** Smaller chips, for the optional add-on at ticket checkout. */
   compact?: boolean;
 }) {
+  // No "No thanks" chip: at ticket checkout nothing is picked by default, and Custom $0 means no donation.
   const options = [
-    ...(allowNone ? [{ value: "none", label: "No thanks" }] : []),
-    ...DONATION_PRESETS_CENTS.map((c) => ({ value: String(c), label: formatCents(c).replace(".00", "") })),
+    ...presets.map((c) => ({ value: String(c), label: formatCents(c).replace(".00", "") })),
     { value: "custom", label: "Custom" },
   ];
 

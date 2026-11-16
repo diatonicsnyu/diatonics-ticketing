@@ -43,18 +43,22 @@ export default async function HomePage() {
       {next && (
         <section className="mt-8 flex flex-col overflow-hidden rounded-sm border border-line bg-panel sm:flex-row" aria-label="Next show">
           <EventThumb imagePath={next.image_path} className="h-48 w-full sm:h-auto sm:min-h-64 sm:w-64" />
-          <div className="flex flex-1 flex-col items-start justify-center p-6 sm:p-8">
-            <p className="text-sm font-semibold uppercase tracking-wide text-burgundy">Next show</p>
-            <h2 className="font-display mt-1 text-4xl font-black">{next.name}</h2>
-            <p className="mt-2 text-lg">{formatShort(next.starts_at)}</p>
-            <p className="text-muted">{next.venue}</p>
+          {/* Text on the left, button on the right, so the tile is balanced edge to edge.
+              Stacks (text, then button) on narrower screens. */}
+          <div className="flex flex-1 flex-col justify-center gap-6 p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between lg:gap-10 lg:px-12">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold uppercase tracking-wide text-burgundy">Next show</p>
+              <h2 className="font-display mt-1 text-4xl font-black">{next.name}</h2>
+              <p className="mt-2 text-lg">{formatShort(next.starts_at)}</p>
+              <p className="text-muted">{next.venue}</p>
+            </div>
             {salesOpen(next) ? (
               <Link href={`/events/${next.slug}`}
-                className="font-display mt-5 inline-block rounded-sm bg-burgundy px-8 py-4 text-lg font-bold text-white hover:bg-burgundy-bright">
+                className="font-display shrink-0 self-start whitespace-nowrap rounded-sm bg-burgundy px-8 py-4 text-lg font-bold text-white hover:bg-burgundy-bright lg:self-center">
                 Get tickets{Number.isFinite(nextCheapest) && ` · ${formatCents(allInCents(nextCheapest))}`}
               </Link>
             ) : (
-              <p className="mt-5 font-semibold">Online sales closed</p>
+              <p className="shrink-0 font-semibold">Online sales closed</p>
             )}
           </div>
         </section>

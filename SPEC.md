@@ -267,7 +267,7 @@ The site itself works fine on `.vercel.app`; it's only email that needs this.
 - **Demo mode:** until the Supabase keys are added, the site runs on sample shows with a "Preview" banner, and saving is turned off. Built so the group can see the idea before the account setup. It switches off by itself once the keys are in, and the `/demo/...` pages then return "not found":
   - Buying tickets: real quantity picker, donation add-on and buyer info on the event page → **demo checkout** page (clearly labeled "no card is charged"; deliberately *not* styled like Stripe; the test card is shown read-only) → "You're going! 🎉" confirmation with real scannable QR codes + short codes.
   - Ticket email preview (`/demo/email`), donation thank-you + receipt (`/demo/thanks`), and a door-scanner mock (`/demo/door`) with pretend Good / Used / Fake scans, full-screen green/yellow/red results, Get help and See history.
-  - Sample shows and "sold" counts are placeholders. The supporters list shows only real people (just "Moona" for now).
+  - Sample shows and "sold" counts are placeholders, except the Winter Concert's date, which is the real show: **Sat, Dec 5, 2026, 6:00 PM** (doors 5:30). The venue is still the sample one. The supporters list shows only real people (just "Moona" for now).
 
 ## 9. Open items
 1. **[pending]** General only vs. General + Student (group vote).
@@ -312,7 +312,7 @@ The site itself works fine on `.vercel.app`; it's only email that needs this.
 
 ### Home page
 Your answer: no preference. **[assumed]** The next show is big at the top (flyer, date, Buy button), then a Donate section, then the group's social links.
-- As built: big logo + "Diatonics A Cappella" heading → **"Next show" tile** with a "Get tickets · $5.50" button → **"More shows"** tiles → Donate section. (Social links are still to come, once you send the links.)
+- As built: big logo + "Diatonics A Cappella" heading → **"Next show" tile** with a "Get tickets · $5.50" button (on a laptop: show text on the left, the button on the right, so the tile is balanced; on narrower screens the button goes under the text. Your request: centered looked off, plain left-aligned left too much empty space). **You approved this layout: keep it, don't redesign it.** → **"More shows"** tiles → Donate section. (Social links are still to come, once you send the links.)
 - **Every show tile has a picture on the left (your request).** It uses the event's uploaded flyer/image, and **the logo as the default placeholder** when there isn't one. On a phone, the "Next show" picture sits on top of the tile instead.
 
 ### Event page

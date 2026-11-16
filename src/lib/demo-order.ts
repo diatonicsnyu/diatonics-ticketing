@@ -14,7 +14,7 @@ export type DemoOrder = {
   serviceFeeCents: number;
   donationCents: number;
   totalCents: number;
-  buyer: { name: string; email: string; phone: string };
+  buyer: { firstName: string; lastName: string; name: string; email: string; phone: string };
   recognize: boolean;
   displayName: string;
   tickets: { code: string; typeName: string }[];

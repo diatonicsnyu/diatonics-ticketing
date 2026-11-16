@@ -23,7 +23,7 @@ export function DonateForm() {
     >
       <div>
         <p className="mb-2 font-semibold">Amount</p>
-        <DonationPicker allowNone={false} choice={donation.choice} custom={donation.custom}
+        <DonationPicker choice={donation.choice} custom={donation.custom}
           onChange={(choice, custom) => setDonation({ choice, custom })} />
         <p className="mt-2 text-sm text-muted">You pay exactly this amount, no added fees. We cover the card processing cost.</p>
       </div>

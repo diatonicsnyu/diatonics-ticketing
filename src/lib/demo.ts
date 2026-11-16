@@ -50,8 +50,9 @@ export const DEMO_EVENTS: AdminEventRow[] = [
       description:
         "The Diatonics close out the year with an evening of a cappella favorites, new arrangements, and a few surprises.\n\nGeneral admission. Doors open 30 minutes before the show.",
       venue: "St. Mark's Church in-the-Bowery, 131 E 10th St, New York, NY",
-      starts_at: daysFromNowAt(21, 19),
-      doors_at: daysFromNowAt(21, 18, 30),
+      // The group's real show date: Sat, Dec 5, 2026, 6:00 PM New York time (EST = UTC-5).
+      starts_at: "2026-12-05T23:00:00.000Z",
+      doors_at: "2026-12-05T22:30:00.000Z",
       capacity: 200,
       door_price_cents: 800,
       status: "on_sale",

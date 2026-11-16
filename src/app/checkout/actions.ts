@@ -10,8 +10,13 @@ import { encodeDemoOrder, type DemoOrder } from "@/lib/demo-order";
 export type CheckoutState = { error?: string };
 
 function readBuyer(formData: FormData) {
+  const firstName = String(formData.get("first_name") ?? "").trim().slice(0, 50);
+  const lastName = String(formData.get("last_name") ?? "").trim().slice(0, 50);
   return {
-    name: String(formData.get("name") ?? "").trim().slice(0, 100),
+    firstName,
+    lastName,
+    name: `${firstName} ${lastName}`.trim(), // full name, for tickets and lookups
+
     email: String(formData.get("email") ?? "").trim().toLowerCase().slice(0, 200),
     phone: String(formData.get("phone") ?? "").trim().slice(0, 30),
   };
@@ -45,7 +50,7 @@ export async function startTicketCheckout(
     String(formData.get("donation") ?? ""),
     String(formData.get("donation_custom") ?? ""),
   );
-  if (donationCents === null) return { error: "Custom donation must be between $1 and $1,000." };
+  if (donationCents === null) return { error: "Custom donation must be $0 (no donation) or between $1 and $1,000." };
 
   const order = priceOrder(lines, donationCents);
   if (order.ticketCount === 0) return { error: "Pick at least one ticket." };
@@ -54,8 +59,13 @@ export async function startTicketCheckout(
   if (left != null && order.ticketCount > left) return { error: `Only ${left} tickets are left.` };
 
   const buyer = readBuyer(formData);
-  if (!buyer.name) return { error: "Please enter your name." };
+  if (!buyer.firstName || !buyer.lastName) return { error: "Please enter your first and last name." };
   if (!isValidEmail(buyer.email)) return { error: "Please enter a valid email so we can send your tickets." };
+
+  // Opt-in name recognition for the donation add-on (spec D12), same rules as the Donate page.
+  const recognize = order.donationCents > 0 && formData.get("recognize") === "on";
+  const displayName = recognize ? String(formData.get("display_name") ?? "").trim().slice(0, 60) : "";
+  if (recognize && !displayName) return { error: "Enter the name you'd like us to display, or uncheck the box." };
 
   if (!isDemo()) {
     // Step 2 replaces this with: hold the tickets, create a Stripe Checkout
@@ -73,8 +83,8 @@ export async function startTicketCheckout(
     donationCents: order.donationCents,
     totalCents: order.totalCents,
     buyer,
-    recognize: false,
-    displayName: "",
+    recognize,
+    displayName,
     tickets: order.lines.flatMap((l) => Array.from({ length: l.quantity }, () => ({ code: newShortCode(), typeName: l.name }))),
   };
   redirect(`/demo/checkout?o=${encodeDemoOrder(demo)}`);
@@ -86,7 +96,7 @@ export async function startDonationCheckout(_prev: CheckoutState, formData: Form
   if (!amount) return { error: "Pick an amount, or enter a custom amount between $1 and $1,000." };
 
   const buyer = readBuyer(formData);
-  if (!buyer.name) return { error: "Please enter your name." };
+  if (!buyer.firstName || !buyer.lastName) return { error: "Please enter your first and last name." };
   if (!isValidEmail(buyer.email)) return { error: "Please enter a valid email for your receipt." };
 
   const recognize = formData.get("recognize") === "on";
