@@ -18,19 +18,19 @@ export default async function AdminEventsPage(props: PageProps<"/admin">) {
     <>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="font-display text-2xl font-black">Events</h1>
-        <Link href="/admin/events/new" className="font-display rounded-full bg-burgundy px-5 py-2.5 font-bold text-white hover:bg-burgundy-bright">
+        <Link href="/admin/events/new" className="font-display rounded-sm bg-burgundy px-5 py-2.5 font-bold text-white hover:bg-burgundy-bright">
           + New event
         </Link>
       </div>
 
-      {saved && <p className="mt-4 rounded-lg border border-link p-3" role="status">Saved.</p>}
+      {saved && <p className="mt-4 rounded-sm border border-link p-3" role="status">Saved.</p>}
 
       {events.length === 0 ? (
         <p className="mt-8 text-muted">No events yet. Create your first one.</p>
       ) : (
         <ul className="mt-6 space-y-3">
           {events.map((e) => (
-            <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-panel p-4">
+            <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-line bg-panel p-4">
               <div>
                 <p className="font-semibold">{e.name}</p>
                 <p className="text-sm text-muted">
@@ -43,7 +43,7 @@ export default async function AdminEventsPage(props: PageProps<"/admin">) {
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${e.status === "on_sale" ? "bg-sky text-ink" : "border border-line"}`}>
+                <span className={`rounded-sm px-3 py-1 text-xs font-semibold ${e.status === "on_sale" ? "bg-sky text-ink" : "border border-line"}`}>
                   {STATUS_LABELS[e.status]}
                 </span>
                 {e.status !== "draft" && (

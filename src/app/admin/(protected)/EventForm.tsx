@@ -25,7 +25,7 @@ type Props = {
   submitLabel: string;
 };
 
-const input = "w-full rounded-lg border border-line bg-white px-3 py-2.5 text-ink";
+const input = "w-full rounded-sm border border-line bg-white px-3 py-2.5 text-ink";
 const label = "mb-1 block font-semibold";
 const hint = "mt-1 block text-sm text-muted";
 
@@ -47,7 +47,7 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
       }}
     >
       {/* ---------- basics ---------- */}
-      <fieldset className="space-y-4 rounded-xl border border-line bg-panel p-5">
+      <fieldset className="space-y-4 rounded-sm border border-line bg-panel p-5">
         <legend className="font-display px-1 font-bold">Event</legend>
         <label className="block">
           <span className={label}>Name</span>
@@ -66,7 +66,7 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
           <span className={label}>Image (optional)</span>
           {defaults.image_url && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={defaults.image_url} alt="Current event image" className="mb-2 max-h-40 rounded-lg" />
+            <img src={defaults.image_url} alt="Current event image" className="mb-2 max-h-40 rounded-sm" />
           )}
           <input name="image" type="file" accept="image/*" className="block text-sm" />
           <span className={hint}>JPG or PNG, under 5 MB. Wide images look best.</span>
@@ -79,7 +79,7 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
       </fieldset>
 
       {/* ---------- timing ---------- */}
-      <fieldset className="space-y-4 rounded-xl border border-line bg-panel p-5">
+      <fieldset className="space-y-4 rounded-sm border border-line bg-panel p-5">
         <legend className="font-display px-1 font-bold">When (New York time)</legend>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
@@ -99,7 +99,7 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
       </fieldset>
 
       {/* ---------- tickets ---------- */}
-      <fieldset className="space-y-4 rounded-xl border border-line bg-panel p-5">
+      <fieldset className="space-y-4 rounded-sm border border-line bg-panel p-5">
         <legend className="font-display px-1 font-bold">Tickets</legend>
         <p className="text-sm text-muted">
           Enter the ticket price <strong>without</strong> the $0.50 service fee. Buyers see the all-in price (e.g. $5 → $5.50).
@@ -107,7 +107,7 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
 
         <div className="space-y-3">
           {rows.map((row, i) => (
-            <div key={row.key} className="grid grid-cols-[1fr_6rem] gap-2 rounded-lg border border-line p-3 sm:grid-cols-[1fr_7rem_8rem_auto] sm:items-end">
+            <div key={row.key} className="grid grid-cols-[1fr_6rem] gap-2 rounded-sm border border-line p-3 sm:grid-cols-[1fr_7rem_8rem_auto] sm:items-end">
               <input type="hidden" name="tt_id" value={row.id} />
               <label className="block">
                 <span className="mb-1 block text-sm">Type name</span>
@@ -125,7 +125,7 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
                 type="button"
                 onClick={() => setRows(rows.filter((_, j) => j !== i))}
                 disabled={rows.length === 1}
-                className="rounded-lg border border-line px-3 py-2.5 text-sm hover:border-link disabled:opacity-40"
+                className="rounded-sm border border-line px-3 py-2.5 text-sm hover:border-link disabled:opacity-40"
               >
                 Remove
               </button>
@@ -135,7 +135,7 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
         <button
           type="button"
           onClick={() => setRows([...rows, { id: "", name: "", price: "", limit: "", key: `r${rowKey++}` }])}
-          className="rounded-full border border-link px-4 py-2 text-sm text-link"
+          className="rounded-sm border border-link px-4 py-2 text-sm text-link"
         >
           + Add ticket type
         </button>
@@ -155,7 +155,7 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
       </fieldset>
 
       {/* ---------- door + visibility ---------- */}
-      <fieldset className="space-y-4 rounded-xl border border-line bg-panel p-5">
+      <fieldset className="space-y-4 rounded-sm border border-line bg-panel p-5">
         <legend className="font-display px-1 font-bold">Door & visibility</legend>
         <label className="block">
           <span className={label}>Door PIN for volunteers</span>
@@ -182,12 +182,12 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
       </fieldset>
 
       {state.error && (
-        <p className="rounded-lg bg-burgundy p-3 text-white" role="alert">{state.error}</p>
+        <p className="rounded-sm bg-burgundy p-3 text-white" role="alert">{state.error}</p>
       )}
 
       <button
         disabled={pending}
-        className="font-display w-full rounded-full bg-burgundy px-6 py-3 font-bold text-white hover:bg-burgundy-bright disabled:opacity-60 sm:w-auto"
+        className="font-display w-full rounded-sm bg-burgundy px-6 py-3 font-bold text-white hover:bg-burgundy-bright disabled:opacity-60 sm:w-auto"
       >
         {pending ? "Saving…" : submitLabel}
       </button>

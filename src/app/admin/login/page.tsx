@@ -17,7 +17,7 @@ export default async function AdminLoginPage(props: PageProps<"/admin/login">) {
   return (
     <main className="mx-auto w-full max-w-sm flex-1 px-4 py-16">
       <h1 className="font-display mb-6 text-2xl font-black">Admin login</h1>
-      {message && <p className="mb-4 rounded-lg bg-burgundy p-3 text-white" role="alert">{message}</p>}
+      {message && <p className="mb-4 rounded-sm bg-burgundy p-3 text-white" role="alert">{message}</p>}
       <LoginForm />
     </main>
   );

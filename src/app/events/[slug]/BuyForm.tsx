@@ -58,11 +58,11 @@ export function BuyForm({
             </div>
             <div className="flex items-center gap-3">
               <button type="button" onClick={() => change(t, -1)} aria-label={`One fewer ${t.name}`}
-                className="h-11 w-11 rounded-full border border-line bg-white text-xl font-bold hover:border-burgundy disabled:opacity-40"
+                className="h-11 w-11 rounded-sm border border-line bg-white text-xl font-bold hover:border-burgundy disabled:opacity-40"
                 disabled={(qty[t.id] ?? 0) === 0}>−</button>
               <span className="w-6 text-center text-lg font-bold" aria-live="polite">{qty[t.id] ?? 0}</span>
               <button type="button" onClick={() => change(t, 1)} aria-label={`One more ${t.name}`}
-                className="h-11 w-11 rounded-full border border-line bg-white text-xl font-bold hover:border-burgundy disabled:opacity-40"
+                className="h-11 w-11 rounded-sm border border-line bg-white text-xl font-bold hover:border-burgundy disabled:opacity-40"
                 disabled={count >= maxTotal}>+</button>
               <input type="hidden" name={`qty_${t.id}`} value={qty[t.id] ?? 0} />
             </div>
@@ -86,7 +86,7 @@ export function BuyForm({
       <BuyerFields />
 
       {/* ---- total ---- */}
-      <div className="rounded-lg bg-page p-4">
+      <div className="rounded-sm bg-page p-4">
         <dl className="space-y-1 text-sm">
           {types.filter((t) => qty[t.id]).map((t) => (
             <div key={t.id} className="flex justify-between">
@@ -103,12 +103,12 @@ export function BuyForm({
         </dl>
       </div>
 
-      <p className="text-sm font-semibold">No refunds. All sales final.</p>
+      <p className="text-xs text-muted">No refunds. All sales final.</p>
 
-      {state.error && <p className="rounded-lg bg-burgundy p-3 text-white" role="alert">{state.error}</p>}
+      {state.error && <p className="rounded-sm bg-burgundy p-3 text-white" role="alert">{state.error}</p>}
 
       <button disabled={pending || count === 0}
-        className="font-display w-full rounded-full bg-burgundy px-6 py-4 text-lg font-bold text-white hover:bg-burgundy-bright disabled:opacity-60">
+        className="font-display w-full rounded-sm bg-burgundy px-6 py-4 text-lg font-bold text-white hover:bg-burgundy-bright disabled:opacity-60">
         {pending ? "One moment…" : `Continue to payment · ${formatCents(total)}`}
       </button>
     </form>

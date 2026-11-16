@@ -1,6 +1,6 @@
 /** Name + email (required) and phone (optional), spec D6. */
 export function BuyerFields({ showPhone = true }: { showPhone?: boolean }) {
-  const input = "w-full rounded-lg border border-line bg-white px-3 py-2.5";
+  const input = "w-full rounded-sm border border-line bg-white px-3 py-2.5";
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       <label className="block">

@@ -9,7 +9,13 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
     <>
       {isDemo() && (
         <p className="bg-sky px-4 py-1.5 text-center text-sm font-semibold text-ink" role="note">
-          Preview with sample data. Real events appear once the database is connected.
+          Preview with sample data, no real payments.{" "}
+          <span className="whitespace-nowrap">
+            Try:{" "}
+            <Link href="/events/winter-concert-demo" className="underline">buy tickets</Link> ·{" "}
+            <Link href="/donate" className="underline">donate</Link> ·{" "}
+            <Link href="/demo/door" className="underline">door scanner</Link>
+          </span>
         </p>
       )}
       <header className="border-b border-line">
@@ -41,7 +47,7 @@ export function DonateButton({ small = false }: { small?: boolean }) {
   return (
     <Link
       href="/donate"
-      className={`font-display inline-block rounded-full bg-burgundy font-bold text-white hover:bg-burgundy-bright ${
+      className={`font-display inline-block rounded-sm bg-burgundy font-bold text-white hover:bg-burgundy-bright ${
         small ? "px-4 py-2 text-sm" : "px-6 py-3 text-base"
       }`}
     >

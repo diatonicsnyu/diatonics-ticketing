@@ -8,7 +8,7 @@ export function LoginForm() {
 
   if (state.sent) {
     return (
-      <p className="rounded-xl border border-line bg-panel p-5" role="status">
+      <p className="rounded-sm border border-line bg-panel p-5" role="status">
         If that&apos;s the admin email, a login link is on its way. Open it <strong>in this same browser</strong>.
       </p>
     );
@@ -23,13 +23,13 @@ export function LoginForm() {
           type="email"
           required
           autoComplete="email"
-          className="w-full rounded-lg border border-line bg-white px-3 py-3 text-ink"
+          className="w-full rounded-sm border border-line bg-white px-3 py-3 text-ink"
         />
       </label>
       {state.error && <p className="text-red-700" role="alert">{state.error}</p>}
       <button
         disabled={pending}
-        className="font-display w-full rounded-full bg-burgundy px-6 py-3 font-bold text-white hover:bg-burgundy-bright disabled:opacity-60"
+        className="font-display w-full rounded-sm bg-burgundy px-6 py-3 font-bold text-white hover:bg-burgundy-bright disabled:opacity-60"
       >
         {pending ? "Sending…" : "Email me a login link"}
       </button>

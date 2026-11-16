@@ -32,7 +32,7 @@ export function DonationPicker({
         {options.map((o) => (
           <label
             key={o.value}
-            className={`cursor-pointer rounded-full border px-4 py-2 font-semibold transition ${
+            className={`cursor-pointer rounded-sm border px-4 py-2 font-semibold transition ${
               choice === o.value ? "border-burgundy bg-burgundy text-white" : "border-line bg-white hover:border-burgundy"
             }`}
           >
@@ -59,7 +59,7 @@ export function DonationPicker({
             onChange={(e) => onChange("custom", e.target.value)}
             placeholder="20"
             aria-label="Custom donation amount in dollars"
-            className="w-full rounded-lg border border-line bg-white px-3 py-2.5"
+            className="w-full rounded-sm border border-line bg-white px-3 py-2.5"
           />
         </label>
       )}

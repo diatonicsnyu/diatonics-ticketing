@@ -61,6 +61,7 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 - **Every ticket (page + email) says "GENERAL ADMISSION: first come, first served"**, so people don't expect to pick seats.
 - **Heading fonts follow the logo's lettering style** (bold flared serif, all caps). Cinzel is the first candidate. Body text is a plain sans-serif: **Figtree** (user picked it over Inter, which they disliked).
 - The scanner keeps green/yellow/red for results (not brand colors).
+- **Small corners only** (`rounded-sm`, 4px) on buttons, inputs, cards, badges. No pill buttons or big rounded cards: the user said they look "vibe coded" (2026-11-15).
 
 ## Still open (don't block on these)
 - Student ticket: group vote.

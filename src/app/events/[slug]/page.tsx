@@ -32,7 +32,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
       <article>
         {img && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={img} alt="" className="mb-6 aspect-video w-full rounded-xl object-cover" />
+          <img src={img} alt="" className="mb-6 aspect-video w-full rounded-sm object-cover" />
         )}
 
         <h1 className="font-display text-3xl font-black sm:text-4xl">{event.name}</h1>
@@ -63,7 +63,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
           <p className="mt-6 whitespace-pre-line text-muted">{event.description}</p>
         )}
 
-        <section className="mt-8 rounded-xl border border-line bg-panel p-5" aria-label="Tickets">
+        <section className="mt-8 rounded-sm border border-line bg-panel p-5" aria-label="Tickets">
           <h2 className="font-display text-xl font-bold">Tickets</h2>
 
           {event.status === "cancelled" ? (
@@ -102,7 +102,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
                   <p className="mt-5 font-semibold">
                     {left === 0 ? "Sold out online." : "Online sales are closed for this show."}
                   </p>
-                  <p className="mt-2 text-sm text-muted">No refunds. All sales final.</p>
+                  <p className="mt-2 text-xs text-muted">No refunds. All sales final.</p>
                 </>
               )}
             </>
