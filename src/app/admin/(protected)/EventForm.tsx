@@ -25,9 +25,9 @@ type Props = {
   submitLabel: string;
 };
 
-const input = "w-full rounded-lg border border-line bg-ink px-3 py-2.5 text-cream";
+const input = "w-full rounded-lg border border-line bg-white px-3 py-2.5 text-ink";
 const label = "mb-1 block font-semibold";
-const hint = "mt-1 block text-sm text-cream-dim";
+const hint = "mt-1 block text-sm text-muted";
 
 let rowKey = 0; // gives each new ticket-type row a stable React key
 
@@ -101,7 +101,7 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
       {/* ---------- tickets ---------- */}
       <fieldset className="space-y-4 rounded-xl border border-line bg-panel p-5">
         <legend className="font-display px-1 font-bold">Tickets</legend>
-        <p className="text-sm text-cream-dim">
+        <p className="text-sm text-muted">
           Enter the ticket price <strong>without</strong> the $0.50 service fee. Buyers see the all-in price (e.g. $5 → $5.50).
         </p>
 
@@ -125,7 +125,7 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
                 type="button"
                 onClick={() => setRows(rows.filter((_, j) => j !== i))}
                 disabled={rows.length === 1}
-                className="rounded-lg border border-line px-3 py-2.5 text-sm hover:border-sky disabled:opacity-40"
+                className="rounded-lg border border-line px-3 py-2.5 text-sm hover:border-link disabled:opacity-40"
               >
                 Remove
               </button>
@@ -135,7 +135,7 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
         <button
           type="button"
           onClick={() => setRows([...rows, { id: "", name: "", price: "", limit: "", key: `r${rowKey++}` }])}
-          className="rounded-full border border-sky px-4 py-2 text-sm text-sky"
+          className="rounded-full border border-link px-4 py-2 text-sm text-link"
         >
           + Add ticket type
         </button>
@@ -182,12 +182,12 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
       </fieldset>
 
       {state.error && (
-        <p className="rounded-lg bg-burgundy p-3 text-cream" role="alert">{state.error}</p>
+        <p className="rounded-lg bg-burgundy p-3 text-white" role="alert">{state.error}</p>
       )}
 
       <button
         disabled={pending}
-        className="font-display w-full rounded-full bg-sky px-6 py-3 font-bold text-ink hover:bg-sky-dim disabled:opacity-60 sm:w-auto"
+        className="font-display w-full rounded-full bg-burgundy px-6 py-3 font-bold text-white hover:bg-burgundy-bright disabled:opacity-60 sm:w-auto"
       >
         {pending ? "Saving…" : submitLabel}
       </button>

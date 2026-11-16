@@ -56,7 +56,9 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 
 ### Branding
 - Logo: `assets/diatonics-logo.png` (black circle, cream serif "DIATONICS", blue soundwave, eighth note).
-- Colors: **light sky blue** + **burgundy**, a dark theme to match the logo.
+- Colors: **light sky blue** + **burgundy**. **NOT a dark theme** ("not dark aesthetic, but still pretty"): a soft sky-blue/cream background with burgundy buttons. The dark-circle logo is the centerpiece.
+- **Page-by-page details are in SPEC.md §12** (event page contents, celebratory confirmation, branded email, scanner "See history", donate page, admin dashboard). Tone: friendly + fun, puns OK.
+- **Every ticket (page + email) says "GENERAL ADMISSION: first come, first served"**, so people don't expect to pick seats.
 - **Heading fonts follow the logo's lettering style** (bold flared serif, all caps). Cinzel is the first candidate. Body text is a plain sans-serif.
 - The scanner keeps green/yellow/red for results (not brand colors).
 

@@ -18,25 +18,25 @@ export default async function AdminEventsPage(props: PageProps<"/admin">) {
     <>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="font-display text-2xl font-black">Events</h1>
-        <Link href="/admin/events/new" className="font-display rounded-full bg-sky px-5 py-2.5 font-bold text-ink hover:bg-sky-dim">
+        <Link href="/admin/events/new" className="font-display rounded-full bg-burgundy px-5 py-2.5 font-bold text-white hover:bg-burgundy-bright">
           + New event
         </Link>
       </div>
 
-      {saved && <p className="mt-4 rounded-lg border border-sky p-3" role="status">Saved.</p>}
+      {saved && <p className="mt-4 rounded-lg border border-link p-3" role="status">Saved.</p>}
 
       {events.length === 0 ? (
-        <p className="mt-8 text-cream-dim">No events yet. Create your first one.</p>
+        <p className="mt-8 text-muted">No events yet. Create your first one.</p>
       ) : (
         <ul className="mt-6 space-y-3">
           {events.map((e) => (
             <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-panel p-4">
               <div>
                 <p className="font-semibold">{e.name}</p>
-                <p className="text-sm text-cream-dim">
+                <p className="text-sm text-muted">
                   {formatShort(e.starts_at)} · {e.venue}
                 </p>
-                <p className="text-sm text-cream-dim">
+                <p className="text-sm text-muted">
                   {e.ticket_types.map((t) => `${t.name} ${formatCents(t.price_cents)}`).join(" · ")}
                   {" · "}
                   {e.capacity ? `capacity ${e.capacity}` : "unlimited"}
@@ -47,9 +47,9 @@ export default async function AdminEventsPage(props: PageProps<"/admin">) {
                   {STATUS_LABELS[e.status]}
                 </span>
                 {e.status !== "draft" && (
-                  <Link href={`/events/${e.slug}`} className="text-sm text-sky hover:underline">View</Link>
+                  <Link href={`/events/${e.slug}`} className="text-sm text-link hover:underline">View</Link>
                 )}
-                <Link href={`/admin/events/${e.id}`} className="text-sm text-sky hover:underline">Edit</Link>
+                <Link href={`/admin/events/${e.id}`} className="text-sm text-link hover:underline">Edit</Link>
               </div>
             </li>
           ))}

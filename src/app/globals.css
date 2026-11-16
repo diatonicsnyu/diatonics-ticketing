@@ -1,30 +1,33 @@
 @import "tailwindcss";
 
 /*
- * Diatonics brand colors (SPEC.md §11). Use them in Tailwind classes,
- * e.g. bg-ink, text-cream, bg-sky, bg-burgundy.
+ * Diatonics brand colors (SPEC.md §11), LIGHT theme only.
+ * Rule for this project: never black or dark page backgrounds.
+ * Soft sky-blue look: pale blue/cream backgrounds, burgundy buttons, dark text.
+ * Use them in Tailwind classes, e.g. bg-page, text-ink, bg-burgundy.
  *
- * Contrast rules: cream on ink and ink on sky are fine. Burgundy is too dark
- * for text on black, so only use it as a FILL with cream text on top.
+ * Contrast rules: white text on burgundy is fine; dark text on sky blue is
+ * fine. Never put sky-blue TEXT on a light background (too faint).
  */
 @theme {
-  --color-sky: #a9d6f5;          /* primary accent: buttons, links */
-  --color-sky-dim: #8cc3ea;      /* hover state for sky buttons */
-  --color-burgundy: #7b1e2e;     /* secondary accent: Donate, highlights */
+  --color-page: #eef6fc;         /* page background: pale sky blue */
+  --color-cream: #fbf7f4;        /* alternate light section background */
+  --color-panel: #ffffff;        /* cards on top of the background */
+  --color-line: #d9e6f0;         /* borders */
+  --color-ink: #1a1a1f;          /* main TEXT color (never a background) */
+  --color-muted: #545460;        /* secondary text (AA contrast on white/pale blue) */
+  --color-sky: #a9d6f5;          /* group sky blue: fills/badges only, never text */
+  --color-link: #7b1e2e;         /* links: burgundy (sky-blue text is too faint) */
+  --color-burgundy: #7b1e2e;     /* buttons (white text on top) */
   --color-burgundy-bright: #962639;
-  --color-ink: #0b0b0d;          /* page background (matches the logo) */
-  --color-panel: #16161a;        /* cards on top of the background */
-  --color-line: #2a2a30;         /* borders */
-  --color-cream: #ede1db;        /* main text */
-  --color-cream-dim: #b9aea8;    /* secondary text (still AA contrast on ink) */
 
   --font-display: var(--font-cinzel), Georgia, serif; /* headings, all caps */
   --font-sans: var(--font-inter), system-ui, sans-serif; /* body text */
 }
 
 body {
-  background: var(--color-ink);
-  color: var(--color-cream);
+  background: var(--color-page);
+  color: var(--color-ink);
   font-family: var(--font-sans);
 }
 
@@ -37,11 +40,11 @@ body {
 
 /* Visible keyboard focus everywhere (accessibility). */
 :focus-visible {
-  outline: 2px solid var(--color-sky);
+  outline: 2px solid var(--color-link);
   outline-offset: 2px;
 }
 
-/* Make native date pickers / selects match the dark theme. */
+/* Native date pickers / selects use the light look, even if the phone is in dark mode. */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }

@@ -19,9 +19,9 @@ export default async function EditEventPage(props: PageProps<"/admin/events/[id]
 
   return (
     <>
-      <Link href="/admin" className="text-sm text-sky hover:underline">← All events</Link>
+      <Link href="/admin" className="text-sm text-link hover:underline">← All events</Link>
       <h1 className="font-display mb-1 mt-2 text-2xl font-black">Edit event</h1>
-      <p className="mb-6 text-sm text-cream-dim">
+      <p className="mb-6 text-sm text-muted">
         Public link: <code>/events/{event.slug}</code>
         {event.status === "draft" && " (hidden while Draft)"}
       </p>

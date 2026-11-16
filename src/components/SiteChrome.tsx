@@ -25,7 +25,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">{children}</main>
 
       <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-3xl flex-wrap justify-between gap-3 px-4 py-6 text-sm text-cream-dim">
+        <div className="mx-auto flex max-w-3xl flex-wrap justify-between gap-3 px-4 py-6 text-sm text-muted">
           <Link href="/lost-ticket" className="underline-offset-4 hover:underline">
             Lost your ticket?
           </Link>
@@ -36,12 +36,12 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Always-visible Donate button (spec D9). Burgundy fill with cream text. */
+/** Always-visible Donate button (spec D9). Burgundy fill with white text. */
 export function DonateButton({ small = false }: { small?: boolean }) {
   return (
     <Link
       href="/donate"
-      className={`font-display inline-block rounded-full bg-burgundy font-bold text-cream hover:bg-burgundy-bright ${
+      className={`font-display inline-block rounded-full bg-burgundy font-bold text-white hover:bg-burgundy-bright ${
         small ? "px-4 py-2 text-sm" : "px-6 py-3 text-base"
       }`}
     >

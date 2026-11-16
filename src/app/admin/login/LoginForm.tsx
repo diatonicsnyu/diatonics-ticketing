@@ -23,13 +23,13 @@ export function LoginForm() {
           type="email"
           required
           autoComplete="email"
-          className="w-full rounded-lg border border-line bg-panel px-3 py-3 text-cream"
+          className="w-full rounded-lg border border-line bg-white px-3 py-3 text-ink"
         />
       </label>
-      {state.error && <p className="text-red-300" role="alert">{state.error}</p>}
+      {state.error && <p className="text-red-700" role="alert">{state.error}</p>}
       <button
         disabled={pending}
-        className="font-display w-full rounded-full bg-sky px-6 py-3 font-bold text-ink hover:bg-sky-dim disabled:opacity-60"
+        className="font-display w-full rounded-full bg-burgundy px-6 py-3 font-bold text-white hover:bg-burgundy-bright disabled:opacity-60"
       >
         {pending ? "Sending…" : "Email me a login link"}
       </button>

@@ -49,7 +49,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
           <div>
             <dt className="sr-only">Venue</dt>
             <dd>
-              <a href={mapUrl} target="_blank" rel="noreferrer" className="text-sky underline underline-offset-4">
+              <a href={mapUrl} target="_blank" rel="noreferrer" className="text-link underline underline-offset-4">
                 {event.venue}
               </a>
             </dd>
@@ -57,7 +57,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
         </dl>
 
         {event.description && (
-          <p className="mt-6 whitespace-pre-line text-cream-dim">{event.description}</p>
+          <p className="mt-6 whitespace-pre-line text-muted">{event.description}</p>
         )}
 
         <section className="mt-8 rounded-xl border border-line bg-panel p-5" aria-label="Tickets">
@@ -79,7 +79,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
 
               {/* Display only. The site never sells or tracks door tickets. */}
               {event.door_price_cents != null && Number.isFinite(cheapest) && (
-                <p className="mt-3 text-sm text-cream-dim">
+                <p className="mt-3 text-sm text-muted">
                   Online {formatCents(allInCents(cheapest))} · At the door{" "}
                   {formatCents(event.door_price_cents)}, Venmo or cash
                 </p>
@@ -90,7 +90,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
                 <button
                   type="button"
                   disabled
-                  className="font-display mt-5 w-full rounded-full bg-sky px-6 py-3 font-bold text-ink opacity-60"
+                  className="font-display mt-5 w-full rounded-full bg-burgundy px-6 py-3 font-bold text-white opacity-60"
                 >
                   Buy tickets (coming in Step 2)
                 </button>
@@ -98,7 +98,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
                 <p className="mt-5 font-semibold">Online sales are closed for this show.</p>
               )}
 
-              <p className="mt-4 text-sm text-cream-dim">No refunds. All sales final.</p>
+              <p className="mt-4 text-sm text-muted">No refunds. All sales final.</p>
             </>
           )}
         </section>

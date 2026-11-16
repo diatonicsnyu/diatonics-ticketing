@@ -21,7 +21,7 @@ export default async function HomePage() {
 
       <section className="mt-8 space-y-4" aria-label="Events">
         {events.length === 0 ? (
-          <p className="rounded-xl border border-line bg-panel p-6 text-center text-cream-dim">
+          <p className="rounded-xl border border-line bg-panel p-6 text-center text-muted">
             No shows on sale right now. Check back soon!
           </p>
         ) : (
@@ -33,7 +33,7 @@ export default async function HomePage() {
               <Link
                 key={e.id}
                 href={`/events/${e.slug}`}
-                className="flex overflow-hidden rounded-xl border border-line bg-panel transition hover:border-sky"
+                className="flex overflow-hidden rounded-xl border border-line bg-panel transition hover:border-link"
               >
                 {img && (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -41,8 +41,8 @@ export default async function HomePage() {
                 )}
                 <div className="flex-1 p-5">
                   <h2 className="font-display text-xl font-bold">{e.name}</h2>
-                  <p className="mt-1 text-cream-dim">{formatShort(e.starts_at)} · {e.venue}</p>
-                  <p className="mt-3 text-sm font-semibold text-sky">
+                  <p className="mt-1 text-muted">{formatShort(e.starts_at)} · {e.venue}</p>
+                  <p className="mt-3 text-sm font-semibold text-link">
                     {open
                       ? Number.isFinite(cheapest)
                         ? `Tickets from ${formatCents(allInCents(cheapest))} →`
@@ -58,7 +58,7 @@ export default async function HomePage() {
 
       <section className="mt-12 rounded-xl border border-line bg-panel p-6 text-center">
         <h2 className="font-display text-xl font-bold">Support the Diatonics</h2>
-        <p className="mt-2 text-cream-dim">Every bit helps us keep singing.</p>
+        <p className="mt-2 text-muted">Every bit helps us keep singing.</p>
         <div className="mt-4">
           <DonateButton />
         </div>

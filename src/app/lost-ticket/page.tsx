@@ -7,7 +7,7 @@ export default function LostTicketPage() {
   return (
     <SiteChrome>
       <h1 className="font-display text-3xl font-black">Lost your ticket?</h1>
-      <p className="mt-4 text-cream-dim">Self-service ticket re-sending is coming soon.</p>
+      <p className="mt-4 text-muted">Self-service ticket re-sending is coming soon.</p>
     </SiteChrome>
   );
 }

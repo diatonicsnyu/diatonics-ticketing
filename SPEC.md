@@ -107,6 +107,7 @@ A small, low-cost web platform for Diatonics a cappella concerts. People buy tic
 ### 3.4 Ticket email
 - Sent via Resend right after payment.
 - Event name, date/time, venue + map link, buyer name, order number.
+- **"GENERAL ADMISSION: first come, first served"** on every ticket.
 - Each ticket's **QR code** (hosted image or attachment, not inline data-URI) + **short code** (e.g. `DIA-7K3F-Q9`) **[assumed format]**.
 - "Turn your screen brightness up at the door" tip.
 - "All sales final" line.
@@ -277,11 +278,12 @@ The site itself works fine on `.vercel.app`; it's only email that needs this.
 |---|---|---|
 | Primary accent | Light sky blue (group color) | `#A9D6F5` |
 | Secondary accent | Burgundy (group color) | `#7B1E2E` |
-| Background (matches logo) | Near-black | `#0B0B0D` |
-| Text / logo cream | Cream | `#EDE1DB` |
+| Page background | Pale sky blue / cream (soft, light) | `#EEF6FC` / `#FBF7F4` |
+| Text | Near-black | `#1A1A1F` |
+| Logo cream (on dark areas) | Cream | `#EDE1DB` |
 
 **Guidelines [assumed]**
-- A dark theme to match the logo: near-black background, cream text, sky-blue buttons/links, burgundy for highlights (e.g. "Donate", section accents).
+- **Not a dark theme, but pretty** (your decision): a **soft sky-blue** look. Pale sky-blue/cream backgrounds, **burgundy buttons**, dark text. The logo (a dark circle) is the centerpiece and stands out against the light background.
 - **Fonts follow the logo's lettering style** (your decision): a bold, high-contrast serif with flared, wedge-shaped serifs, in all caps.
   - **Headings / titles / buttons:** a free Google Font close to the logo. First pick: **Cinzel** (weights 700–900); alternatives: **Marcellus SC**, **Playfair Display SC** (bold). Use all caps with slightly wide letter spacing, like the logo. **[assumed: final font chosen side by side against the logo]**
   - If whoever designed the logo knows the exact font, use that (if its license allows web use). Otherwise, upload the logo to a font identifier like WhatTheFont to find it.
@@ -289,8 +291,52 @@ The site itself works fine on `.vercel.app`; it's only email that needs this.
   - The door scanner's result text uses the plain sans-serif at a large size, for speed.
 - Use the logo on the home page, event pages, emails (header), the door app icon, and the browser tab icon.
 - **The door scanner keeps green / yellow / red for results**, not brand colors, so burgundy never gets confused with 🟥 "invalid."
-- Emails use the same colors but a light background, since many email apps handle dark backgrounds badly.
-- Check contrast: cream on black and black on sky blue are both fine. Burgundy text on black is too dark, so use burgundy as a fill with cream text on top.
+- Emails use the same light colors.
+- Check contrast: cream/white text on burgundy buttons is fine; dark text on pale sky blue is fine. Don't put sky-blue text on a light background (too faint).
+
+## 12. Page-by-page details (decided 2026-11-15)
+
+**Tone everywhere: friendly + fun.** Music puns are OK ("You're going! 🎶", "See you there", "Encore-worthy").
+
+### Home page
+Your answer: no preference. **[assumed]** The next show is big at the top (flyer, date, Buy button), then a Donate section, then the group's social links.
+
+### Event page
+- **Poster/flyer image** at the top.
+- Date, time, venue, all-in price, plus the door-price notice (D31).
+- **"General admission: first come, first served"** shown clearly near the price.
+- **Setlist or description** text.
+- **Map + directions** (embedded map or a link).
+- **Tickets-left count** (e.g. "23 left").
+
+### Confirmation page (after buying)
+- **Celebratory:** "You're going! 🎉" with the tickets (QR + short code) shown right on the page, plus "We also emailed them to you."
+- "General admission: first come, first served" on each ticket.
+
+### Ticket email
+- **Branded:** logo header, group colors, one card per ticket with the QR code + short code.
+- Each ticket card says **"GENERAL ADMISSION: first come, first served"** so nobody expects assigned seats.
+- (Still a light background; see §11.)
+
+### Door scanner
+- Camera + full-screen results (§3.7).
+- **Checked-in count** always visible (e.g. 142 / 180).
+- **"See history"** button: everyone that device scanned, in **reverse chronological order** (newest first), with name, ticket type, result, and time.
+- Door-sale +/− counter (D32).
+
+### Donate page
+- Amounts ($5 / $10 / $25 / custom) + thank-you.
+- **"Why donate"** section: what donations pay for (venues, competitions, etc.). You write the text.
+- **Supporters list** of opt-in donor names (D12) shown on the page.
+- No goal progress bar.
+
+### Admin (works equally well on **laptop and phone**)
+Dashboard shows first:
+- **Tickets sold vs. capacity** (a progress bar per event)
+- **Money totals** (gross, service fees, Stripe fees, net, donations)
+- **Sales over time** (a chart of tickets sold per day)
+
+The master list, CSV, comps, etc. stay as in §3.8. On a phone, tables collapse into cards.
 
 ## 10. Build steps & checkpoints
 

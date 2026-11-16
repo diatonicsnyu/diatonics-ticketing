@@ -23,12 +23,12 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <nav className="flex items-center gap-5">
             <Link href="/admin" className="font-display font-bold">Diatonics Admin</Link>
-            <Link href="/admin" className="text-sky hover:underline">Events</Link>
-            <Link href="/" className="text-sky hover:underline">View site</Link>
+            <Link href="/admin" className="text-link hover:underline">Events</Link>
+            <Link href="/" className="text-link hover:underline">View site</Link>
           </nav>
-          <form action={logout} className="flex items-center gap-3 text-sm text-cream-dim">
+          <form action={logout} className="flex items-center gap-3 text-sm text-muted">
             <span className="hidden sm:inline">{user.email}</span>
-            <button className="rounded-full border border-line px-3 py-1 hover:border-sky">Log out</button>
+            <button className="rounded-full border border-line px-3 py-1 hover:border-link">Log out</button>
           </form>
         </div>
       </header>
