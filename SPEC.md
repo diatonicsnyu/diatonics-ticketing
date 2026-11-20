@@ -44,7 +44,7 @@ _Status: draft · Started 2026-11-15 · Last updated 2026-11-15_
 ### Setup
 | # | Decision |
 |---|---|
-| D24 | **Stripe + bank account owner: the group president.** **[pending]** her setup (see §5.4). |
+| D24 | **Stripe account owner: you** (changed 2026-11-20 from the president). Activated under your name at go-live, payouts to your bank; the president gets Stripe's "View only" role (see §5.4). |
 | D25 | **Supabase: a new account under a group email.** Use the same group email for Stripe, Resend, Vercel and the domain. |
 | D26 | **URL: `diatonics-ticketing.vercel.app` (and localhost) during development.** If the build is good, you'll buy **`diatonics.com`** yourself (it's available) and use **`ticketing.diatonics.com`** (free subdomain, set up with a DNS record pointing to Vercel). Resend verifies the same domain for email, e.g. `tickets@diatonics.com`. ⚠️ Until then, email only reaches your own inbox, see §7.1. |
 | D27 | **Location: New York City; not school-registered.** |
@@ -209,7 +209,7 @@ Multi-ticket orders come out further ahead, since the 30¢ is charged once per o
 The group absorbs them: a $5 donation nets ~$4.55, $10 nets ~$9.41, and $25 nets ~$23.98. When a donation is added to a ticket order, Stripe charges its 30¢ only once for the whole order.
 
 ### 5.4 Account ownership (D24)
-- The president owns the Stripe and bank accounts. **She should create the Stripe account herself** (entering her own SSN/bank details) and then **invite you as a team member** (Stripe supports Developer/Admin roles). That way you never need to collect her personal info.
+- **You own the Stripe account** (changed 2026-11-20; it was going to be the president, Sophia). You activate it under your own name at go-live, with payouts to your bank. **Sophia gets the "View only" role** so she can see every payment and total but can't change anything.
 - ⚠️ If she signs up as an individual/sole proprietor, ticket and donation money counts as **her personal income**. The cleaner version: she gets a free **EIN** for the group (as an "unincorporated association") with herself as the responsible party, and Stripe + the bank account go under the EIN.
 - IRS 1099-K reporting starts at $20,000 **and** 200 transactions per year, which is unlikely to be reached. _Not tax advice._
 - Plan for a handoff when presidents change: with an EIN, the account stays with the group.
@@ -233,7 +233,7 @@ The group absorbs them: a $5 donation nets ~$4.55, $10 nets ~$9.41, and $25 nets
 
 | Piece | Choice | Cost |
 |---|---|---|
-| Payments | Stripe (president's account, D24) | Per-transaction only |
+| Payments | Stripe (your account, D24) | Per-transaction only |
 | Email | Resend free (D23) | $0 |
 | Database | Supabase free, group account (D25) | $0. Pauses after ~1 week idle, so it needs a keep-alive ping |
 | Hosting | Vercel, `diatonics-ticketing.vercel.app` (D26) | $0 |
@@ -273,7 +273,7 @@ The site itself works fine on `.vercel.app`; it's only email that needs this.
 ## 9. Open items
 1. **[pending]** General only vs. General + Student (group vote).
 2. **[pending]** Domain approval from leadership (blocks email, §7.1).
-3. **[pending]** President's Stripe setup; sole proprietor vs. group EIN.
+3. ~~President's Stripe setup~~ Settled 2026-11-20: you own the Stripe account (D24).
 4. Will the venue have signal at the door? (Offline mode is in either way.)
 
 ## 11. Branding (D28)
@@ -371,7 +371,7 @@ Each step ends with a checklist **you** run before the next step starts.
 
 **Nothing pending blocks steps 1–8.** Everything runs in **Stripe test mode** (fake cards) and sends email **only to your own inbox**. The things you're waiting on only affect **step 9 (go live)**:
 - **Ticket types vote:** the system supports multiple types from step 1; adding "Student" later is just a setting in the admin page.
-- **Sophia's Stripe details:** test mode needs no SSN or bank account. Create the Stripe account now with the group Gmail; Sophia fills in her details later to activate it for real payments.
+- **Stripe activation:** test mode needs no SSN or bank account. Create the Stripe account now; you fill in your own details later to activate it for real payments.
 - **Domain:** only needed so email can reach other people's inboxes.
 - **Venue signal:** offline mode gets built either way.
 
@@ -445,7 +445,7 @@ Split-day reminders with the email budget; 3-step cancel/reschedule.
 
 ### Step 9: Go live ⏳ (waits on the group)
 - [ ] Ticket types finalized (vote) and set in admin
-- [ ] Sophia activates Stripe (ideally under a group EIN) → switch to live keys
+- [ ] You activate Stripe under your own name → switch to live keys
 - [ ] Buy `diatonics.com` (Cloudflare) → `ticketing.diatonics.com` → Vercel; verify the domain in Resend
 - [ ] One real $5.50 purchase end-to-end, using a real card
 - [ ] Door dry run at the venue (checks the signal too)

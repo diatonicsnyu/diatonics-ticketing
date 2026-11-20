@@ -1,13 +1,13 @@
 # Setup session with Sophia
 
-Everything the ticketing site needs from Sophia, in order. Parts 1–3 need her in the room. Parts 4–6 you can do yourself once you have the group Gmail login, but do them while she's still around in case Google asks her phone for a code.
+Everything the ticketing site needs from Sophia, in order. Parts 1 and 3 need her in the room; in part 2 she only accepts an invite. Parts 4–6 you can do yourself once you have the group Gmail login, but do them while she's still around in case Google asks her phone for a code.
 
 **Never paste passwords or API keys into chat, Slack, or a group text.** Put them in your password manager, and put API keys only in `.env.local` (it's gitignored).
 
 ## Checklist
 
 - [ ] 1. Group Gmail: you can sign in on your own
-- [ ] 2. Stripe: account created by Sophia, you invited as Administrator
+- [ ] 2. Stripe: your account, Sophia invited as View only
 - [ ] 3. Show Sophia the prototype
 - [ ] 4. Supabase: account + project under the group Gmail
 - [ ] 5. Resend: account + API key under the group Gmail
@@ -30,29 +30,27 @@ Every service below is registered to this address, so you need to be able to sig
 
 **Done when:** you can sign in to the group Gmail from your laptop with no help.
 
-## 2. Stripe (Sophia does this, ~10 min)
+## 2. Stripe (you, ~10 min; Sophia just accepts an invite)
 
-Sophia creates the account herself, so her personal info never has to go through you. The site uses **test mode** (fake card numbers) until go-live, and test mode doesn't need her SSN or bank details.
-
-On **her** laptop or phone, signed in to the group Gmail:
+The account is **yours** (decided 2026-11-20). The site uses **test mode** (fake card numbers) until go-live, and test mode needs no SSN or bank details. You fill those in only at go-live, and then payouts go to your bank.
 
 1. Go to **dashboard.stripe.com/register**.
-2. Email: **the group Gmail**. Full name: Sophia's name. Password: a new one, saved in the password manager.
-3. Click the verification link Stripe emails to the group Gmail.
+2. Email: **your own email** (it's your account, not the group's) **[assumed]**. Full name: yours. Password: a new one, saved in your password manager.
+3. Click the verification link Stripe emails you.
 4. Stripe may ask for the business name: **Diatonics**. Country: **United States**.
-5. When Stripe asks her to **activate payments** or verify identity (SSN, bank account, EIN), **skip it.** Look for "Skip for now", "I'll do this later", or just close the setup checklist. That's only needed at go-live.
-6. Invite you:
+5. When Stripe asks you to **activate payments** or verify identity (SSN, bank account), **skip it.** Look for "Skip for now", "I'll do this later", or just close the setup checklist. That's only needed at go-live.
+6. Make sure you're in **test mode** (newer accounts may call it a **Sandbox**). There's a toggle or switcher near the top.
+7. Turn on Cash App Pay (already decided): **Settings → Payments → Payment methods** → find **Cash App Pay** → turn it **on**.
+8. Get the test keys: **Developers → API keys**. You'll see a **Publishable key** (`pk_test_…`) and a **Secret key** (`sk_test_…`; click Reveal). Save both in your password manager. They go into `.env.local` when build step 2 starts.
+9. Invite Sophia so she can see every payment:
    - Click the **gear icon (Settings)** in the top right → **Team and security** (it may be labeled **Team**).
-   - **Add member** (or **New member**) → enter **your own email** → role **Administrator** → send the invite.
-7. On your laptop: open the invite email from Stripe and accept it. If you don't have a Stripe login yet, it'll have you make one.
+   - **Add member** (or **New member**) → enter **Sophia's email** → role **View only** → send the invite.
+   - **View only** lets her see all payments, totals, and payouts, but not change anything. Don't make her **Administrator**: admins can change the payout bank account.
+10. Sophia opens the invite email and accepts it (she'll make a Stripe login if she doesn't have one).
 
-Afterwards, you can do this part on your own:
+**Done when:** Stripe is in test mode, Cash App Pay is on, and Sophia can log in and see the (empty) Payments page.
 
-8. In the Stripe dashboard, make sure you're in **test mode** (newer accounts may call it a **Sandbox**). There's a toggle or switcher near the top.
-9. Turn on Cash App Pay (already decided): **Settings → Payments → Payment methods** → find **Cash App Pay** → turn it **on**.
-10. Get the test keys: **Developers → API keys**. You'll see a **Publishable key** (`pk_test_…`) and a **Secret key** (`sk_test_…`; click Reveal). Save both in your password manager. They go into `.env.local` when build step 2 starts.
-
-**Done when:** you can log in to Stripe as yourself, see the Diatonics account, and it's in test mode.
+Before go-live, keep in mind: real payouts will go to your bank, and Stripe's tax form (1099-K) would be in your name. At these ticket prices you'll very likely stay under the reporting threshold. Still, keep the group's money separate from your own, and keep a simple record of where it goes.
 
 ## 3. Show Sophia the prototype (~15 min)
 
@@ -127,6 +125,6 @@ Note for later: Vercel's Hobby plan is meant for non-commercial use, and selling
 
 None of these block building. They only matter at go-live.
 
-- **Stripe activation:** her personal info (sole proprietor) or a **group EIN**? A group EIN keeps her SSN off it. It's free from the IRS and takes about 15 minutes online.
+- **Stripe:** tell her it's under your name, and that she has View only access to see every payment.
 - **Student ticket:** has the group voted yet?
 - **Domain:** who pays for `diatonics.com` (about $10–11/year, Cloudflare) when it's time to buy it?

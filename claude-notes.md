@@ -32,10 +32,10 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 - **Cash App Pay is ON** (decided). Stripe supports it in the US at the normal rate; it's a payment-method toggle, not extra code. Checkout = cards + Apple Pay + Google Pay + Cash App Pay.
 - **Donations:** checkout add-on **and** a standalone Donate button that's always on the site, even with no events. Presets $5 / $10 / $25 + custom. **The group absorbs Stripe fees on donations.** Opt-in name recognition. Never say "tax-deductible" (not a 501(c)(3)).
 - **Sales tax:** none on tickets (NY exempts live musical performances). Merch is out of scope.
-- **Stripe account owner: the group president, Sophia.** She creates the account with the **group Gmail** and invites the user as a team member. **Test mode needs none of her info**, so it doesn't block building. Live activation is go-live only. (Personal vs. group EIN is still up to her.)
+- **Stripe account owner: the user** (changed 2026-11-20; previously Sophia, who wasn't engaged). The user creates it and activates it under their own name at go-live, with payouts to their own bank. **Sophia gets the "View only" role** so she can see all payments and totals (transparency). Test mode needs no personal info, so this doesn't block building. If the group later gets an EIN + bank account, that likely means a new business Stripe account.
 
 ### Accounts & infra
-- **Group Gmail** owns everything: Supabase, Stripe, Resend, Vercel, the domain. The user is getting the login from Sophia.
+- **Group Gmail** owns everything except Stripe: Supabase, Resend, Vercel, the domain. The user is getting the login from Sophia. Stripe is the user's own account, signed up with the user's own email **[assumed]**.
 - **Supabase:** free tier, on a **new account under the group Gmail** (the user's personal account is at its 2-project limit). Free projects pause after ~1 week idle, so add a keep-alive.
 - **Email: Resend free tier** (100/day, 3,000/month). The user is confident they won't exceed 100/day. **Resend can't send to other people without a verified domain**, so during development, emails go only to the user's own inbox.
 - **Hosting: Vercel**, at `diatonics-ticketing.vercel.app` during development.
@@ -66,6 +66,6 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 
 ## Still open (don't block on these)
 - Student ticket: group vote.
-- Sophia's Stripe activation (sole proprietor vs. group EIN).
+- Stripe live activation (the user, at go-live).
 - Buying the domain (after localhost looks good).
 - Venue signal at the door.
