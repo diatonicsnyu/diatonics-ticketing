@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteChrome } from "@/components/SiteChrome";
-import { TicketCard } from "@/components/TicketCard";
+import { OrderTickets } from "@/components/OrderTickets";
 import { isDemo } from "@/lib/demo";
 import { finalizeCheckoutSession, getOrderBySession } from "@/lib/orders";
 import { formatCents } from "@/lib/money";
+import { orderLinkKey } from "@/lib/ticket-token";
 
 export const metadata = { title: "You're going!", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -77,30 +78,14 @@ export default async function ConfirmedPage(props: PageProps<"/orders/confirmed"
         )}
       </div>
 
-      <div className="mt-8 space-y-5">
-        {order.tickets.map((t, i) => (
-          <TicketCard
-            key={t.id}
-            // Step 3/4 switches this to a signed token the door app can verify.
-            qrText={t.shortCode}
-            code={t.shortCode}
-            typeName={t.typeName}
-            eventName={order.event.name}
-            startsAt={order.event.starts_at}
-            venue={order.event.venue}
-            holder={order.buyerName}
-            index={i + 1}
-            count={order.tickets.length}
-            actions
-            orderNo={order.orderNo}
-          />
-        ))}
+      <div className="mt-8">
+        <OrderTickets order={order} />
       </div>
 
-      <div className="mt-8 rounded-sm border border-line bg-white p-5 text-sm">
-        <p>📱 <strong>At the door:</strong> turn your screen brightness up and show the QR code. Each ticket gets one person in.</p>
-        <p className="mt-2">Tip: tap <strong>Download</strong> to keep your ticket on your phone, in case there&apos;s no signal at the venue.</p>
-      </div>
+      <p className="mt-6 text-center text-sm text-muted">
+        We also emailed them to {order.buyerEmail}. To see them again later, use the link in that email, or open{" "}
+        <Link href={`/tickets/${orderLinkKey(order.id)}`} className="text-link underline underline-offset-4">your tickets page</Link> and bookmark it.
+      </p>
 
       <div className="mt-6 flex justify-center text-sm">
         <Link href="/" className="text-link underline underline-offset-4">Back to shows</Link>

@@ -44,4 +44,25 @@ export const env = {
   get siteUrl() {
     return required("NEXT_PUBLIC_SITE_URL", process.env.NEXT_PUBLIC_SITE_URL).replace(/\/$/, "");
   },
+  /** Signs ticket QR codes and "view my tickets" links. Changing it breaks every ticket already sent. */
+  get ticketSecret() {
+    const s = required("TICKET_SECRET", process.env.TICKET_SECRET);
+    if (s.length < 32) throw new Error("TICKET_SECRET must be at least 32 characters.");
+    return s;
+  },
+  get resendApiKey() {
+    return required("RESEND_API_KEY", process.env.RESEND_API_KEY);
+  },
+  /** Sender. Until a domain is verified in Resend, only Resend's test address works. */
+  get emailFrom() {
+    return process.env.EMAIL_FROM?.trim() || "Diatonics Tickets <onboarding@resend.dev>";
+  },
+  /**
+   * Test mode: if set, EVERY email goes to this address instead of the buyer
+   * (Resend can only deliver to the account's own inbox until a domain is
+   * verified). Remove it at go-live.
+   */
+  get emailTestTo() {
+    return process.env.EMAIL_TEST_TO?.trim() || null;
+  },
 };

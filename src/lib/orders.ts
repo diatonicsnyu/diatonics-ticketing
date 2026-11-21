@@ -8,6 +8,8 @@ import { allInCents, formatCents, SERVICE_FEE_CENTS } from "@/lib/money";
 import { formatShort } from "@/lib/time";
 import type { EventRow } from "@/lib/events";
 import type { PricedOrder } from "@/lib/order";
+import { ticketQrToken } from "@/lib/ticket-token";
+import { sendTicketEmail } from "@/lib/ticket-mail";
 
 /*
  * Real ticket orders (Step 2). How a purchase flows:
@@ -173,7 +175,7 @@ export async function finalizeCheckoutSession(sessionId: string): Promise<"paid"
 
   if (session.payment_status === "paid" || session.payment_status === "no_payment_required") {
     const pi = session.payment_intent as Stripe.PaymentIntent | string | null;
-    const { error } = await db.rpc("mark_order_paid", {
+    const { data: orderId, error } = await db.rpc("mark_order_paid", {
       p_session_id: session.id,
       p_payment_intent_id: typeof pi === "string" ? pi : (pi?.id ?? null),
     });
@@ -181,6 +183,12 @@ export async function finalizeCheckoutSession(sessionId: string): Promise<"paid"
     const fee = stripeFeeCents(pi);
     if (fee != null) {
       await db.from("orders").update({ stripe_fee_cents: fee }).eq("stripe_session_id", session.id).is("stripe_fee_cents", null);
+    }
+    // Email the tickets (only the first call actually sends). A failed email
+    // never undoes the payment: it's logged, the next call (webhook retry or
+    // confirmation page refresh) tries again, and "Lost your ticket?" works.
+    if (typeof orderId === "string") {
+      await sendTicketEmail(orderId).catch((err) => console.error("Ticket email failed:", err));
     }
     return "paid";
   }
@@ -232,21 +240,25 @@ export async function cancelPendingOrder(orderId: string): Promise<string | null
   return slug;
 }
 
-// ---------- confirmation page -------------------------------------------
+// ---------- loading an order (confirmation page, tickets page, emails) ----
 
 export type ConfirmedOrder = {
+  id: string;
   orderNo: string;
   status: "pending" | "paid" | "expired" | "refunded" | "comp";
+  buyerFirstName: string;
   buyerName: string;
   buyerEmail: string;
   donationCents: number;
   recognize: boolean;
   displayName: string;
-  event: { name: string; slug: string; starts_at: string; venue: string };
-  tickets: { id: string; shortCode: string; typeName: string }[];
+  event: { id: string; name: string; slug: string; starts_at: string; doors_at: string | null; venue: string };
+  /** qrToken is the signed code inside the QR (lib/ticket-token.ts). */
+  tickets: { id: string; shortCode: string; typeName: string; status: string; qrToken: string }[];
 };
 
 type OrderQueryRow = {
+  id: string;
   order_no: string;
   status: ConfirmedOrder["status"];
   buyer_first_name: string;
@@ -255,9 +267,42 @@ type OrderQueryRow = {
   donation_cents: number;
   recognize: boolean;
   display_name: string;
-  events: { name: string; slug: string; starts_at: string; venue: string } | null;
-  tickets: { id: string; short_code: string; created_at: string; ticket_types: { name: string; sort_order: number } | null }[];
+  events: ConfirmedOrder["event"] | null;
+  tickets: { id: string; short_code: string; status: string; created_at: string; ticket_types: { name: string; sort_order: number } | null }[];
 };
+
+const ORDER_FIELDS =
+  "id, order_no, status, buyer_first_name, buyer_last_name, buyer_email, donation_cents, recognize, display_name, tickets(id, short_code, status, created_at, ticket_types(name, sort_order))";
+const EVENT_FIELDS = "(id, name, slug, starts_at, doors_at, venue)";
+
+function toConfirmedOrder(row: OrderQueryRow): ConfirmedOrder | null {
+  if (!row.events) return null;
+  const ev = row.events;
+  const tickets = [...row.tickets]
+    .filter((t) => t.status !== "void")
+    .sort((a, b) => (a.ticket_types?.sort_order ?? 0) - (b.ticket_types?.sort_order ?? 0) || a.created_at.localeCompare(b.created_at))
+    .map((t) => ({
+      id: t.id,
+      shortCode: t.short_code,
+      typeName: t.ticket_types?.name ?? "Ticket",
+      status: t.status,
+      qrToken: ticketQrToken(ev.id, t.id),
+    }));
+
+  return {
+    id: row.id,
+    orderNo: row.order_no,
+    status: row.status,
+    buyerFirstName: row.buyer_first_name,
+    buyerName: `${row.buyer_first_name} ${row.buyer_last_name}`.trim(),
+    buyerEmail: row.buyer_email,
+    donationCents: row.donation_cents,
+    recognize: row.recognize,
+    displayName: row.display_name,
+    event: ev,
+    tickets,
+  };
+}
 
 /**
  * Loads an order by its Stripe checkout id (only the buyer has it: Stripe
@@ -266,29 +311,43 @@ type OrderQueryRow = {
 export async function getOrderBySession(sessionId: string): Promise<ConfirmedOrder | null> {
   const { data, error } = await adminDb()
     .from("orders")
-    .select(
-      "order_no, status, buyer_first_name, buyer_last_name, buyer_email, donation_cents, recognize, display_name, events(name, slug, starts_at, venue), tickets(id, short_code, created_at, ticket_types(name, sort_order))",
-    )
+    .select(`${ORDER_FIELDS}, events${EVENT_FIELDS}`)
     .eq("stripe_session_id", sessionId)
     .maybeSingle();
   if (error) throw error;
-  if (!data) return null;
-  const row = data as unknown as OrderQueryRow;
-  if (!row.events) return null;
+  return data ? toConfirmedOrder(data as unknown as OrderQueryRow) : null;
+}
 
-  const tickets = [...row.tickets]
-    .sort((a, b) => (a.ticket_types?.sort_order ?? 0) - (b.ticket_types?.sort_order ?? 0) || a.created_at.localeCompare(b.created_at))
-    .map((t) => ({ id: t.id, shortCode: t.short_code, typeName: t.ticket_types?.name ?? "Ticket" }));
+/** Loads an order by id. Only call with an id from a signed link or from the server itself. */
+export async function getOrderById(orderId: string): Promise<ConfirmedOrder | null> {
+  if (!UUID.test(orderId)) return null;
+  const { data, error } = await adminDb()
+    .from("orders")
+    .select(`${ORDER_FIELDS}, events${EVENT_FIELDS}`)
+    .eq("id", orderId)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? toConfirmedOrder(data as unknown as OrderQueryRow) : null;
+}
 
-  return {
-    orderNo: row.order_no,
-    status: row.status,
-    buyerName: `${row.buyer_first_name} ${row.buyer_last_name}`.trim(),
-    buyerEmail: row.buyer_email,
-    donationCents: row.donation_cents,
-    recognize: row.recognize,
-    displayName: row.display_name,
-    event: row.events,
-    tickets,
-  };
+/**
+ * A buyer's paid tickets for shows that haven't ended yet ("Lost your
+ * ticket?"), soonest show first. A show counts as over 12 hours after it
+ * starts [assumed].
+ */
+export async function getUpcomingOrdersByEmail(email: string): Promise<ConfirmedOrder[]> {
+  const since = new Date(Date.now() - 12 * 60 * 60_000).toISOString();
+  const { data, error } = await adminDb()
+    .from("orders")
+    .select(`${ORDER_FIELDS}, events!inner${EVENT_FIELDS}`)
+    .eq("kind", "tickets")
+    .in("status", ["paid", "comp"])
+    // Case-insensitive exact match: escape ilike's wildcards.
+    .ilike("buyer_email", email.replace(/[\\%_]/g, (c) => "\\" + c))
+    .gt("events.starts_at", since);
+  if (error) throw error;
+  return (data as unknown as OrderQueryRow[])
+    .map(toConfirmedOrder)
+    .filter((o): o is ConfirmedOrder => !!o && o.tickets.length > 0)
+    .sort((a, b) => a.event.starts_at.localeCompare(b.event.starts_at));
 }

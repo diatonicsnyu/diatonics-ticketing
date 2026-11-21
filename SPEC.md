@@ -408,6 +408,12 @@ Resend email with QR codes + short codes, "view my tickets" page, "Lost your tic
 - [ ] "Lost your ticket?" re-sends to the email on file and never shows tickets on screen
 - [ ] The 4th re-send within an hour is blocked
 
+**As built (2026-11-21):** needs `supabase/migrations/0006_email.sql` (tables `email_log` and `ticket_resend_requests`) and two new settings, both already in `.env.local` and Vercel: `TICKET_SECRET` (signs QR codes + links; **never change it after tickets are sold**) and `EMAIL_TEST_TO` (test mode: every email goes to the group Gmail with a yellow "this email was for <buyer>" note, because Resend only delivers to the account's own inbox until `diatonics.com` is verified; **delete it at go-live** and set `EMAIL_FROM`). Details:
+- **QR codes are signed** (§4): the QR holds `D1.<ticket id>.<signature>`, signed with a key for that event only (derived from `TICKET_SECRET`), so the door app can reject fakes offline in step 5 by getting just that event's key. Code: `src/lib/ticket-token.ts`.
+- **Ticket email** is sent when the order is marked paid (webhook or confirmation page, whichever is first). The database lets only one call send it; a failed send is logged and the next call retries. QR images are hosted at `/api/qr/<token>` (Gmail blocks images built into the email). Template: `src/lib/email/ticket-email.ts`.
+- **"View my tickets"** = `/tickets/<signed key>` (no login; the key can't be guessed). Linked from the email and the confirmation page.
+- **"Lost your ticket?"** (`/lost-ticket`): re-sends tickets for shows that haven't ended (up to 12 hours after the start **[assumed]**) to the email on the order, in one email. Same answer whether or not the email has tickets. Limits: 3 per email per hour, 10 per network per hour **[assumed]**, and re-sends stop at 90 emails in 24 hours so ticket emails always fit under Resend's 100/day **[assumed]**.
+
 ### Step 4: Door scanner (online)
 Deployed to `diatonics-ticketing.vercel.app` (phones need https for the camera). PIN login, always-on camera, full-screen results, manual lookup, Get help.
 - [ ] Adds to your phone's home screen and opens full-screen
