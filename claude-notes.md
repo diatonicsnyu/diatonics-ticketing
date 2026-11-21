@@ -67,6 +67,7 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 - **Small corners only** (`rounded-sm`, 4px) on buttons, inputs, cards, badges. No pill buttons or big rounded cards: the user said they look "vibe coded" (2026-11-15).
 
 ## Still open (don't block on these)
+- **Admin login is broken on Vercel: PAUSED by the user (2026-11-21), not cancelled. They'll come back to it; the admin dashboard stays in the plan.** The name + leadership-PIN login (SPEC D18, `src/lib/auth.ts`, `src/app/admin/login/`) shows Next's "This page couldn't load / A server error occurred" on the live site. `ADMIN_PIN` is set in Vercel and the user redeployed; still broken. Not diagnosed yet: the next step is the red line from Vercel → Logs while trying to log in. Suspects: the Vercel `ADMIN_PIN` value isn't 4–8 digits only (`env.adminPin` throws on purpose), or a missing migration (`0002`/`0003`). Until it's fixed, test events are created with SQL in Supabase instead of `/admin`. Don't work on it again until the user brings it back.
 - Student ticket: group vote.
 - Stripe live activation (the user, at go-live).
 - Buying the domain (after localhost looks good).
