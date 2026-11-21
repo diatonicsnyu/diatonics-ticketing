@@ -4,13 +4,20 @@ Written from your notes after a bad day: the admin login and Stripe both failed 
 
 ## 1. Stripe has to work (top priority tonight)
 - [ ] A test purchase on the **live Vercel site** works end to end: event page → Continue to payment → Stripe Checkout → pay with `4242 4242 4242 4242` → "You're going! 🎉" page with tickets → the order shows as **paid** in Supabase.
-- [ ] The webhook works on Vercel too, not only on localhost: Stripe → Developers → Webhooks has an endpoint for `https://diatonics-ticketing.vercel.app/api/stripe/webhook`, and Vercel's `STRIPE_WEBHOOK_SECRET` is **that endpoint's** signing secret (not the one from the Stripe CLI).
-- [ ] Every Stripe + Supabase variable in `.env.local` is also in Vercel (Production), then redeploy.
-- [ ] Find the actual error first (Vercel → Logs, Stripe → Developers → Logs/Events) instead of guessing.
+  - ✅ Verified 2026-11-21 (automated browser on the live site): event page → form → **Stripe Checkout opens** with "$5.50 each, includes $0.50 service fee", the donation as its own line, and "No refunds. All sales final."
+  - ✅ Verified: Stripe's back arrow → `/checkout/cancel` → "Checkout cancelled" on the event page, and the hold is released at once.
+  - ✅ Verified (same database function the site uses): holds count against capacity (4 held of 5 → asking for 2 more is refused), 11 in one order is refused, and after the sales cutoff it's refused and the live page says "Online sales are closed."
+  - ⏳ **The card payment itself needs you (about 30 seconds):** Stripe's anti-bot check blocks automated browsers from pressing Pay. Open the test show, buy 1–2 tickets, pay with `4242 4242 4242 4242` (any future date, any CVC/ZIP). You should land on "You're going! 🎉".
+- [x] The webhook works on Vercel too. Verified 2026-11-21: the Stripe test-mode endpoint `https://diatonics-ticketing.vercel.app/api/stripe/webhook` exists, is enabled, and has all 4 events. An event signed with the secret in `.env.local` gets **HTTP 200** from the live site (so Vercel's `STRIPE_WEBHOOK_SECRET` matches), and a wrongly signed one gets **400**.
+- [x] Every variable is in Vercel (Production). Added 2026-11-21: `NEXT_PUBLIC_SITE_URL` (= `https://diatonics-ticketing.vercel.app`), `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `RESEND_API_KEY`. Redeployed (dpl_Bt1fuyhBbumCp2SXZM2ChBSUWk81, READY).
+- [x] The actual error: **`NEXT_PUBLIC_SITE_URL` was missing on Vercel.** The checkout code reads it to build Stripe's return links, threw, and the buyer saw "We couldn't open the payment page." Evidence: your 3 attempts (orders RJ32, DR58, CT96) never got a Stripe session; after adding the variable + redeploying, Checkout opens. (Stripe's "Managed Payments" problem was the earlier cause; that fix was already pushed.)
+- [x] **Also fixed:** Checkout was offering Klarna, Amazon Pay and a "Bank · $5 back" (Link) option. Stripe has two configs named "Default"; Checkout uses the account's own one, which is now card (+ Apple Pay / Google Pay) and Cash App Pay only. Verified: a new Checkout offers exactly `card, cashapp`. No code change.
 
 ## 2. Admin dashboard won't open
-- [ ] `/admin/login` on Vercel shows "This page couldn't load / A server error occurred", even though `ADMIN_PIN` is set in Vercel and it was redeployed. (This was paused earlier today; it's back on now.)
-- [ ] Get the red error line from Vercel → Logs while logging in, then fix the cause. Suspects: `ADMIN_PIN` in Vercel isn't 4–8 digits only (the code throws on purpose), or migrations `0002` / `0003` were never run in Supabase.
+- [x] `/admin/login` on Vercel shows "This page couldn't load / A server error occurred", even though `ADMIN_PIN` is set in Vercel and it was redeployed. (This was paused earlier today; it's back on now.)
+  - ✅ **Works now.** Verified 2026-11-21 ~02:46 with an automated browser on the live site: name "Rachel Chen" + the PIN from `.env.local` → lands on `/admin` showing "Logged in as Rachel Chen" and the events list. So Vercel's `ADMIN_PIN` matches `.env.local`, and migrations 0002/0003/0004 are all in Supabase (checked: their tables exist).
+- [x] The cause: the live deploy didn't have a valid `ADMIN_PIN` yet (Vercel only applies new env vars on the next build). Evidence: your earlier tries left **no rows** in `admin_logins`, and the only thing between the name check and writing that row is reading `ADMIN_PIN`, which throws on purpose if it's missing or not 4–8 digits. The redeploy at 06:26 UTC picked up the PIN. The runtime-log stream only shows live requests, so the old error line itself was gone.
+  - Code hardening (needs commit + push): `src/app/admin/login/actions.ts` now shows "Admin login isn't set up on the server: ADMIN_PIN must be 4–8 digits, then redeploy." instead of a crash page if that ever happens again.
 
 ## 3. Admin login (how it should work)
 - Type **your name**, then **the PIN**.
@@ -46,3 +53,9 @@ The group isn't trying to make a profit. The money is for paying for things like
 
 ## 8. Looks (later, not tonight)
 - The site is bare and ugly right now. You'll pick a new UI template from **21st.dev**; restyle after that. Keep the existing brand rules (light mode, sky blue + burgundy, 4px corners, Figtree).
+
+## Progress log
+(Every overnight run reads this first and continues from the "Next" step. Newest at the bottom.)
+- 2026-11-21 ~02:00 · Set up the auto-resume: Claude Code cron job **34917247**, hourly at :07, runs inside this VS Code Claude session (session-only: it stops if VS Code / Claude is closed; auto-expires after 7 days). **Next:** §1 Stripe: compare Vercel env vars with `.env.local`, read Vercel logs.
+- 2026-11-21 ~02:47 · **§1 Stripe done as far as automation allows** (details checked off in §1). Added 3 missing Vercel env vars + redeployed; Checkout opens on the live site; cancel, capacity, 10-max and cutoff verified; webhook secret verified (200 / 400); Checkout payment methods fixed to card + Cash App. **Only the actual card payment is left for the user** (Stripe blocks automated Pay). Test show moved to Sat Nov 28, 7:00 PM. Scratch tools used: Playwright in the session scratchpad. **Next:** §2 admin login: reproduce on the live site, read Vercel runtime logs.
+- 2026-11-21 ~02:50 · **§2 admin login done.** Live login verified working (automated browser). Cause + code hardening noted in §2. **Next:** §4 Venmo-style expense log (new migration `0005_ledger.sql`, rewrite `/admin/expenses`), then §5 dashboard, §7 buyer list. §6 (event editing stays in admin) needs no change.

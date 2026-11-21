@@ -89,7 +89,16 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
   if (!member) return { error: "That name isn't on the e-board list. Try your full name." };
 
   // 3. Check the PIN and log the try either way.
-  const ok = isLeadershipPin(pin);
+  // If ADMIN_PIN is missing or isn't 4–8 digits on the server, env.adminPin
+  // throws. Show a clear message instead of a crash page (this is what broke
+  // the live login on 2026-11-21: the deploy didn't have a valid ADMIN_PIN yet).
+  let ok: boolean;
+  try {
+    ok = isLeadershipPin(pin);
+  } catch (err) {
+    console.error("Admin login misconfigured:", err instanceof Error ? err.message : err);
+    return { error: "Admin login isn't set up on the server: ADMIN_PIN must be 4–8 digits, then redeploy." };
+  }
   const { error: logErr } = await db
     .from("admin_logins")
     .insert({ member_id: member.id, name_typed: typed, ip, success: ok });
