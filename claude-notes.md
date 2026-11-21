@@ -11,7 +11,7 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 5. **Keep replies short.** The user is busy and is the only technical person in the group.
 6. **Work one build step at a time** (SPEC.md §10), then stop with the checklist for the user to run.
 7. **Never put secrets in code or chat.** Use `.env.local` (gitignored) + `.env.example`.
-8. **Never `git push` without the user's explicit OK.** Commit locally at the end of each step, then say "committed locally, not pushed." Never run `git checkout -- <file>` or anything else that discards the user's uncommitted edits.
+8. **Never `git commit` or `git push`.** The user does all commits and pushes themselves (said 2026-11-21: "never ever commit for me"). At the end of a step, list the changed files instead. Never run `git checkout -- <file>` or anything else that discards the user's uncommitted edits.
 
 ## Who the user is
 
