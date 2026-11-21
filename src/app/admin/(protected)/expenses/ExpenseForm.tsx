@@ -25,22 +25,18 @@ export function AddEntry({
   members: Member[];
   categories: readonly string[];
 }) {
-  const [kind, setKind] = useState<"expense" | "reimbursement" | null>(null);
+  const [picked, setPicked] = useState<"expense" | "reimbursement" | null>(null);
   const [state, formAction, pending] = useActionState(action, {});
-  const formRef = useRef<HTMLFormElement>(null);
-  const [justSaved, setJustSaved] = useState(false);
-
-  // After a successful save: clear and close the form, show "Added".
-  useEffect(() => {
-    if (!state.savedAt) return;
-    formRef.current?.reset();
-    setKind(null);
-    setJustSaved(true);
-  }, [state.savedAt]);
+  // Which save we'd seen when the form was opened. A newer save means "done":
+  // the form closes and "Added" shows (no effect needed).
+  const [openedAt, setOpenedAt] = useState<number | undefined>(undefined);
+  const savedSinceOpen = state.savedAt !== undefined && state.savedAt !== openedAt;
+  const kind = savedSinceOpen ? null : picked;
+  const justSaved = savedSinceOpen;
 
   function pick(k: "expense" | "reimbursement") {
-    setKind(kind === k ? null : k);
-    setJustSaved(false);
+    setOpenedAt(state.savedAt);
+    setPicked(kind === k ? null : k);
   }
 
   return (
@@ -72,7 +68,7 @@ export function AddEntry({
 
       {kind && (
         <form
-          ref={formRef}
+          key={`${kind}-${openedAt ?? 0}`}
           className={`space-y-4 rounded-sm border p-5 ${kind === "expense" ? EXPENSE_TONE : REIMBURSE_TONE}`}
           onSubmit={(e) => {
             e.preventDefault(); // keeps what you typed if there's an error
@@ -136,7 +132,7 @@ export function AddEntry({
             >
               {pending ? "Saving…" : kind === "expense" ? "Add expense" : "Add reimbursement"}
             </button>
-            <button type="button" onClick={() => setKind(null)} className="rounded-sm border border-line bg-white px-4 py-3 text-ink">
+            <button type="button" onClick={() => setPicked(null)} className="rounded-sm border border-line bg-white px-4 py-3 text-ink">
               Cancel
             </button>
           </div>

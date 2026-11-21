@@ -23,8 +23,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <nav className="flex flex-wrap items-center gap-x-5 gap-y-1">
             <Link href="/admin" className="font-display font-bold">Diatonics Admin</Link>
-            <Link href="/admin" className="text-link hover:underline">Events</Link>
-            <Link href="/admin/expenses" className="text-link hover:underline">Expenses</Link>
+            <Link href="/admin" className="text-link hover:underline">Dashboard</Link>
+            <Link href="/admin/expenses" className="text-link hover:underline">Expense log</Link>
+            <Link href="/admin/buyers" className="text-link hover:underline">Buyers</Link>
             <Link href="/" className="text-link hover:underline">View site</Link>
           </nav>
           <form action={logout} className="flex items-center gap-3 text-sm text-muted">

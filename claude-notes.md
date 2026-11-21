@@ -54,7 +54,8 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 - **Buyers re-send their own tickets** ("Lost your ticket?"), so volunteers never deal with it.
 - **Reminder emails:** if there are >100 recipients, split across 2 days by purchase time (earliest buyers 2 days before, the rest 1 day before) to stay under Resend's limit.
 - **Admin:** a dashboard plus a **full master list of everything** (who, when, how many, amounts, check-in status: everything except card data), CSV export, comp tickets (rarely used but should exist).
-- **E-board expense tracker** (SPEC D33, built 2026-11-21) at `/admin/expenses` so no one quietly spends personal money: who paid, what, amount, paid back yes/no, per-person totals. Only people logged into admin see it. E-board names are real ones the user gave; don't invent others.
+- **E-board expense log** (SPEC D33) at `/admin/expenses`, **Venmo-style since 2026-11-21**: Expense / Reimbursement buttons, name from the login, one shared red/green log, optional "I got it", per-person balances. Table `ledger_entries` (`supabase/migrations/0005_ledger.sql`, which copies over the old `expenses` rows). Only people logged into admin see it. E-board names are real ones the user gave; don't invent others.
+- **Dashboard** (`/admin`) and **buyer list** (`/admin/buyers` + CSV at `/admin/buyers/csv`) for every admin (SPEC D19), built 2026-11-21. Money only counts **paid** orders.
 - No Apple/Google Wallet passes, no merch, no reserved seating.
 
 ### Branding
@@ -67,8 +68,10 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 - **Small corners only** (`rounded-sm`, 4px) on buttons, inputs, cards, badges. No pill buttons or big rounded cards: the user said they look "vibe coded" (2026-11-15).
 
 ## Still open (don't block on these)
-- **Tonight's fix list: `issues-to-fix-tonight.md` (2026-11-21).** Stripe working end to end on Vercel is the #1 priority, then the admin login. The user brought the admin login back (no longer paused).
-- **Admin login is broken on Vercel** (was paused earlier on 2026-11-21, now back on). The name + leadership-PIN login (SPEC D18, `src/lib/auth.ts`, `src/app/admin/login/`) shows Next's "This page couldn't load / A server error occurred" on the live site. `ADMIN_PIN` is set in Vercel and the user redeployed; still broken. Not diagnosed yet: the next step is the red line from Vercel → Logs while trying to log in. Suspects: the Vercel `ADMIN_PIN` value isn't 4–8 digits only (`env.adminPin` throws on purpose), or a missing migration (`0002`/`0003`). Until it's fixed, test events are created with SQL in Supabase instead of `/admin`. Don't work on it again until the user brings it back.
+- **Tonight's fix list: `issues-to-fix-tonight.md` (2026-11-21).** Its "Progress log" says what's done and what's left for the user.
+- **Admin login: FIXED (2026-11-21).** It crashed because the live deploy didn't have a valid `ADMIN_PIN` yet (Vercel applies new env vars only on the next build). Verified working on the live site after a redeploy. The login now shows a clear message instead of crashing if `ADMIN_PIN` is ever missing or not 4–8 digits.
+- **Vercel API access:** `VERCEL_TOKEN` in `.env.local` (the user OK'd reading logs + changing env vars). Project `prj_dfEFAjcxRcUDNF0vrZqrZ9xKJrhv`, team `team_PdjZdzRhOR1evA6tlpPTpLEm`. The runtime-logs endpoint only streams live requests, not past errors.
+- **Stripe test-mode payment methods** are set on the account's own default config (card + Cash App only); see SPEC step 2 "As built". Stripe's bot check blocks automated browsers from pressing Pay, so a real test payment needs the user.
 - Student ticket: group vote.
 - Stripe live activation (the user, at go-live).
 - Buying the domain (after localhost looks good).

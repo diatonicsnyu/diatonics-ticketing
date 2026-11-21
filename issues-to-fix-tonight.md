@@ -24,32 +24,36 @@ Written from your notes after a bad day: the admin login and Stripe both failed 
 - Each admin will get **their own PIN eventually**. For now everyone uses the one shared PIN in the env (`ADMIN_PIN`).
 
 ## 4. Expense log (works like Venmo)
-- [ ] **Adding an entry:** two buttons, **Expense** or **Reimbursement**. Pick one, enter the amount (+ what it was for), done.
+> **Built 2026-11-21, needs 2 steps from you before it's live:** run `supabase/migrations/0005_ledger.sql` in Supabase (SQL Editor), then commit + push. Verified: lint + production build pass; the page's query runs against your real Supabase (until 0005 is run, the page shows a "run 0005_ledger.sql" message instead of crashing). Not yet clicked through on the live site (it isn't deployed until you push). 0005 also copies over anything in the old expense tracker (it's empty right now).
+
+- [x] **Adding an entry:** two buttons, **Expense** or **Reimbursement**. Pick one, enter the amount (+ what it was for), done.
   - Your name is filled in automatically from who's logged in. No name box.
   - **Expense** = I spent my own money on the group. Each person enters their own.
   - **Reimbursement** = money sent back to someone. Pick **who it's for**. Usually you'll enter these, since the ticket money goes to your account and you send the paybacks.
-- [ ] Each admin can still edit their own entries.
-- [ ] **Colors in the log:** expenses are **red/pink**, reimbursements are **green**. If everyone's been paid back, the reds and greens balance out. More red = someone still needs to be paid back.
-- [ ] **Shared log that every admin sees,** newest first, e.g.:
+- [x] Each admin can still edit their own entries. (Edit + Delete show only on entries you added; the server checks it too.)
+- [x] **Colors in the log:** expenses are **red/pink**, reimbursements are **green**. If everyone's been paid back, the reds and greens balance out. More red = someone still needs to be paid back.
+- [x] **Shared log that every admin sees,** newest first, e.g.:
   - 🟥 "Callum spent $20 (posters)"
   - 🟩 "Callum received $20 from ticket sale funds (sent by Rachel)"
-- [ ] **"I got it" check (optional):** the person who was paid back can tap to confirm they received it. Probably nobody will, but build it anyway. Unconfirmed reimbursements still count as paid back.
-- [ ] Per-person balance: spent − reimbursed = still owed. The "E-board is owed $X" total on the dashboard uses this.
+- [x] **"I got it" check (optional):** the person who was paid back can tap to confirm they received it. Probably nobody will, but build it anyway. Unconfirmed reimbursements still count as paid back.
+- [x] Per-person balance: spent − reimbursed = still owed. The "E-board is owed $X" total on the dashboard uses this. (Someone paid back more than they spent shows as "overpaid" and doesn't reduce what others are owed **[assumed]**.)
 
 ## 5. Dashboard (every admin sees this)
 The group isn't trying to make a profit. The money is for paying for things like costumes. So the numbers are:
-- [ ] **Tickets sold**
-- [ ] **Total revenue:** everything that came in (tickets + service fees + donations)
-- [ ] **Net profit from sales:** revenue − Stripe processing fees
-- [ ] **Total spent:** e-board expenses (from the expense log)
-- [ ] **Current balance:** net profit from sales − total spent. This is what the group actually has to spend.
+- [x] **Tickets sold**
+- [x] **Total revenue:** everything that came in (tickets + service fees + donations)
+- [x] **Net profit from sales:** revenue − Stripe processing fees
+- [x] **Total spent:** e-board expenses (from the expense log)
+- [x] **Current balance:** net profit from sales − total spent. This is what the group actually has to spend.
 - Later, not now: a budgeting area.
+- > **Built 2026-11-21** at /admin (the admin home): the 5 big numbers, then ticket sales / service fees / donations / Stripe fees / checked in, and each event with "X sold of Y" + a bar. Only **paid** orders count. Verified: build passes; its queries run against your real Supabase (0 paid orders so far, so everything shows $0.00 until a test payment goes through). Live after you push. Total spent / Current balance show "—" until 0005_ledger.sql is run. Not built yet: the "sales over time" chart from SPEC §12.
 
 ## 6. Edit the event
-- [ ] Event editing stays in admin. In practice it'll be you doing it, since the others aren't technical.
+- [x] Event editing stays in admin. In practice it'll be you doing it, since the others aren't technical. (No change needed: Dashboard → Events → Edit.)
 
 ## 7. Buyer spreadsheet
-- [ ] A list of **everyone who bought tickets**, which **every admin** can see as a **table right in the browser** (no Excel needed), plus a **CSV download**. No .xlsx.
+- [x] A list of **everyone who bought tickets**, which **every admin** can see as a **table right in the browser** (no Excel needed), plus a **CSV download**. No .xlsx.
+  - **Built 2026-11-21** at /admin/buyers (menu: Buyers): table on a laptop, cards on a phone; filter by event; search by name / email / order number; **Download CSV** (opens in Google Sheets / Excel). Verified: build passes; its query runs against your real Supabase. Live after you push.
 
 ## 8. Looks (later, not tonight)
 - The site is bare and ugly right now. You'll pick a new UI template from **21st.dev**; restyle after that. Keep the existing brand rules (light mode, sky blue + burgundy, 4px corners, Figtree).
@@ -59,3 +63,5 @@ The group isn't trying to make a profit. The money is for paying for things like
 - 2026-11-21 ~02:00 · Set up the auto-resume: Claude Code cron job **34917247**, hourly at :07, runs inside this VS Code Claude session (session-only: it stops if VS Code / Claude is closed; auto-expires after 7 days). **Next:** §1 Stripe: compare Vercel env vars with `.env.local`, read Vercel logs.
 - 2026-11-21 ~02:47 · **§1 Stripe done as far as automation allows** (details checked off in §1). Added 3 missing Vercel env vars + redeployed; Checkout opens on the live site; cancel, capacity, 10-max and cutoff verified; webhook secret verified (200 / 400); Checkout payment methods fixed to card + Cash App. **Only the actual card payment is left for the user** (Stripe blocks automated Pay). Test show moved to Sat Nov 28, 7:00 PM. Scratch tools used: Playwright in the session scratchpad. **Next:** §2 admin login: reproduce on the live site, read Vercel runtime logs.
 - 2026-11-21 ~02:50 · **§2 admin login done.** Live login verified working (automated browser). Cause + code hardening noted in §2. **Next:** §4 Venmo-style expense log (new migration `0005_ledger.sql`, rewrite `/admin/expenses`), then §5 dashboard, §7 buyer list. §6 (event editing stays in admin) needs no change.
+- 2026-11-21 ~03:30 · **§4 expense log, §5 dashboard, §7 buyer list built** (§6 needed no change). Verified: `npm run lint` + `npm run build` pass; the dashboard / buyer-list queries run against the real Supabase; the expense log waits for `0005_ledger.sql`. Not clicked through live yet (needs a push). Note: commit `643767c "STEP 1"` (pushed 02:14) contains only half of this work, so **Vercel's build of it FAILED**. The live site is still on the last good deploy (06:26 UTC, Stripe + login working). Pushing the remaining files fixes the build.
+- 2026-11-21 ~03:30 · **All automatable work is done. Deleted the auto-resume cron job 34917247.** Left for the user: (1) run `0005_ledger.sql` in Supabase, (2) commit + push the changed files, (3) one real test payment with `4242 4242 4242 4242` on /events/stripe-test-show.
