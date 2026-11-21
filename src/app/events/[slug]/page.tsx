@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SiteChrome } from "@/components/SiteChrome";
-import { getPublicEventBySlug, salesOpen, eventImageUrl, ticketsRemaining } from "@/lib/events";
+import { getPublicEventBySlug, salesOpen, eventImageUrl, getTicketsRemaining } from "@/lib/events";
 import { startTicketCheckout } from "@/app/checkout/actions";
 import { BuyForm } from "./BuyForm";
 import { Flyer } from "@/components/Flyer";
@@ -22,6 +22,7 @@ export async function generateMetadata(props: PageProps<"/events/[slug]">): Prom
 
 export default async function EventPage(props: PageProps<"/events/[slug]">) {
   const { slug } = await props.params;
+  const { cancelled } = await props.searchParams;
   // Uses the public (RLS) client, so draft events simply aren't found -> 404.
   const event = await getPublicEventBySlug(slug);
   if (!event) notFound();
@@ -30,7 +31,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
   const flyer = img ?? (isDemo() ? "/sample-flyer.svg" : null);
   const open = salesOpen(event);
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue)}`;
-  const left = ticketsRemaining(event);
+  const left = await getTicketsRemaining(event);
   const cheapest = Math.min(...event.ticket_types.map((t) => t.price_cents));
 
   return (
@@ -77,6 +78,13 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
 
         <section className="rounded-sm border border-line bg-panel p-5 sm:p-8 lg:col-span-3" aria-label="Tickets">
           <h2 className="font-display text-3xl font-black">Tickets</h2>
+
+          {/* Back from Stripe without paying (set by /checkout/cancel). */}
+          {cancelled && (
+            <p className="mt-3 rounded-sm border border-line bg-page p-3" role="status">
+              Checkout cancelled. You weren&apos;t charged, and you can try again below.
+            </p>
+          )}
 
           {event.status === "cancelled" ? (
             <p className="mt-3">This show has been cancelled.</p>

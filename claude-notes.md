@@ -16,7 +16,7 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 ## Who the user is
 
 - The only technical member of the Diatonics (an NYC a cappella group, **not** school-registered).
-- **The only admin, ever.** No admin user management is needed.
+- **Admin login = name + leadership PIN** (changed 2026-11-21; it used to be "the user is the only admin" with an email magic link). Leadership types their name (must be on the e-board list) + **one shared PIN for all of leadership for now**, stored only as `ADMIN_PIN` in `.env.local` / Vercel (never write the PIN in the repo). It **may become one PIN per person later**. Still no admin user management: the e-board list is who can log in. Details: SPEC D18.
 - Volunteers (non-technical group members) run the door with a shared PIN and need zero training.
 
 ## Settled facts & decisions (with the why)
@@ -54,7 +54,7 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 - **Buyers re-send their own tickets** ("Lost your ticket?"), so volunteers never deal with it.
 - **Reminder emails:** if there are >100 recipients, split across 2 days by purchase time (earliest buyers 2 days before, the rest 1 day before) to stay under Resend's limit.
 - **Admin:** a dashboard plus a **full master list of everything** (who, when, how many, amounts, check-in status: everything except card data), CSV export, comp tickets (rarely used but should exist).
-- **E-board expense tracker** (SPEC D33, built 2026-11-21) at `/admin/expenses` so no one quietly spends personal money: who paid, what, amount, paid back yes/no, per-person totals. Only the admin uses it. E-board names are real ones the user gave; don't invent others.
+- **E-board expense tracker** (SPEC D33, built 2026-11-21) at `/admin/expenses` so no one quietly spends personal money: who paid, what, amount, paid back yes/no, per-person totals. Only people logged into admin see it. E-board names are real ones the user gave; don't invent others.
 - No Apple/Google Wallet passes, no merch, no reserved seating.
 
 ### Branding

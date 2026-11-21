@@ -2,8 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/auth";
-import { adminDb, authClient } from "@/lib/supabase/clients";
+import { requireAdmin, endAdminSession } from "@/lib/auth";
+import { adminDb } from "@/lib/supabase/clients";
 import { nyInputToIso, isoToNyDate, addMinutes } from "@/lib/time";
 import { dollarsToCents } from "@/lib/money";
 import { hashPin, isValidPin } from "@/lib/pin";
@@ -12,8 +12,7 @@ import { isDemo } from "@/lib/demo";
 
 export async function logout() {
   if (isDemo()) redirect("/");
-  const supabase = await authClient();
-  await supabase.auth.signOut();
+  await endAdminSession();
   redirect("/");
 }
 

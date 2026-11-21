@@ -29,8 +29,17 @@ export const env = {
   get supabaseSecretKey() {
     return required("SUPABASE_SECRET_KEY", process.env.SUPABASE_SECRET_KEY);
   },
-  get adminEmail() {
-    return required("ADMIN_EMAIL", process.env.ADMIN_EMAIL).trim().toLowerCase();
+  /** Leadership PIN for /admin (4–8 digits). One shared PIN for now (SPEC D18). */
+  get adminPin() {
+    const pin = required("ADMIN_PIN", process.env.ADMIN_PIN).trim();
+    if (!/^\d{4,8}$/.test(pin)) throw new Error("ADMIN_PIN must be 4–8 digits.");
+    return pin;
+  },
+  get stripeSecretKey() {
+    return required("STRIPE_SECRET_KEY", process.env.STRIPE_SECRET_KEY);
+  },
+  get stripeWebhookSecret() {
+    return required("STRIPE_WEBHOOK_SECRET", process.env.STRIPE_WEBHOOK_SECRET);
   },
   get siteUrl() {
     return required("NEXT_PUBLIC_SITE_URL", process.env.NEXT_PUBLIC_SITE_URL).replace(/\/$/, "");

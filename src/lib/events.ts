@@ -118,13 +118,26 @@ export async function getEventForAdmin(id: string): Promise<AdminEventRow | null
   return data ? sortTypes(data as AdminEventRow) : null;
 }
 
+/** Demo mode only: tickets left using the sample "sold" numbers. */
+function demoTicketsRemaining(event: Pick<EventRow, "id" | "capacity">): number | null {
+  if (event.capacity == null) return null;
+  return Math.max(0, event.capacity - (DEMO_SOLD[event.id] ?? 0));
+}
+
 /**
  * Tickets still available online, or null if the event has no capacity
- * (unlimited). Step 2 will subtract real sold + held tickets from the
- * database; until then only demo mode has "sold" numbers.
+ * (unlimited). Counts paid tickets plus tickets held by people who are
+ * paying right now (30-min holds). Door sales never count (D31).
  */
-export function ticketsRemaining(event: Pick<EventRow, "id" | "capacity">): number | null {
+export async function getTicketsRemaining(event: Pick<EventRow, "id" | "capacity">): Promise<number | null> {
   if (event.capacity == null) return null;
-  const sold = isDemo() ? (DEMO_SOLD[event.id] ?? 0) : 0;
-  return Math.max(0, event.capacity - sold);
+  if (isDemo()) return demoTicketsRemaining(event);
+  const { data, error } = await publicDb().rpc("tickets_left", { p_event_id: event.id });
+  if (error) {
+    // 0004_orders.sql not run yet: nothing can have sold, so show full capacity
+    // instead of breaking the event page.
+    if (error.code === "PGRST202" || error.code === "42883") return event.capacity;
+    throw error;
+  }
+  return data as number | null;
 }

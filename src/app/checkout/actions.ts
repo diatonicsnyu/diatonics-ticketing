@@ -1,7 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { getPublicEventBySlug, salesOpen, ticketsRemaining } from "@/lib/events";
+import { getPublicEventBySlug, salesOpen, getTicketsRemaining } from "@/lib/events";
+import { startStripeTicketCheckout } from "@/lib/orders";
 import { priceOrder, parseDonation, isValidEmail, MAX_TICKETS_PER_ORDER } from "@/lib/order";
 import { newOrderNumber, newShortCode } from "@/lib/shortcode";
 import { isDemo } from "@/lib/demo";
@@ -55,7 +56,9 @@ export async function startTicketCheckout(
   const order = priceOrder(lines, donationCents);
   if (order.ticketCount === 0) return { error: "Pick at least one ticket." };
   if (order.ticketCount > MAX_TICKETS_PER_ORDER) return { error: `You can buy up to ${MAX_TICKETS_PER_ORDER} tickets per order.` };
-  const left = ticketsRemaining(event);
+  // Quick check for a friendly message. The database checks again, under a
+  // lock, when it holds the tickets (so two buyers can't get the last one).
+  const left = await getTicketsRemaining(event);
   if (left != null && order.ticketCount > left) return { error: `Only ${left} tickets are left.` };
 
   const buyer = readBuyer(formData);
@@ -68,9 +71,10 @@ export async function startTicketCheckout(
   const displayName = recognize ? buyer.name.slice(0, 60) : "";
 
   if (!isDemo()) {
-    // Step 2 replaces this with: hold the tickets, create a Stripe Checkout
-    // session (test mode), and redirect to Stripe.
-    return { error: "Online checkout is switched on in Step 2." };
+    // Hold the tickets, create Stripe's checkout page, and send the buyer there.
+    const result = await startStripeTicketCheckout(event, order, buyer, recognize, displayName);
+    if ("error" in result) return { error: result.error };
+    redirect(result.url);
   }
 
   const demo: DemoOrder = {

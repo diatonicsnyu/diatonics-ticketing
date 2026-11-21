@@ -82,11 +82,9 @@ The database. Your personal Supabase account is at its 2-free-project limit, so 
 5. Get the keys:
    - **Project Settings → Data API**: copy the **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
    - **Project Settings → API Keys**: copy the **Publishable key** (`sb_publishable_…`) → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and the **Secret key** (`sb_secret_…`) → `SUPABASE_SECRET_KEY`
-6. Make yourself the admin:
-   - **Authentication → Users → Add user → Create new user**
-   - Email: **your own email** (the one you'll log in to `/admin` with) **[assumed: your own email, not the group Gmail]**
-   - Set that same email as `ADMIN_EMAIL`.
+6. Set the admin PIN: `ADMIN_PIN` = the leadership PIN (4–8 digits, one shared PIN for e-board for now). No Supabase user is needed: admin login is name + PIN (SPEC D18).
 7. In the project folder, copy `.env.example` to `.env.local` and fill in the four values above. Leave `NEXT_PUBLIC_SITE_URL` as `http://localhost:3000`.
+8. In Supabase's **SQL Editor**, run each file in `supabase/migrations/` in number order (0001, 0002, 0003, …).
 
 **Done when:** `npm run dev` starts without errors and the home page no longer shows the sample events.
 

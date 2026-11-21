@@ -1,6 +1,6 @@
 # Diatonics Ticketing — Spec (v0.3, draft)
 
-_Status: draft · Started 2026-11-15 · Last updated 2026-11-15_
+_Status: draft · Started 2026-11-15 · Last updated 2026-11-21_
 
 > Everything in this spec has been reviewed by you unless marked **[assumed]** (small technical defaults you can still change). **[pending]** means you're waiting on someone else.
 
@@ -34,9 +34,9 @@ _Status: draft · Started 2026-11-15 · Last updated 2026-11-15_
 ### Admin & email
 | # | Decision |
 |---|---|
-| D18 | **You are the only admin, ever.** You're the only one who creates events and manages things. No admin user management needed. |
+| D18 | **Admin login: name + leadership PIN** (changed 2026-11-21, your request; before, you were the only admin and logged in with an email link). At `/admin/login` a leadership member types **their name** and **the PIN**. **One shared PIN for all of leadership for now** (the one you picked, set as `ADMIN_PIN` in `.env.local` and Vercel, never written in the repo). It may become **one PIN per person later**. The name has to be on the **e-board list** (D33), as a full name or a first name only one person has ("Rachel") **[assumed]**, so the e-board list is who can log in and there are no accounts to manage. Wrong PINs lock out: 5 per device per 15 minutes, 30 per hour across the whole site **[assumed]**. Every try is logged with the name (table `admin_logins`, `supabase/migrations/0003_admin_login.sql`). A login lasts 7 days **[assumed]**; changing the PIN logs everyone out. The top bar shows "Logged in as <name>". |
 | D19 | **Admin tools:** sales dashboard, a full master list of every buyer and order (everything except card info), comp tickets (rarely used, but available), CSV export. No refund button (D8). |
-| D33 | **E-board expense tracker** (added 2026-11-21, your request) at `/admin/expenses`: log what each e-board member paid out of pocket (who, date, what, category, amount, notes), mark it paid back, per-person totals, and an "E-board is owed $X" line on the admin home. Admin-only (you enter everything). E-board list is editable; starts with Rachel Chen, Lila Erol, Callum Robechek, Sophia Shahrooz, Isaac Kan, Victoria Zou. Tables: `supabase/migrations/0002_expenses.sql`. No receipt uploads **[assumed]**: paste a receipt link in Notes. |
+| D33 | **E-board expense tracker** (added 2026-11-21, your request) at `/admin/expenses`: log what each e-board member paid out of pocket (who, date, what, category, amount, notes), mark it paid back, per-person totals, and an "E-board is owed $X" line on the admin home. Only people logged into admin see it (D18). E-board list is editable (it's also the list of who can log in to admin); starts with Rachel Chen, Lila Erol, Callum Robechek, Sophia Shahrooz, Isaac Kan, Victoria Zou. Tables: `supabase/migrations/0002_expenses.sql`. No receipt uploads **[assumed]**: paste a receipt link in Notes. |
 | D20 | **Cancelled show:** two options, **refund everyone** or **reschedule** (tickets carry over). It takes **3 confirmation steps** so it can't happen by accident. |
 | D21 | **Reminder emails:** split across 2 days if there are more than 100 recipients (earliest buyers 2 days before, the rest 1 day before) to stay under Resend's limit. |
 | D22 | **Buyers re-send their own tickets** ("Lost your ticket?" page), so volunteers never have to. |
@@ -59,7 +59,7 @@ _Status: draft · Started 2026-11-15 · Last updated 2026-11-15_
 
 ## 1. Goal
 
-A small, low-cost web platform for Diatonics a cappella concerts. People buy tickets by card or donate, get their tickets by email, and are checked in at the door with a fast QR scan. Volunteers can use it with no training. One admin (you) runs everything.
+A small, low-cost web platform for Diatonics a cappella concerts. People buy tickets by card or donate, get their tickets by email, and are checked in at the door with a fast QR scan. Volunteers can use it with no training. Leadership runs it from the admin pages (name + PIN login, D18).
 
 ### Non-goals (v1)
 - Reserved seating (general admission only)
@@ -67,7 +67,7 @@ A small, low-cost web platform for Diatonics a cappella concerts. People buy tic
 - Native apps (the scanner is an installable web app)
 - Merch (would trigger NYC sales tax of 8.875% and require registering with the state)
 - Apple/Google Wallet passes
-- Multiple admin accounts (D18)
+- Admin accounts with passwords or email logins (D18: name + one shared leadership PIN for now)
 
 ## 2. Users & roles
 
@@ -75,7 +75,7 @@ A small, low-cost web platform for Diatonics a cappella concerts. People buy tic
 |---|---|---|---|
 | **Buyer / donor** | Audience | No account | Buy tickets, donate, view tickets, re-send own tickets |
 | **Door volunteer** | Any group member | Shared per-event PIN (D16) | Scan, manual lookup, check in. Nothing else. |
-| **Admin** | You only (D18) | Personal login: magic link by email **[assumed]** | Everything |
+| **Admin** | Leadership (anyone on the e-board list, D18) | Their name + the shared leadership PIN (D18) | Everything |
 
 ## 3. Flows
 
@@ -167,7 +167,7 @@ A small, low-cost web platform for Diatonics a cappella concerts. People buy tic
 - First scan wins (D15). Only the admin can undo a check-in.
 - Volunteers can't see revenue, emails, or anything beyond the door list.
 
-### 3.8 Admin (you, D18–D20)
+### 3.8 Admin (leadership, D18–D20)
 - **Events:** create/edit name, date/time, venue, description, image, capacity, ticket types + prices, sales close time (default show start + 30 min), door PIN.
 - **Dashboard:** tickets sold per type, donations, gross, service fees, Stripe fees, net, live check-in count.
 - **Master list:** every order, with buyer name, email, phone, purchase time, quantity per type, amounts (tickets / service fee / donation / total), check-in status per ticket, donor display name. Searchable and sortable. Everything except card info (we never have it).
@@ -228,6 +228,7 @@ The group absorbs them: a $5 donation nets ~$4.55, $10 nets ~$9.41, and $25 nets
 - **Ticket**: id, order_id, ticket_type_id, short_code, status (valid / checked_in / void), checked_in_at, checked_in_device
 - **Donation**: id, order_id, amount_cents, recognize (bool), display_name, created_at
 - **CheckInLog**: ticket_id, device_id, action (check_in / undo), timestamp, synced_at, conflict (bool)
+- **AdminLogin**: member_id, name_typed, ip, success, created_at (every admin login try; used for the wrong-PIN lockout, D18)
 - **EmailLog**: order_id, type (ticket / resend / reminder / cancel / reschedule / donation_receipt), sent_at (used for the 100/day budget)
 
 ## 7. Stack & costs
@@ -257,13 +258,13 @@ The site itself works fine on `.vercel.app`; it's only email that needs this.
 - **Mobile-first** for buyers and the door.
 - **Cost:** $0/month plus a domain if approved.
 - **Scale:** hundreds of tickets per show, 2–4 scanners.
-- **Security:** HTTPS; signed QR codes; per-event door PIN, changeable, with rate-limited attempts; admin pages for you only; re-sends go only to the email on file.
+- **Security:** HTTPS; signed QR codes; per-event door PIN, changeable, with rate-limited attempts; admin pages need a name on the e-board list + the leadership PIN, with lockout after wrong PINs (D18); re-sends go only to the email on file.
 - **Privacy:** collect only name, email, optional phone; simple privacy note; never share or sell data.
 - **Accessibility:** good contrast, screen-reader friendly.
 - **Handoff:** you're the only technical member, so keep a short `ADMIN-GUIDE.md` for whoever takes over someday.
 
 ### 6.1 Step 1 defaults **[assumed]**
-- Admin login is a magic link sent to `ADMIN_EMAIL`. Supabase sign-ups are off, so no one else can make an account.
+- Admin login is name + leadership PIN (D18), replacing the earlier email magic link (2026-11-21). The login is a signed, http-only cookie; it doesn't use Supabase Auth.
 - Door PIN is 4–8 digits and only a hash of it is stored.
 - Every time is entered and shown in New York time.
 - **Demo mode:** until the Supabase keys are added, the site runs on sample shows with a "Preview" banner, and saving is turned off. Built so the group can see the idea before the account setup. It switches off by itself once the keys are in, and the `/demo/...` pages then return "not found":
@@ -377,8 +378,8 @@ Each step ends with a checklist **you** run before the next step starts.
 - **Venue signal:** offline mode gets built either way.
 
 ### Step 1: Foundation + events
-Project setup, Supabase (group account), your admin login, event create/edit, public home page with the event list and a Donate button placeholder.
-- [ ] You can log in as admin; anyone else is blocked from admin pages
+Project setup, Supabase (group account), admin login (name + PIN, D18), event create/edit, public home page with the event list and a Donate button placeholder.
+- [ ] You can log in with your name + the leadership PIN; a wrong PIN or a name that isn't on the e-board list is blocked; 5 wrong PINs lock that device out for 15 minutes; logged-out visitors are blocked from admin pages
 - [ ] You can create, edit, and save a test event (name, date, venue, capacity, General $5, sales close +30 min)
 - [ ] It shows on the home page, and looks good on your phone
 - [ ] A draft event does **not** show publicly
@@ -392,6 +393,8 @@ Event page → quantity → name/email/phone → Stripe Checkout → confirmatio
 - [ ] Buying is blocked after the sales cutoff (show start + 30 min)
 - [ ] "All sales final" is shown before payment
 - [ ] The order shows up in the Supabase data (the admin master list comes in step 6)
+
+**As built (2026-11-21):** tables + functions in `supabase/migrations/0004_orders.sql` (`orders`, `order_lines`, `tickets`; a database lock stops two buyers getting the last ticket). Checkout saves a **pending** order that holds the tickets for 31 minutes; Stripe's page expires at the same moment. Paying marks it **paid** and creates one ticket per person (short code like `DIA-7K3F-Q9`); leaving, a declined card, or the time running out marks it **expired** and frees the tickets. Both Stripe's webhook (`/api/stripe/webhook`, needs `STRIPE_WEBHOOK_SECRET`) and the confirmation page (`/orders/confirmed`) confirm payments, so tickets appear even if one of them is slow. Stripe "back" link → `/checkout/cancel` frees the hold right away. The donation add-on is charged as its own line already (receipts/recognition list are step 7). **[assumed]** Until step 3/4, the QR code holds the short code; step 3/4 switches it to a signed token.
 
 ### Step 3: Ticket email + self re-send
 Resend email with QR codes + short codes, "view my tickets" page, "Lost your ticket?" page.

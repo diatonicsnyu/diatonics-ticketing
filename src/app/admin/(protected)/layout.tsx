@@ -28,7 +28,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             <Link href="/" className="text-link hover:underline">View site</Link>
           </nav>
           <form action={logout} className="flex items-center gap-3 text-sm text-muted">
-            <span className="hidden sm:inline">{user.email}</span>
+            <span className="hidden sm:inline">Logged in as {user.name}</span>
             <button className="rounded-sm border border-line px-3 py-1 hover:border-link">Log out</button>
           </form>
         </div>
