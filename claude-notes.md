@@ -36,6 +36,7 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 
 ### Accounts & infra
 - **Group Gmail** owns everything except Stripe: Supabase, Resend, Vercel, the domain. The user is getting the login from Sophia. Stripe is the user's own account, signed up with the user's own email **[assumed]**.
+- **GitHub:** the repo is owned by the group account, **`diatonicsnyu/diatonics-ticketing`** (transferred 2026-11-20). The user commits as a collaborator. The group's Vercel imports it from there.
 - **Supabase:** free tier, on a **new account under the group Gmail** (the user's personal account is at its 2-project limit). Free projects pause after ~1 week idle, so add a keep-alive.
 - **Email: Resend free tier** (100/day, 3,000/month). The user is confident they won't exceed 100/day. **Resend can't send to other people without a verified domain**, so during development, emails go only to the user's own inbox.
 - **Hosting: Vercel**, at `diatonics-ticketing.vercel.app` during development.

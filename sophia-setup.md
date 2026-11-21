@@ -9,7 +9,7 @@ Everything the ticketing site needs from Sophia, in order. Parts 1 and 3 need he
 - [ ] 1. Group Gmail: you can sign in on your own
 - [ ] 2. Stripe: your account, Sophia invited as View only
 - [ ] 3. Show Sophia the prototype
-- [ ] 4. Supabase: account + project under the group Gmail
+- [x] 4. Supabase: account + project under the group Gmail
 - [ ] 5. Resend: account + API key under the group Gmail
 - [ ] 6. Vercel: account under the group Gmail, connected to the code
 - [ ] 7. Talk through the open questions (bottom of this file)
