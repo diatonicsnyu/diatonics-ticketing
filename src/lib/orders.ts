@@ -119,6 +119,10 @@ export async function startStripeTicketCheckout(
   try {
     const session = await stripe().checkout.sessions.create({
       mode: "payment",
+      // Stripe "Managed Payments" (Stripe as merchant of record, for digital
+      // products) is on by default for new accounts. It adds fees and blocks
+      // custom_text below, so it's always off for ticket sales.
+      managed_payments: { enabled: false },
       line_items: lineItems,
       customer_email: buyer.email,
       client_reference_id: orderId,
