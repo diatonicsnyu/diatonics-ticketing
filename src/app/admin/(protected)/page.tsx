@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth";
 import { listAllEventsForAdmin, STATUS_LABELS } from "@/lib/events";
 import { formatShort } from "@/lib/time";
 import { formatCents } from "@/lib/money";
+import { owedToEboardCents } from "@/lib/expenses";
 
 export const metadata = { title: "Admin · Events" };
 export const dynamic = "force-dynamic";
@@ -12,10 +13,22 @@ export default async function AdminEventsPage(props: PageProps<"/admin">) {
   // parallel with its layout, so every page that loads private data checks.
   await requireAdmin();
   const { saved } = await props.searchParams;
-  const events = await listAllEventsForAdmin();
+  const [events, owed] = await Promise.all([listAllEventsForAdmin(), owedToEboardCents()]);
 
   return (
     <>
+      {owed !== null && owed > 0 && (
+        <Link
+          href="/admin/expenses"
+          className="mb-6 flex flex-wrap items-center justify-between gap-2 rounded-sm border border-line bg-panel p-4 hover:border-link"
+        >
+          <span>
+            E-board is owed <strong>{formatCents(owed)}</strong> in expenses.
+          </span>
+          <span className="text-sm text-link">View expenses →</span>
+        </Link>
+      )}
+
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="font-display text-3xl font-black">Events</h1>
         <Link href="/admin/events/new" className="font-display rounded-sm bg-burgundy px-5 py-2.5 font-bold text-white hover:bg-burgundy-bright">

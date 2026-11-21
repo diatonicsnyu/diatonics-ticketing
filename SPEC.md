@@ -36,6 +36,7 @@ _Status: draft · Started 2026-11-15 · Last updated 2026-11-15_
 |---|---|
 | D18 | **You are the only admin, ever.** You're the only one who creates events and manages things. No admin user management needed. |
 | D19 | **Admin tools:** sales dashboard, a full master list of every buyer and order (everything except card info), comp tickets (rarely used, but available), CSV export. No refund button (D8). |
+| D33 | **E-board expense tracker** (added 2026-11-21, your request) at `/admin/expenses`: log what each e-board member paid out of pocket (who, date, what, category, amount, notes), mark it paid back, per-person totals, and an "E-board is owed $X" line on the admin home. Admin-only (you enter everything). E-board list is editable; starts with Rachel Chen, Lila Erol, Callum Robechek, Sophia Shahrooz, Isaac Kan, Victoria Zou. Tables: `supabase/migrations/0002_expenses.sql`. No receipt uploads **[assumed]**: paste a receipt link in Notes. |
 | D20 | **Cancelled show:** two options, **refund everyone** or **reschedule** (tickets carry over). It takes **3 confirmation steps** so it can't happen by accident. |
 | D21 | **Reminder emails:** split across 2 days if there are more than 100 recipients (earliest buyers 2 days before, the rest 1 day before) to stay under Resend's limit. |
 | D22 | **Buyers re-send their own tickets** ("Lost your ticket?" page), so volunteers never have to. |

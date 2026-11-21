@@ -27,6 +27,11 @@ export function isoToNyDate(iso: string): string {
   return format(new TZDate(iso, TIME_ZONE), "yyyy-MM-dd");
 }
 
+/** Today's date in New York, e.g. "2026-11-21" (default for date fields). */
+export function todayNy(): string {
+  return format(new TZDate(Date.now(), TIME_ZONE), "yyyy-MM-dd");
+}
+
 /** "Saturday, December 5, 2026" */
 export function formatDate(iso: string): string {
   return new Intl.DateTimeFormat("en-US", {
