@@ -74,6 +74,8 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 - **Step 3 (ticket email + "Lost your ticket?") built 2026-11-21**; see SPEC step 3 "As built". The group Gmail (Resend account owner, the only inbox Resend delivers to until a domain is verified) is in `EMAIL_TEST_TO`. The first real test payment (order EB36) worked end to end on 2026-11-21.
 - **Step 4 (door scanner, online) built 2026-11-21**; see SPEC step 4 "As built". The ticket email was confirmed working by the user on 2026-11-21, and the door scanner on 2026-11-21.
 - **Step 5 (offline mode) built 2026-11-21**; see SPEC step 5 "As built".
+- **Step 6 (admin tools) built 2026-11-21**; see SPEC step 6 "As built". The user has dashboard / general UI feedback still to give (asked 2026-11-21); the sales chart waits on it.
+- **Never press "Redeploy" on an old Vercel deployment:** on 2026-11-21 an old commit got redeployed to production and took the door app + emails offline until the latest deployment was promoted again.
 - **Supabase keep-alive built 2026-11-21:** Vercel Cron (`vercel.json`) calls `/api/cron/daily` once a day (14:00 UTC); it does one tiny database read. Protected by `CRON_SECRET` (in `.env.local` + Vercel production). Step 8 reminders should hook into the same daily route.
 - **Stripe test-mode payment methods** are set on the account's own default config (card + Cash App only); see SPEC step 2 "As built". Stripe's bot check blocks automated browsers from pressing Pay, so a real test payment needs the user.
 - Student ticket: group vote.

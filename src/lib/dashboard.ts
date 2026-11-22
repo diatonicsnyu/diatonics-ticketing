@@ -16,6 +16,8 @@ import { ledgerTotals } from "@/lib/expenses";
 
 export type Dashboard = {
   ticketsSold: number;
+  /** Of ticketsSold, how many were comps (free). */
+  compTickets: number;
   checkedIn: number;
   ticketSalesCents: number;
   serviceFeesCents: number;
@@ -56,7 +58,7 @@ export async function loadDashboard(): Promise<DashboardResult> {
       .from("orders")
       .select("tickets_subtotal_cents, service_fee_cents, donation_cents, total_cents, stripe_fee_cents, payment_method")
       .eq("status", "paid"),
-    db.from("tickets").select("event_id, ticket_type_id, status").neq("status", "void"),
+    db.from("tickets").select("event_id, ticket_type_id, status, orders(status)").neq("status", "void"),
     ledgerTotals(),
     db.from("door_sale_counts").select("event_id, delta"),
     db.from("check_in_log").select("id", { count: "exact", head: true }).eq("conflict", true),
@@ -95,6 +97,7 @@ export async function loadDashboard(): Promise<DashboardResult> {
     status: "ok",
     data: {
       ticketsSold: (tickets.data ?? []).length,
+      compTickets: (tickets.data ?? []).filter((t) => (t.orders as unknown as { status: string } | null)?.status === "comp").length,
       checkedIn,
       ticketSalesCents: sum("tickets_subtotal_cents"),
       serviceFeesCents: sum("service_fee_cents"),

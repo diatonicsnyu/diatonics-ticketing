@@ -28,6 +28,18 @@ export type BuyerRow = {
   status: string;
 };
 
+export type BuyerSort = "newest" | "oldest" | "name" | "event" | "total";
+export const BUYER_SORTS: { value: BuyerSort; label: string }[] = [
+  { value: "newest", label: "Newest first" },
+  { value: "oldest", label: "Oldest first" },
+  { value: "name", label: "Last name A–Z" },
+  { value: "event", label: "Show" },
+  { value: "total", label: "Biggest total" },
+];
+export function parseBuyerSort(v: unknown): BuyerSort {
+  return BUYER_SORTS.some((s) => s.value === v) ? (v as BuyerSort) : "newest";
+}
+
 export type BuyersResult = { status: "demo" } | { status: "setup_needed" } | { status: "ok"; rows: BuyerRow[] };
 
 type Row = {
@@ -52,7 +64,7 @@ type Row = {
 };
 
 /** Call requireAdmin() first. `eventId` limits it to one show; `q` searches name / email / order number. */
-export async function loadBuyers(opts: { eventId?: string; q?: string } = {}): Promise<BuyersResult> {
+export async function loadBuyers(opts: { eventId?: string; q?: string; sort?: BuyerSort } = {}): Promise<BuyersResult> {
   if (isDemo()) return { status: "demo" };
   let query = adminDb()
     .from("orders")
@@ -96,26 +108,77 @@ export async function loadBuyers(opts: { eventId?: string; q?: string } = {}): P
       [r.firstName, r.lastName, `${r.firstName} ${r.lastName}`, r.email, r.orderNo, r.phone].some((v) => v.toLowerCase().includes(q)),
     );
   }
+  const byName = (a: BuyerRow, b: BuyerRow) =>
+    a.lastName.localeCompare(b.lastName, "en", { sensitivity: "base" }) || a.firstName.localeCompare(b.firstName, "en", { sensitivity: "base" });
+  const sorters: Record<BuyerSort, (a: BuyerRow, b: BuyerRow) => number> = {
+    newest: (a, b) => b.purchasedAt.localeCompare(a.purchasedAt),
+    oldest: (a, b) => a.purchasedAt.localeCompare(b.purchasedAt),
+    name: byName,
+    event: (a, b) => a.eventName.localeCompare(b.eventName) || byName(a, b),
+    total: (a, b) => b.totalCents - a.totalCents || b.purchasedAt.localeCompare(a.purchasedAt),
+  };
+  rows.sort(sorters[opts.sort ?? "newest"]);
   return { status: "ok", rows };
 }
 
-/** Turns rows into CSV text that opens cleanly in Google Sheets / Excel. */
+// ---------- CSV (opens cleanly in Google Sheets / Excel) ----------
+const money = (c: number) => (c / 100).toFixed(2);
+const when = (iso: string) =>
+  new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "2-digit" }).format(new Date(iso));
+// Quote every cell; neutralize spreadsheet formulas (a name like "=HYPERLINK(...)").
+const cell = (v: string | number) => {
+  let s = String(v);
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+  return `"${s.replace(/"/g, '""')}"`;
+};
+// The BOM makes Excel read the file as UTF-8 (names with accents stay correct).
+const csvText = (header: string[], rows: (string | number)[][]) =>
+  "﻿" + [header, ...rows].map((r) => r.map(cell).join(",")).join("\r\n") + "\r\n";
+
+/** One row per order. */
 export function buyersCsv(rows: BuyerRow[]): string {
-  const money = (c: number) => (c / 100).toFixed(2);
-  const when = (iso: string) =>
-    new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "2-digit" }).format(new Date(iso));
-  // Quote every cell; neutralize spreadsheet formulas (a name like "=HYPERLINK(...)").
-  const cell = (v: string | number) => {
-    let s = String(v);
-    if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
-    return `"${s.replace(/"/g, '""')}"`;
-  };
-  const header = ["Order", "Purchased (NY time)", "Event", "First name", "Last name", "Email", "Phone", "Tickets", "Ticket types", "Tickets $", "Service fees $", "Donation $", "Total $", "Checked in", "Supporter name", "Status"];
-  const lines = rows.map((r) =>
-    [r.orderNo, when(r.purchasedAt), r.eventName, r.firstName, r.lastName, r.email, r.phone, r.ticketCount, r.ticketTypes, money(r.ticketsCents), money(r.serviceFeeCents), money(r.donationCents), money(r.totalCents), r.checkedIn, r.supporterName, r.status]
-      .map(cell)
-      .join(","),
+  return csvText(
+    ["Order", "Purchased (NY time)", "Event", "First name", "Last name", "Email", "Phone", "Tickets", "Ticket types", "Tickets $", "Service fees $", "Donation $", "Total $", "Checked in", "Supporter name", "Status"],
+    rows.map((r) => [r.orderNo, when(r.purchasedAt), r.eventName, r.firstName, r.lastName, r.email, r.phone, r.ticketCount, r.ticketTypes, money(r.ticketsCents), money(r.serviceFeeCents), money(r.donationCents), money(r.totalCents), r.checkedIn, r.supporterName, r.status]),
   );
-  // The BOM makes Excel read the file as UTF-8 (names with accents stay correct).
-  return "﻿" + [header.map(cell).join(","), ...lines].join("\r\n") + "\r\n";
+}
+
+type TicketCsvRow = {
+  short_code: string;
+  status: string;
+  checked_in_at: string | null;
+  checked_in_device: string | null;
+  ticket_types: { name: string } | null;
+  events: { name: string } | null;
+  orders: { order_no: string; status: string; buyer_first_name: string; buyer_last_name: string; buyer_email: string };
+};
+
+/** One row per ticket, with its check-in status (SPEC §3.8 CSV export: tickets). Call requireAdmin() first. */
+export async function ticketsCsv(eventId?: string): Promise<string | null> {
+  if (isDemo()) return null;
+  let query = adminDb()
+    .from("tickets")
+    .select("short_code, status, checked_in_at, checked_in_device, created_at, ticket_types(name), events(name), orders!inner(order_no, status, buyer_first_name, buyer_last_name, buyer_email)")
+    .in("orders.status", ["paid", "comp"])
+    .order("created_at");
+  if (eventId) query = query.eq("event_id", eventId);
+  const { data, error } = await query;
+  if (error) return null;
+  const label: Record<string, string> = { valid: "Not scanned", checked_in: "Checked in", void: "Void" };
+  return csvText(
+    ["Ticket code", "Order", "Event", "First name", "Last name", "Email", "Ticket type", "Comp", "Status", "Checked in (NY time)", "Checked in on"],
+    (data as unknown as TicketCsvRow[]).map((t) => [
+      t.short_code,
+      t.orders.order_no,
+      t.events?.name ?? "",
+      t.orders.buyer_first_name,
+      t.orders.buyer_last_name,
+      t.orders.buyer_email,
+      t.ticket_types?.name ?? "",
+      t.orders.status === "comp" ? "yes" : "",
+      label[t.status] ?? t.status,
+      t.checked_in_at ? when(t.checked_in_at) : "",
+      t.checked_in_device ?? "",
+    ]),
+  );
 }

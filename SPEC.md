@@ -457,6 +457,16 @@ Dashboard, master list, CSV export, comps, undo check-in.
 - [ ] Comp tickets can't exceed the remaining capacity
 - [ ] Undoing a check-in lets the ticket scan 🟩 again
 
+**As built (2026-11-21):**
+- `supabase/migrations/0009_admin_tools.sql`: `create_comp_order` (locks the event, same capacity / type-limit checks as a purchase, creates the tickets at once; status + payment_method `comp`, $0; new columns `orders.comp_by` / `comp_note`) and `admin_undo_check_in` (ticket back to valid; the old check-in stays in `check_in_log` plus an `undo` row, method `admin`).
+- **Comps** at `/admin/comps` (nav: Comps): show, ticket type, how many (1–10, capped at tickets left), name, email, optional phone and note. Allowed for shows on sale or with sales closed, until a day after the start **[assumed: comps can still be issued after online sales close, e.g. show night]**. Emailed right away like a normal order; the list below shows who issued each.
+- **Order page** `/admin/orders/<order no>` (linked from the buyer list): buyer, amounts, Stripe fee, ticket-email status (with a "Send the ticket email" button if it never went out or failed), every ticket with its check-in history, and **Undo check-in** (with an "are you sure"). Door phones pick up an undo on their next list refresh (within a minute).
+- **Buyer list** = the master list: now sortable (newest, oldest, last name, show, biggest total), includes comps (🎟️), order numbers link to the order page, plus a second CSV with one row per ticket (`/admin/buyers/tickets-csv`). Donation / donor-recognition CSVs come with step 7.
+- Dashboard: "Tickets sold" says "incl. N comp" when there are comps. Checked 2026-11-21: dashboard totals = Stripe test mode (3 orders, $20.50 gross, - [ ] Undoing a check-in lets the ticket scan 🟩 again
+.50 fees, - [ ] Undoing a check-in lets the ticket scan 🟩 again
+9.00 net).
+- Not built yet: the "Sales over time" chart (§12 Admin); waiting on the user's dashboard feedback.
+
 ### Step 7: Donations
 Standalone donate page (works with zero events), checkout add-on, receipts, opt-in recognition.
 - [ ] With **no events listed**, the home page Donate button still works

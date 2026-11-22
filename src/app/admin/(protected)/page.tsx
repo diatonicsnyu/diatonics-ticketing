@@ -31,7 +31,7 @@ export default async function AdminDashboardPage(props: PageProps<"/admin">) {
         <>
           {/* The 5 big numbers (SPEC §12 Admin). */}
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            <Stat label="Tickets sold" value={String(d.ticketsSold)} />
+            <Stat label="Tickets sold" value={String(d.ticketsSold)} sub={d.compTickets > 0 ? `incl. ${d.compTickets} comp` : undefined} />
             <Stat label="Total revenue" value={formatCents(d.revenueCents)} sub="Tickets + fees + donations" />
             <Stat label="Net profit from sales" value={formatCents(d.netCents)} sub="Revenue − Stripe fees" />
             <Stat
