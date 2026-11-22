@@ -53,7 +53,7 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 - **Online sales close 30 min after show start** (7:30 for a 7:00 show).
 - **Buyers re-send their own tickets** ("Lost your ticket?"), so volunteers never deal with it.
 - **Reminder emails:** if there are >100 recipients, split across 2 days by purchase time (earliest buyers 2 days before, the rest 1 day before) to stay under Resend's limit.
-- **Admin:** a dashboard plus a **full master list of everything** (who, when, how many, amounts, check-in status: everything except card data), CSV export, comp tickets (rarely used but should exist).
+- **Admin:** a dashboard plus a **full master list of everything** (who, when, how many, amounts, check-in status: everything except card data), CSV export, comp tickets (rarely used but should exist). **Call them "gift tickets" everywhere users see them** (user, 2026-11-21: doesn't like "comps"); the database keeps status `comp`. They can be given after online sales close, but only while tickets are left.
 - **E-board expense log** (SPEC D33) at `/admin/expenses`, **Venmo-style since 2026-11-21**: Expense / Reimbursement buttons, name from the login, one shared red/green log, optional "I got it", per-person balances. Table `ledger_entries` (`supabase/migrations/0005_ledger.sql`, which copies over the old `expenses` rows). Only people logged into admin see it. E-board names are real ones the user gave; don't invent others.
 - **Dashboard** (`/admin`) and **buyer list** (`/admin/buyers` + CSV at `/admin/buyers/csv`) for every admin (SPEC D19), built 2026-11-21. Money only counts **paid** orders.
 - No Apple/Google Wallet passes, no merch, no reserved seating.

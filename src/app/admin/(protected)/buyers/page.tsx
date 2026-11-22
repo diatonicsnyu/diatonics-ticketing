@@ -33,7 +33,7 @@ export default async function BuyersPage(props: PageProps<"/admin/buyers">) {
         )}
       </div>
       <p className="mt-2 text-muted">
-        Everyone who bought tickets online, plus comps. Tap an order to see each ticket&apos;s check-in. The CSV opens in Google Sheets or Excel
+        Everyone who bought tickets online, plus gift tickets. Tap an order to see each ticket&apos;s check-in. The CSV opens in Google Sheets or Excel
         {result.status === "ok" && (
           <>
             {" "}(or <a href={ticketsCsvHref} className="text-link hover:underline">download one row per ticket</a>)
@@ -101,7 +101,7 @@ export default async function BuyersPage(props: PageProps<"/admin/buyers">) {
                     <tr key={r.orderNo} className="border-t border-line align-top">
                       <td className="px-3 py-2 font-semibold">
                         {r.firstName} {r.lastName}
-                        {r.status === "comp" && <span className="block text-xs font-normal text-muted">🎟️ comp</span>}
+                        {r.status === "comp" && <span className="block text-xs font-normal text-muted">🎁 gift tickets</span>}
                         {r.supporterName && <span className="block text-xs font-normal text-muted">💛 supporter</span>}
                       </td>
                       <td className="px-3 py-2 break-all">{r.email}</td>
@@ -129,7 +129,7 @@ export default async function BuyersPage(props: PageProps<"/admin/buyers">) {
                   <p className="font-semibold">
                     {r.firstName} {r.lastName}{" "}
                     <Link href={`/admin/orders/${r.orderNo}`} className="font-mono font-normal text-link hover:underline">· {r.orderNo}</Link>
-                    {r.status === "comp" && <span className="font-normal text-muted"> · 🎟️ comp</span>}
+                    {r.status === "comp" && <span className="font-normal text-muted"> · 🎁 gift tickets</span>}
                   </p>
                   <p className="break-all">{r.email}{r.phone && ` · ${r.phone}`}</p>
                   <p className="text-muted">{r.eventName} · {r.ticketTypes}</p>

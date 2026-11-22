@@ -1,17 +1,17 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import type { CompFormState } from "./actions";
+import type { GiftFormState } from "./actions";
 import { MAX_TICKETS_PER_ORDER } from "@/lib/order";
 
-type Action = (prev: CompFormState, formData: FormData) => Promise<CompFormState>;
-export type CompEvent = { id: string; label: string; left: number | null; types: { id: string; name: string }[] };
+type Action = (prev: GiftFormState, formData: FormData) => Promise<GiftFormState>;
+export type GiftEvent = { id: string; label: string; left: number | null; types: { id: string; name: string }[] };
 
 const input = "w-full rounded-sm border border-line bg-white px-3 py-2.5 text-ink";
 const label = "mb-1 block font-semibold";
 
-/** Free tickets for one person: emailed like a normal order, counted against capacity. */
-export function CompForm({ action, events }: { action: Action; events: CompEvent[] }) {
+/** Gift (free) tickets for one person: emailed like a normal order, counted against capacity. */
+export function GiftForm({ action, events }: { action: Action; events: GiftEvent[] }) {
   const [state, formAction, pending] = useActionState(action, {});
   const [eventId, setEventId] = useState(events[0]?.id ?? "");
   const event = events.find((e) => e.id === eventId);
@@ -29,7 +29,7 @@ export function CompForm({ action, events }: { action: Action; events: CompEvent
           </select>
           {event && (
             <span className="mt-1 block text-sm text-muted">
-              {event.left == null ? "No capacity limit." : event.left === 0 ? "This show is full: no room for comps." : `${event.left} ticket${event.left === 1 ? "" : "s"} left.`}
+              {event.left == null ? "No capacity limit." : event.left === 0 ? "This show is full: no tickets left to give." : `${event.left} ticket${event.left === 1 ? "" : "s"} left.`}
             </span>
           )}
         </label>
@@ -73,7 +73,7 @@ export function CompForm({ action, events }: { action: Action; events: CompEvent
           <span className={label}>
             Note <span className="font-normal text-muted">(optional, only admins see it)</span>
           </span>
-          <input name="note" maxLength={200} placeholder="e.g. guest performer, photographer" className={input} />
+          <input name="note" maxLength={200} placeholder="e.g. guest performer, photographer, family" className={input} />
         </label>
       </div>
 
@@ -85,7 +85,7 @@ export function CompForm({ action, events }: { action: Action; events: CompEvent
         disabled={pending || event?.left === 0}
         className="font-display rounded-sm bg-burgundy px-5 py-2.5 font-bold text-white hover:bg-burgundy-bright disabled:opacity-60"
       >
-        {pending ? "Issuing…" : "Issue comp tickets"}
+        {pending ? "Sending…" : "Give tickets"}
       </button>
     </form>
   );

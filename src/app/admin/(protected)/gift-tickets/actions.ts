@@ -6,12 +6,12 @@ import { requireAdmin } from "@/lib/auth";
 import { isDemo } from "@/lib/demo";
 import { issueComp } from "@/lib/admin-orders";
 
-export type CompFormState = { error?: string };
+export type GiftFormState = { error?: string };
 
-/** Issue free tickets (SPEC §3.8 comps). On success, opens the new order. */
-export async function issueCompAction(_prev: CompFormState, formData: FormData): Promise<CompFormState> {
+/** Gift tickets (SPEC §3.8 "comps"; stored as status 'comp'). On success, opens the new order. */
+export async function giveTicketsAction(_prev: GiftFormState, formData: FormData): Promise<GiftFormState> {
   const admin = await requireAdmin(); // Server Actions must check this themselves.
-  if (isDemo()) return { error: "Demo preview: comps work once Supabase is connected." };
+  if (isDemo()) return { error: "Demo preview: gift tickets work once Supabase is connected." };
 
   const field = (k: string, max: number) => String(formData.get(k) ?? "").trim().slice(0, max);
   const result = await issueComp({
@@ -28,6 +28,6 @@ export async function issueCompAction(_prev: CompFormState, formData: FormData):
   if ("error" in result) return { error: result.error };
 
   revalidatePath("/admin");
-  revalidatePath("/admin/comps");
-  redirect(`/admin/orders/${result.orderNo}?msg=${result.email === "sent" ? "comp_sent" : "comp_email_failed"}`);
+  revalidatePath("/admin/gift-tickets");
+  redirect(`/admin/orders/${result.orderNo}?msg=${result.email === "sent" ? "gift_sent" : "gift_email_failed"}`);
 }

@@ -7,7 +7,7 @@ import { sendTicketEmail } from "@/lib/ticket-mail";
 
 /*
  * Admin tools for single orders (SPEC §3.8, step 6): the order page,
- * comp (free) tickets, and undoing a check-in. Call requireAdmin() first.
+ * gift tickets ("comps" in the spec; order status 'comp' in the database), and undoing a check-in. Call requireAdmin() first.
  */
 
 export type AdminTicket = {
@@ -145,7 +145,7 @@ export async function loadAdminOrder(orderNo: string): Promise<AdminOrder | null
 }
 
 // ---------------------------------------------------------------------------
-// Comp tickets
+// Gift tickets (stored as status 'comp')
 // ---------------------------------------------------------------------------
 
 export type CompInput = {
@@ -161,8 +161,8 @@ export type CompInput = {
 };
 
 const COMP_ERRORS: Record<string, string> = {
-  EVENT_NOT_OPEN: "Comps can only be issued for a show that's on sale or has sales closed (not a draft or cancelled show).",
-  SOLD_OUT: "There isn't room: that many comps would go over the show's capacity.",
+  EVENT_NOT_OPEN: "Gift tickets can only be given for a show that's on sale or has sales closed (not a draft or cancelled show).",
+  SOLD_OUT: "There aren't that many tickets left for this show. Try a smaller number.",
   TYPE_SOLD_OUT: "That ticket type doesn't have that many left.",
   BAD_QUANTITY: `Pick between 1 and ${MAX_TICKETS_PER_ORDER} tickets.`,
   BAD_TYPE: "That ticket type isn't part of this show. Refresh the page and try again.",
@@ -192,7 +192,7 @@ export async function issueComp(input: CompInput): Promise<{ orderNo: string; em
     });
     if (!error) {
       const email = await sendTicketEmail(data as string).catch((e) => {
-        console.error("comp ticket email failed:", e);
+        console.error("gift ticket email failed:", e);
         return "failed" as const;
       });
       return { orderNo, email };
@@ -210,7 +210,7 @@ export async function issueComp(input: CompInput): Promise<{ orderNo: string; em
 
 export type CompRow = { orderNo: string; name: string; email: string; eventName: string; count: number; compBy: string; note: string; at: string };
 
-/** Recent comps, newest first. */
+/** Recent gift tickets, newest first. */
 export async function listComps(limit = 50): Promise<CompRow[]> {
   if (isDemo()) return [];
   const { data, error } = await adminDb()

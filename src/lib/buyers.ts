@@ -5,7 +5,7 @@ import { isDemo } from "@/lib/demo";
 /*
  * Buyer list (SPEC D19, §3.8): everyone who bought tickets, for every admin.
  * Shown as a table in the browser and as a CSV download (no .xlsx).
- * Only paid (and later, comp) ticket orders. Never any card info (we never have it).
+ * Paid and gift (status 'comp') ticket orders. Never any card info (we never have it).
  */
 
 export type BuyerRow = {
@@ -139,7 +139,7 @@ const csvText = (header: string[], rows: (string | number)[][]) =>
 export function buyersCsv(rows: BuyerRow[]): string {
   return csvText(
     ["Order", "Purchased (NY time)", "Event", "First name", "Last name", "Email", "Phone", "Tickets", "Ticket types", "Tickets $", "Service fees $", "Donation $", "Total $", "Checked in", "Supporter name", "Status"],
-    rows.map((r) => [r.orderNo, when(r.purchasedAt), r.eventName, r.firstName, r.lastName, r.email, r.phone, r.ticketCount, r.ticketTypes, money(r.ticketsCents), money(r.serviceFeeCents), money(r.donationCents), money(r.totalCents), r.checkedIn, r.supporterName, r.status]),
+    rows.map((r) => [r.orderNo, when(r.purchasedAt), r.eventName, r.firstName, r.lastName, r.email, r.phone, r.ticketCount, r.ticketTypes, money(r.ticketsCents), money(r.serviceFeeCents), money(r.donationCents), money(r.totalCents), r.checkedIn, r.supporterName, r.status === "comp" ? "gift" : r.status]),
   );
 }
 
@@ -166,7 +166,7 @@ export async function ticketsCsv(eventId?: string): Promise<string | null> {
   if (error) return null;
   const label: Record<string, string> = { valid: "Not scanned", checked_in: "Checked in", void: "Void" };
   return csvText(
-    ["Ticket code", "Order", "Event", "First name", "Last name", "Email", "Ticket type", "Comp", "Status", "Checked in (NY time)", "Checked in on"],
+    ["Ticket code", "Order", "Event", "First name", "Last name", "Email", "Ticket type", "Gift", "Status", "Checked in (NY time)", "Checked in on"],
     (data as unknown as TicketCsvRow[]).map((t) => [
       t.short_code,
       t.orders.order_no,

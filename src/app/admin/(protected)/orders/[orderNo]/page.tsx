@@ -19,14 +19,14 @@ const MESSAGES: Record<string, string> = {
   email_already: "The ticket email already went out, so it wasn't sent again. The buyer can use “Lost your ticket?” to get another copy.",
   email_failed: "The email didn't go through. Try again in a few minutes.",
   email_skipped: "This order has no tickets to send.",
-  comp_sent: "Comp tickets issued and emailed.",
-  comp_email_failed: "Comp tickets issued, but the email didn't go through. Use “Send the ticket email” below to try again.",
+  gift_sent: "Gift tickets sent.",
+  gift_email_failed: "Gift tickets created, but the email didn't go through. Use “Send the ticket email” below to try again.",
   not_found: "Couldn't find that order.",
 };
 
 const STATUS: Record<string, string> = {
   paid: "Paid",
-  comp: "Comp (free)",
+  comp: "Gift tickets (free)",
   pending: "Checkout not finished",
   expired: "Checkout abandoned",
   refunded: "Refunded",
@@ -70,8 +70,8 @@ export default async function AdminOrderPage(props: PageProps<"/admin/orders/[or
           <dl className="mt-2 space-y-1 text-sm">
             <Row label="Email" value={<span className="break-all">{order.email}</span>} />
             <Row label="Phone" value={order.phone || "—"} />
-            <Row label={order.status === "comp" ? "Issued" : "Bought"} value={formatShort(order.paidAt ?? order.createdAt)} />
-            {order.status === "comp" && <Row label="Issued by" value={order.compBy || "—"} />}
+            <Row label={order.status === "comp" ? "Given" : "Bought"} value={formatShort(order.paidAt ?? order.createdAt)} />
+            {order.status === "comp" && <Row label="Given by" value={order.compBy || "—"} />}
             {order.compNote && <Row label="Note" value={order.compNote} />}
             {order.supporterName && <Row label="Supporter name" value={`💛 ${order.supporterName}`} />}
             <Row
