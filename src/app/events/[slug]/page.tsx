@@ -87,7 +87,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
           )}
 
           {event.status === "cancelled" ? (
-            <p className="mt-3">This show has been cancelled.</p>
+            <p className="mt-3">This show has been cancelled. Everyone who bought tickets has been refunded and emailed.</p>
           ) : (
             <>
               {/* Key facts, each in its own box. GA must sit near the price (spec §12). */}

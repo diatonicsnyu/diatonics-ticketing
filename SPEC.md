@@ -490,6 +490,15 @@ Split-day reminders with the email budget; 3-step cancel/reschedule.
 - [ ] Reschedule: the new date shows everywhere, old tickets still scan 🟩, and buyers are emailed
 - [ ] Backing out at any of the 3 steps changes nothing
 
+**As built (2026-11-21):** `supabase/migrations/0011_reminders_cancel.sql` (event cancel/reschedule dates, order refund fields, email-log fields + once-only indexes).
+- **Reminders** go out by themselves from the daily job (14:00 UTC = 9 or 10am New York). **One email per buyer per show** (all their orders together, with the QR codes) **[assumed]**. Schedule logic is `src/lib/reminder-plan.ts` (tested with made-up numbers: 1–80 buyers all go 1 day before; 81–160 split earliest half 2 days before / rest 1 day before; above that the 80-a-day cap spills the rest to the show-day morning; late buyers still get one). **[assumed] The split starts above 80, not 100**, because reminders may only use 80 of the 100 daily emails (so ~20 stay free for new orders and re-sends). Sending uses Resend's batch API (one request per 25 emails).
+- Event admin page: **Reminder emails** box (who's been reminded, the plan in plain words, "Preview the email", "Send now to everyone not reminded yet").
+- **Cancel / move** at `/admin/events/<id>/change` (button on the event page): step 1 choose (refund, or pick the new date/doors) → step 2 review (orders, amount refunded, Stripe fees lost, tickets) → step 3 type the show's name. Steps 1–2 only look. Name check ignores case and extra spaces.
+  - **Refund:** stops sales first (status cancelled), closes open checkouts, refunds each paid order **in full, including any donation added at checkout [assumed]** (Stripe idempotency key per order, so retrying never double-refunds), voids every ticket (gift tickets too), emails everyone "cancelled". Anything left (Stripe error, 100/day email limit) is finished by the daily job for 30 days, or the **Keep going** button. Cancelled shows can't be edited anymore.
+  - **Reschedule:** moves start, doors and the sales cutoff by the same amount; tickets stay valid (they're tied to the show, not the date); emails every buyer the new date with their tickets; reminders run again for the new date. Changing the date in the normal edit form does NOT email anyone (the edit page says so).
+  - Show-change emails may use 90 of the 100 daily emails (they're urgent) **[assumed]**.
+- Dashboard: Stripe fees on refunded orders count as a loss ("Fees lost to refunds"). A refunded buyer's ticket link says the show was cancelled and refunded. The public show page says everyone was refunded.
+
 ### Step 9: Go live ⏳ (waits on the group)
 - [ ] Ticket types finalized (vote) and set in admin
 - [ ] You activate Stripe under your own name → switch to live keys

@@ -83,29 +83,50 @@ ${order.tickets.map((t, i) => ticketCard(siteUrl, order, t, i)).join("")}
 
 /**
  * Builds the email. kind "ticket" = right after buying (one order);
- * "resend" = "Lost your ticket?" (every upcoming order for that email).
+ * "resend" = "Lost your ticket?" (every upcoming order for that email);
+ * "reminder" = before the show (§3.6; `when` = "tomorrow", "in 2 days", "today");
+ * "reschedule" = the show moved (D20; `previousStartsAt` = the old time).
  * testFor = the buyer's address when test mode redirected the email.
  */
 export function buildTicketEmail(opts: {
-  kind: "ticket" | "resend";
+  kind: "ticket" | "resend" | "reminder" | "reschedule";
   siteUrl: string;
   firstName: string;
   orders: EmailOrder[];
   testFor?: string | null;
+  when?: string;
+  previousStartsAt?: string | null;
 }): { subject: string; html: string; text: string } {
   const { kind, siteUrl, firstName, orders, testFor } = opts;
   const first = orders[0];
-  const subject =
-    (testFor ? "[Test] " : "") +
-    (kind === "ticket" ? `Your tickets for ${first.event.name} 🎶` : "Your Diatonics tickets, re-sent 🎶");
-  const hello =
-    kind === "ticket"
-      ? `Hi ${esc(firstName)}, you're going! 🎉`
-      : `Hi ${esc(firstName)}, here are your tickets again 🎶`;
-  const intro =
-    kind === "ticket"
-      ? "Thanks for getting tickets! Show the QR code at the door. Each ticket gets one person in."
-      : `Someone (hopefully you) asked us to re-send your tickets. Show the QR code at the door. Each ticket gets one person in.`;
+  const name = first.event.name;
+  const when = opts.when ?? "soon";
+  const moved = `${formatDate(first.event.starts_at)} at ${formatTime(first.event.starts_at)}`;
+  const words = {
+    ticket: {
+      subject: `Your tickets for ${name} 🎶`,
+      hello: `Hi ${firstName}, you're going! 🎉`,
+      intro: "Thanks for getting tickets! Show the QR code at the door. Each ticket gets one person in.",
+    },
+    resend: {
+      subject: "Your Diatonics tickets, re-sent 🎶",
+      hello: `Hi ${firstName}, here are your tickets again 🎶`,
+      intro: "Someone (hopefully you) asked us to re-send your tickets. Show the QR code at the door. Each ticket gets one person in.",
+    },
+    reminder: {
+      subject: `Reminder: ${name} is ${when}! 🎶`,
+      hello: `Hi ${firstName}, see you ${when}! 🎶`,
+      intro: "Your tickets are below. Show the QR code at the door. Each ticket gets one person in.",
+    },
+    reschedule: {
+      subject: `New date: ${name} is now ${moved}`,
+      hello: `Hi ${firstName}, ${name} has a new date 📅`,
+      intro: `${name}${opts.previousStartsAt ? `, which was on ${formatDate(opts.previousStartsAt)},` : ""} is now on ${moved}. Your tickets still work: same QR codes, nothing to do. They're below.`,
+    },
+  }[kind];
+  const subject = (testFor ? "[Test] " : "") + words.subject;
+  const hello = esc(words.hello);
+  const intro = esc(words.intro);
 
   // Never say "tax-deductible": the group isn't a 501(c)(3).
   const donation = kind === "ticket" ? (first.donationCents ?? 0) : 0;
@@ -134,7 +155,8 @@ export function buildTicketEmail(opts: {
 
   const text = [
     testFor ? `[TEST MODE: this email was for ${testFor}]\n` : "",
-    kind === "ticket" ? `Hi ${firstName}, you're going!` : `Hi ${firstName}, here are your tickets again.`,
+    words.hello,
+    words.intro,
     "",
     donation ? `Thank you for your ${formatCents(donation)} donation!
 ` : "",

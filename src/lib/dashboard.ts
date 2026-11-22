@@ -26,6 +26,8 @@ export type Dashboard = {
   stripeFeesCents: number;
   /** Paid orders whose Stripe fee isn't known yet (net is slightly high until it is). */
   ordersMissingFee: number;
+  /** Stripe fees on orders refunded because a show was cancelled (Stripe keeps them). */
+  refundFeesLostCents: number;
   netCents: number;
   /** null = the expense log isn't set up yet (0005_ledger.sql). */
   spentCents: number | null;
@@ -56,8 +58,8 @@ export async function loadDashboard(): Promise<DashboardResult> {
   const [orders, tickets, ledger, door, dupes] = await Promise.all([
     db
       .from("orders")
-      .select("tickets_subtotal_cents, service_fee_cents, donation_cents, total_cents, stripe_fee_cents, payment_method")
-      .eq("status", "paid"),
+      .select("status, tickets_subtotal_cents, service_fee_cents, donation_cents, total_cents, stripe_fee_cents, payment_method")
+      .in("status", ["paid", "refunded"]),
     db.from("tickets").select("event_id, ticket_type_id, status, orders(status)").neq("status", "void"),
     ledgerTotals(),
     db.from("door_sale_counts").select("event_id, delta"),
@@ -67,7 +69,9 @@ export async function loadDashboard(): Promise<DashboardResult> {
   if (orders.error) throw orders.error;
   if (tickets.error) throw tickets.error;
 
-  const paid = orders.data ?? [];
+  const paid = (orders.data ?? []).filter((o) => o.status === "paid");
+  // A cancelled show's refunds give the money back, but Stripe keeps its fee (D20).
+  const refundFeesLost = (orders.data ?? []).filter((o) => o.status === "refunded").reduce((s, o) => s + ((o.stripe_fee_cents as number | null) ?? 0), 0);
   const sum = (k: "tickets_subtotal_cents" | "service_fee_cents" | "donation_cents" | "total_cents") =>
     paid.reduce((s, o) => s + (o[k] as number), 0);
   const stripeFees = paid.reduce((s, o) => s + ((o.stripe_fee_cents as number | null) ?? 0), 0);
@@ -88,7 +92,7 @@ export async function loadDashboard(): Promise<DashboardResult> {
   }
 
   const revenue = sum("total_cents");
-  const net = revenue - stripeFees;
+  const net = revenue - stripeFees - refundFeesLost;
   const spent = ledger?.spentCents ?? null;
   const checkedIn = (tickets.data ?? []).filter((t) => t.status === "checked_in").length;
   const doorSales = Object.values(doorSalesByEvent).reduce((a, b) => a + b, 0);
@@ -105,6 +109,7 @@ export async function loadDashboard(): Promise<DashboardResult> {
       revenueCents: revenue,
       stripeFeesCents: stripeFees,
       ordersMissingFee: missingFee,
+      refundFeesLostCents: refundFeesLost,
       netCents: net,
       spentCents: spent,
       owedCents: ledger?.owedCents ?? null,

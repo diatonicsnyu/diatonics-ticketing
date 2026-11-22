@@ -19,7 +19,35 @@ const RESEND_DAILY_CAP = 90;
 const PER_EMAIL_PER_HOUR = 3;
 const PER_IP_PER_HOUR = 10;
 
-type SendResult = { ok: true; id: string } | { ok: false; error: string };
+export type OutgoingEmail = { to: string; subject: string; html: string; text: string };
+
+/**
+ * Sends up to 100 emails in ONE request (Resend's batch API), so a round of
+ * reminders isn't slowed by the 2-requests-a-second limit. Each email still
+ * counts toward the 100/day. Returns one result per email, in order.
+ */
+export async function resendBatch(msgs: OutgoingEmail[]): Promise<SendResult[]> {
+  if (msgs.length === 0) return [];
+  try {
+    const r = await fetch("https://api.resend.com/emails/batch", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${env.resendApiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify(msgs.map((m) => ({ from: env.emailFrom, to: [m.to], subject: m.subject, html: m.html, text: m.text }))),
+      signal: AbortSignal.timeout(30_000),
+    });
+    const body = (await r.json().catch(() => ({}))) as { data?: { id: string }[]; message?: string };
+    if (!r.ok || !Array.isArray(body.data) || body.data.length !== msgs.length) {
+      const error = `Resend batch ${r.status}: ${body.message ?? "unexpected reply"}`.slice(0, 500);
+      return msgs.map(() => ({ ok: false as const, error }));
+    }
+    return body.data.map((d) => ({ ok: true as const, id: d.id }));
+  } catch (err) {
+    const error = `Resend batch failed: ${err instanceof Error ? err.message : String(err)}`.slice(0, 500);
+    return msgs.map(() => ({ ok: false as const, error }));
+  }
+}
+
+export type SendResult = { ok: true; id: string } | { ok: false; error: string };
 
 async function resendSend(msg: { to: string; subject: string; html: string; text: string }): Promise<SendResult> {
   try {
@@ -38,12 +66,12 @@ async function resendSend(msg: { to: string; subject: string; html: string; text
 }
 
 /** Where an email for this buyer actually goes (test mode sends everything to the group inbox). */
-function recipient(buyerEmail: string): { to: string; testFor: string | null } {
+export function recipient(buyerEmail: string): { to: string; testFor: string | null } {
   const test = env.emailTestTo;
   return test ? { to: test, testFor: buyerEmail } : { to: buyerEmail, testFor: null };
 }
 
-function toEmailOrder(o: ConfirmedOrder): EmailOrder {
+export function toEmailOrder(o: ConfirmedOrder): EmailOrder {
   return {
     orderNo: o.orderNo,
     buyerName: o.buyerName,
@@ -56,7 +84,22 @@ function toEmailOrder(o: ConfirmedOrder): EmailOrder {
 
 /** Emails sent (or being sent) in the last 24 hours. */
 async function emailsLastDay(): Promise<number> {
-  const since = new Date(Date.now() - 24 * 60 * 60_000).toISOString();
+  return emailsSince(24);
+}
+
+/** Emails sent (or being sent) in the last `hours` hours, optionally of one type. */
+export async function emailsSince(hours: number, type?: string): Promise<number> {
+  const since = new Date(Date.now() - hours * 60 * 60_000).toISOString();
+  if (type) {
+    const { count, error } = await adminDb()
+      .from("email_log")
+      .select("id", { count: "exact", head: true })
+      .eq("type", type)
+      .neq("status", "failed")
+      .gte("created_at", since);
+    if (error) throw error;
+    return count ?? 0;
+  }
   const { count, error } = await adminDb()
     .from("email_log")
     .select("id", { count: "exact", head: true })

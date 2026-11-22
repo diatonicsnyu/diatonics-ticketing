@@ -143,8 +143,11 @@ export async function saveEvent(
     }
     if (!id) return { error: "Couldn't create a unique link for this event. Try a slightly different name." };
   } else {
-    const { error } = await db.from("events").update(fields).eq("id", id);
+    // A cancelled show stays cancelled: this form must never reopen it
+    // (its buyers were refunded). ".neq" makes that hold even mid-cancel.
+    const { data, error } = await db.from("events").update(fields).eq("id", id).neq("status", "cancelled").select("id");
     if (error) return { error: `Couldn't save: ${error.message}` };
+    if (!data || data.length === 0) return { error: "This show is cancelled, so it can't be edited." };
   }
 
   // Ticket types: update kept rows, add new rows, delete removed rows.

@@ -21,7 +21,21 @@ export default async function MyTicketsPage(props: PageProps<"/tickets/[key]">) 
   const orderId = orderIdFromLinkKey(key);
   if (!orderId) notFound();
   const order = await getOrderById(orderId);
-  if (!order || (order.status !== "paid" && order.status !== "comp")) notFound();
+  if (!order) notFound();
+  // Cancelled show (D20): say what happened instead of "not found".
+  if (order.status === "refunded") {
+    return (
+      <SiteChrome>
+        <div className="text-center">
+          <h1 className="font-display text-4xl font-black">This show was cancelled</h1>
+          <p className="mt-3 text-lg">{order.event.name} · {formatDate(order.event.starts_at)}</p>
+          <p className="mt-3 text-muted">Order {order.orderNo} was refunded in full to the card or account you paid with. Refunds take 5–10 business days to show up.</p>
+          <Link href="/" className="mt-6 inline-block text-link underline underline-offset-4">See upcoming shows</Link>
+        </div>
+      </SiteChrome>
+    );
+  }
+  if (order.status !== "paid" && order.status !== "comp") notFound();
 
   return (
     <SiteChrome>
