@@ -16,6 +16,8 @@ export type EboardMember = {
   name: string;
   active: boolean;
   sort_order: number;
+  /** eboard = can log in to admin; spender = in the expense log only (0012_spenders.sql). */
+  role: "eboard" | "spender";
 };
 
 export type LedgerKind = "expense" | "reimbursement";
@@ -60,14 +62,20 @@ const ENTRY_COLUMNS =
 export async function loadLedger(): Promise<LedgerData> {
   if (isDemo()) return { status: "demo" };
   const db = adminDb();
-  const [m, e] = await Promise.all([
-    db.from("eboard_members").select("id, name, active, sort_order").order("sort_order").order("name"),
+  const [m0, e] = await Promise.all([
+    db.from("eboard_members").select("id, name, active, sort_order, role").order("sort_order").order("name"),
     db.from("ledger_entries").select(ENTRY_COLUMNS).order("created_at", { ascending: false }),
   ]);
+  // Before 0012_spenders.sql there's no role column: everyone is e-board.
+  const m =
+    m0.error?.code === "42703"
+      ? await db.from("eboard_members").select("id, name, active, sort_order").order("sort_order").order("name")
+      : m0;
   if (isMissingTable(m.error) || isMissingTable(e.error)) return { status: "setup_needed" };
   if (m.error) throw m.error;
   if (e.error) throw e.error;
-  return { status: "ok", members: m.data as EboardMember[], entries: e.data as LedgerEntry[] };
+  const members = (m.data as (Omit<EboardMember, "role"> & { role?: EboardMember["role"] })[]).map((x) => ({ ...x, role: x.role ?? "eboard" }));
+  return { status: "ok", members, entries: e.data as LedgerEntry[] };
 }
 
 /**

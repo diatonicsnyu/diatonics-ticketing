@@ -63,7 +63,7 @@ export function DonationPicker({
             onChange={(e) => onChange("custom", e.target.value)}
             placeholder="20"
             aria-label="Custom donation amount in dollars"
-            className="w-full rounded-sm border border-line bg-white px-3 py-2.5"
+            className="w-full rounded-sm border border-edge bg-white px-3 py-2.5"
           />
         </label>
       )}

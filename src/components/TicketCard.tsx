@@ -41,7 +41,7 @@ export async function TicketCard({
   const png = actions ? await QRCode.toDataURL(qrText, { width: 600, margin: 2, errorCorrectionLevel: "M", color: colors }) : null;
 
   return (
-    <div className="overflow-hidden rounded-sm border border-line bg-white shadow-sm">
+    <div className="overflow-hidden rounded-sm border border-edge bg-white shadow-sm">
       <div className="bg-burgundy px-5 py-3 text-white">
         <p className="font-display font-bold">{eventName}</p>
         <p className="text-sm opacity-90">

@@ -15,7 +15,7 @@ export default function LostTicketPage() {
         <p className="mt-4 text-lg">
           No problem. Type the email you bought them with and we&apos;ll send your tickets there again.
         </p>
-        <div className="mt-6 rounded-sm border border-line bg-white p-5">
+        <div className="mt-6 rounded-sm border border-edge bg-white p-5">
           <LostTicketForm />
         </div>
         <p className="mt-4 text-sm text-muted">

@@ -6,6 +6,7 @@ import { cancelProgress, showSummary } from "@/lib/show-changes";
 import { formatCents } from "@/lib/money";
 import { formatShort, isoToNyInput, nyInputToIso } from "@/lib/time";
 import { confirmShowChange, finishCancellationAction } from "./actions";
+import { btn, btnPrimary, btnSm } from "@/lib/ui";
 
 export const metadata = { title: "Admin · Cancel or move a show" };
 export const dynamic = "force-dynamic";
@@ -22,8 +23,8 @@ const ERRORS: Record<string, string> = {
 
 const box = "rounded-sm border border-line bg-panel p-5";
 const input = "w-full rounded-sm border border-line bg-white px-3 py-2.5 text-ink";
-const primary = "font-display rounded-sm bg-burgundy px-5 py-2.5 font-bold text-white hover:bg-burgundy-bright";
-const secondary = "rounded-sm border border-line bg-white px-4 py-2.5 hover:border-link";
+const primary = btnPrimary;
+const secondary = btn;
 
 /**
  * Cancel (refund everyone) or reschedule a show, D20 / §3.8. Three steps:
@@ -39,14 +40,14 @@ export default async function ChangeShowPage(props: PageProps<"/admin/events/[id
   const str = (k: string) => (typeof sp[k] === "string" ? (sp[k] as string) : "");
   const error = ERRORS[str("error")];
   const neverMind = (
-    <Link href={`/admin/events/${id}`} className="py-2.5 text-link hover:underline">
+    <Link href={`/admin/events/${id}`} className={btn}>
       Never mind, change nothing
     </Link>
   );
   const header = (
     <>
-      <Link href={`/admin/events/${id}`} className="text-sm text-link hover:underline">← {event.name}</Link>
-      <h1 className="font-display mt-2 text-3xl font-black">Cancel or move this show</h1>
+      <Link href={`/admin/events/${id}`} className={btnSm}>← {event.name}</Link>
+      <h1 className="font-display mt-3 text-3xl font-black">Cancel or move this show</h1>
       <p className="mt-1 text-muted">{event.name} · {formatShort(event.starts_at)}</p>
       {error && <p className="mt-4 rounded-sm border border-burgundy bg-white p-3 text-burgundy" role="alert">{error}</p>}
     </>
@@ -105,7 +106,7 @@ export default async function ChangeShowPage(props: PageProps<"/admin/events/[id
             </li>
             <li>🔔 Reminders will go out again before the new date.</li>
           </ul>
-          <Link href={`/admin/events/${id}`} className="mt-4 inline-block text-link hover:underline">Back to the show</Link>
+          <Link href={`/admin/events/${id}`} className={`${btn} mt-4`}>Back to the show</Link>
         </section>
       </>
     );

@@ -18,7 +18,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
           </span>
         </p>
       )}
-      <header className="border-b border-line">
+      <header className="border-b border-edge bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
           <Link href="/" className="flex items-center gap-3" aria-label="Diatonics home">
             <Image src={logo} alt="" width={48} height={48} priority />
@@ -30,11 +30,16 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
 
-      <footer className="border-t border-line">
+      <footer className="border-t border-edge bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-3 px-4 py-6 text-sm text-muted">
-          <Link href="/lost-ticket" className="underline-offset-4 hover:underline">
-            Lost your ticket?
-          </Link>
+          <span className="flex flex-wrap gap-2">
+            <Link href="/lost-ticket" className="rounded-sm border border-edge bg-white px-3 py-1.5 font-semibold text-ink shadow-sm transition hover:border-burgundy">
+              Lost your ticket?
+            </Link>
+            <Link href="/donate" className="rounded-sm border border-edge bg-white px-3 py-1.5 font-semibold text-ink shadow-sm transition hover:border-burgundy">
+              Donate
+            </Link>
+          </span>
           <span>Diatonics A Cappella · New York City</span>
         </div>
       </footer>
@@ -47,7 +52,7 @@ export function DonateButton({ small = false }: { small?: boolean }) {
   return (
     <Link
       href="/donate"
-      className={`font-display inline-block rounded-sm bg-burgundy font-bold text-white hover:bg-burgundy-bright ${
+      className={`font-display inline-block rounded-sm bg-burgundy font-bold text-white shadow-sm transition hover:-translate-y-px hover:bg-burgundy-bright hover:shadow-md ${
         small ? "px-4 py-2 text-sm" : "px-6 py-3 text-base"
       }`}
     >

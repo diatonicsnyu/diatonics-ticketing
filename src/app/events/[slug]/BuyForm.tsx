@@ -73,7 +73,7 @@ export function BuyForm({
       <Step n={1} title="Tickets" open={open} reached={reached} summary={count > 0 ? ticketSummary : undefined} onOpen={setOpen}>
         <ul className="space-y-3">
           {types.map((t) => (
-            <li key={t.id} className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-line bg-page p-4">
+            <li key={t.id} className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-edge bg-page p-4">
               <div>
                 <p className="text-lg font-semibold">{t.name}</p>
                 {/* All-in price, required by NY law + FTC rule (spec D4). */}
@@ -81,11 +81,11 @@ export function BuyForm({
               </div>
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => change(t, -1)} aria-label={`One fewer ${t.name}`}
-                  className="h-12 w-12 rounded-sm border border-line bg-white text-2xl font-bold hover:border-burgundy disabled:opacity-40"
+                  className="h-12 w-12 rounded-sm border border-edge bg-white text-2xl font-bold hover:border-burgundy disabled:opacity-40"
                   disabled={(qty[t.id] ?? 0) === 0}>−</button>
                 <span className="w-8 text-center text-2xl font-bold tabular-nums" aria-live="polite">{qty[t.id] ?? 0}</span>
                 <button type="button" onClick={() => change(t, 1)} aria-label={`One more ${t.name}`}
-                  className="h-12 w-12 rounded-sm border border-line bg-white text-2xl font-bold hover:border-burgundy disabled:opacity-40"
+                  className="h-12 w-12 rounded-sm border border-edge bg-white text-2xl font-bold hover:border-burgundy disabled:opacity-40"
                   disabled={count >= maxTotal}>+</button>
                 <input type="hidden" name={`qty_${t.id}`} value={qty[t.id] ?? 0} />
               </div>

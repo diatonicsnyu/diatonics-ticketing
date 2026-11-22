@@ -1,63 +1,47 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
-import { loadLedger, balancesByMember, totalOwed, formatDay, firstName, type EboardMember, type LedgerEntry } from "@/lib/expenses";
+import { loadLedger, balancesByMember, totalOwed, nameLookup, type EboardMember, type LedgerEntry } from "@/lib/expenses";
 import { EXPENSE_CATEGORIES } from "@/lib/expense-categories";
-import { EXPENSE_TONE, REIMBURSE_TONE } from "@/lib/ledger-style";
 import { formatCents } from "@/lib/money";
-import { addEntry, updateEntry, deleteEntry, setReceived, addMember, setMemberActive } from "./actions";
+import { btn, btnSm, eyebrow, panel } from "@/lib/ui";
+import { FeedLine } from "@/components/admin/FeedLine";
+import { addEntry, updateEntry, deleteEntry, setReceived } from "./actions";
 import { AddEntry, EditEntry } from "./ExpenseForm";
 import { ConfirmSubmit } from "./ConfirmSubmit";
 
 export const metadata = { title: "Admin · Expense log" };
 export const dynamic = "force-dynamic";
 
-const smallButton = "rounded-sm border border-line bg-white px-3 py-1 text-sm text-ink hover:border-link";
+type Person = { id: string; name: string; role: EboardMember["role"] };
 
-function Intro() {
-  return (
-    <>
-      <h1 className="font-display text-3xl font-black">Expense log</h1>
-      <p className="mt-2 text-muted">
-        Spent your own money on the group? Log an <strong className="text-ink">Expense</strong>. Sent someone money back? Log a{" "}
-        <strong className="text-ink">Reimbursement</strong>. Everyone on e-board sees the same log.
-      </p>
-    </>
-  );
-}
-
-/** First names, unless two people share one (then full names). */
-function nameLookup(members: EboardMember[]) {
-  const firstCounts = new Map<string, number>();
-  for (const m of members) firstCounts.set(firstName(m.name), (firstCounts.get(firstName(m.name)) ?? 0) + 1);
-  const byId = new Map(members.map((m) => [m.id, (firstCounts.get(firstName(m.name)) ?? 0) > 1 ? m.name : firstName(m.name)]));
-  return (id: string | null) => (id ? byId.get(id) ?? "Someone" : "Someone");
-}
-
+/**
+ * Expense log (SPEC D33, §13), three panels:
+ *  left   = a button per person (click to see only theirs)
+ *  middle = the full log, newest on top, like a notification feed
+ *  right  = add an expense / reimbursement, and Settings
+ */
 export default async function ExpenseLogPage(props: PageProps<"/admin/expenses">) {
   const me = await requireAdmin();
-  const { member } = await props.searchParams;
-  const filterId = typeof member === "string" ? member : undefined;
+  const sp = await props.searchParams;
+  const filterId = typeof sp.member === "string" ? sp.member : undefined;
+  const start = sp.add === "expense" || sp.add === "reimbursement" ? sp.add : undefined;
   const data = await loadLedger();
 
-  if (data.status === "demo") {
+  if (data.status !== "ok") {
     return (
       <>
-        <Intro />
-        <p className="mt-6 rounded-sm border border-line bg-panel p-4">The expense log works once the database is connected.</p>
-      </>
-    );
-  }
-  if (data.status === "setup_needed") {
-    return (
-      <>
-        <Intro />
-        <div className="mt-6 space-y-2 rounded-sm border border-line bg-panel p-4">
-          <p className="font-semibold">One-time setup needed</p>
-          <p>
-            In Supabase, open <strong>SQL Editor → New query</strong>, paste everything from{" "}
-            <code>supabase/migrations/0005_ledger.sql</code>, and click <strong>Run</strong>. Then refresh this page.
-          </p>
-        </div>
+        <h1 className="font-display text-3xl font-black">Expense log</h1>
+        {data.status === "demo" ? (
+          <p className={`${panel} mt-6 p-4`}>The expense log works once the database is connected.</p>
+        ) : (
+          <div className={`${panel} mt-6 space-y-2 p-4`}>
+            <p className="font-semibold">One-time setup needed</p>
+            <p>
+              In Supabase, open <strong>SQL Editor → New query</strong>, paste everything from <code>supabase/migrations/0005_ledger.sql</code>, and click{" "}
+              <strong>Run</strong>. Then refresh this page.
+            </p>
+          </div>
+        )}
       </>
     );
   }
@@ -66,163 +50,125 @@ export default async function ExpenseLogPage(props: PageProps<"/admin/expenses">
   const balances = balancesByMember(members, entries);
   const owed = totalOwed(balances);
   const nameOf = nameLookup(members);
-  const activeMembers = members.filter((m) => m.active).map((m) => ({ id: m.id, name: m.name }));
+  const people: Person[] = members.filter((m) => m.active).map((m) => ({ id: m.id, name: m.name, role: m.role }));
   const shown = filterId ? entries.filter((e) => e.member_id === filterId) : entries;
   const filterName = filterId ? members.find((m) => m.id === filterId)?.name : undefined;
+  const filterBalance = filterId ? balances.find((b) => b.member.id === filterId) : undefined;
+  // Edit lists must include the entry's own person, even if they were removed since.
+  const peopleFor = (e: LedgerEntry): Person[] => {
+    if (people.some((p) => p.id === e.member_id)) return people;
+    const m = members.find((x) => x.id === e.member_id);
+    return m ? [...people, { id: m.id, name: `${m.name} (removed)`, role: m.role }] : people;
+  };
 
   return (
     <>
-      <Intro />
-
-      {/* ---------- balances ---------- */}
-      <section className="mt-6 rounded-sm border border-line bg-panel p-5">
-        <p className="text-sm text-muted">E-board is owed</p>
-        <p className="font-display text-3xl font-black">{formatCents(owed)}</p>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="text-muted">
-              <tr className="border-b border-line">
-                <th className="py-2 pr-3 font-semibold">Person</th>
-                <th className="py-2 pr-3 text-right font-semibold">Spent</th>
-                <th className="py-2 pr-3 text-right font-semibold">Paid back</th>
-                <th className="py-2 text-right font-semibold">Still owed</th>
-              </tr>
-            </thead>
-            <tbody>
-              {balances.map((b) => (
-                <tr key={b.member.id} className="border-b border-line last:border-0">
-                  <td className="py-2 pr-3">
-                    <Link href={`/admin/expenses?member=${b.member.id}`} className="text-link hover:underline">{b.member.name}</Link>
-                    {!b.member.active && <span className="text-muted"> (former)</span>}
-                  </td>
-                  <td className="py-2 pr-3 text-right tabular-nums">{formatCents(b.spent_cents)}</td>
-                  <td className="py-2 pr-3 text-right tabular-nums">{formatCents(b.reimbursed_cents)}</td>
-                  <td className={`py-2 text-right tabular-nums ${b.owed_cents > 0 ? "font-semibold" : "text-muted"}`}>
-                    {b.owed_cents >= 0 ? formatCents(b.owed_cents) : `overpaid ${formatCents(-b.owed_cents)}`}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-3xl font-black">Expense log</h1>
+          <p className="mt-1 text-muted">Everyone on e-board sees the same log. Red = someone spent money. Green = someone was paid back.</p>
         </div>
-      </section>
-
-      {/* ---------- add ---------- */}
-      <section className="mt-8">
-        <h2 className="font-display text-xl font-bold">Add to the log</h2>
-        <div className="mt-3">
-          <AddEntry action={addEntry} myName={me.name} members={activeMembers} categories={EXPENSE_CATEGORIES} />
-        </div>
-      </section>
-
-      {/* ---------- shared log ---------- */}
-      <div className="mt-10 flex flex-wrap items-baseline justify-between gap-3">
-        <h2 className="font-display text-xl font-bold">{filterName ? `${filterName}'s entries` : "The log"}</h2>
-        {filterName && <Link href="/admin/expenses" className="text-sm text-link hover:underline">Show everyone</Link>}
+        <Link href="/admin/expenses/settings" className={btn}>
+          ⚙️ Settings
+        </Link>
       </div>
-      {shown.length === 0 ? (
-        <p className="mt-4 text-muted">Nothing in the log yet.</p>
-      ) : (
-        <ul className="mt-4 space-y-3">
-          {shown.map((e) => (
-            <LogRow key={e.id} e={e} me={me.memberId} nameOf={nameOf} members={activeMembers} />
-          ))}
-        </ul>
-      )}
 
-      {/* ---------- e-board list ---------- */}
-      <details className="mt-10 rounded-sm border border-line bg-panel p-5">
-        <summary className="cursor-pointer font-display font-bold">Edit the e-board list</summary>
-        <p className="mt-2 text-sm text-muted">
-          This is also who can log in to admin. Removing someone hides them and blocks their login; their past entries stay.
-        </p>
-        <ul className="mt-4 space-y-2">
-          {members.map((m) => (
-            <li key={m.id} className="flex items-center justify-between gap-3">
-              <span className={m.active ? "" : "text-muted line-through"}>{m.name}</span>
-              {m.id !== me.memberId && (
-                <form action={setMemberActive}>
-                  <input type="hidden" name="id" value={m.id} />
-                  <input type="hidden" name="active" value={m.active ? "no" : "yes"} />
-                  <button className={smallButton}>{m.active ? "Remove" : "Restore"}</button>
-                </form>
-              )}
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[16rem_minmax(0,1fr)] xl:grid-cols-[16rem_minmax(0,1fr)_22rem]">
+        {/* ---------- left: people ---------- */}
+        <aside className={`${panel} p-4`} aria-label="People">
+          <h2 className="font-display text-lg font-black">People</h2>
+          <ul className="mt-3 space-y-2">
+            <li>
+              <PersonButton href="/admin/expenses" on={!filterId} title="Everyone" sub={`${formatCents(owed)} owed in total`} />
             </li>
-          ))}
-        </ul>
-        <form action={addMember} className="mt-4 flex flex-wrap gap-2">
-          <input name="name" required placeholder="New member's full name" className="min-w-0 flex-1 rounded-sm border border-line bg-white px-3 py-2 text-ink" />
-          <button className="rounded-sm border border-link px-4 py-2 text-sm text-link">+ Add</button>
-        </form>
-      </details>
+            {balances.map((b) => (
+              <li key={b.member.id}>
+                <PersonButton
+                  href={`/admin/expenses?member=${b.member.id}`}
+                  on={filterId === b.member.id}
+                  title={b.member.name}
+                  tag={!b.member.active ? "removed" : b.member.role === "spender" ? "spender" : undefined}
+                  sub={b.owed_cents > 0 ? `Owed ${formatCents(b.owed_cents)}` : b.owed_cents < 0 ? `Overpaid ${formatCents(-b.owed_cents)}` : "All square"}
+                  owed={b.owed_cents > 0}
+                />
+              </li>
+            ))}
+          </ul>
+        </aside>
+
+        {/* ---------- middle: the feed ---------- */}
+        <section className="min-w-0" aria-label="Log">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-display text-xl font-black">{filterName ? `${filterName}'s activity` : "All activity"}</h2>
+            {filterBalance && (
+              <p className="text-sm">
+                Spent {formatCents(filterBalance.spent_cents)} · paid back {formatCents(filterBalance.reimbursed_cents)} ·{" "}
+                <strong>{filterBalance.owed_cents >= 0 ? `still owed ${formatCents(filterBalance.owed_cents)}` : `overpaid ${formatCents(-filterBalance.owed_cents)}`}</strong>
+              </p>
+            )}
+          </div>
+          {shown.length === 0 ? (
+            <p className={`${panel} mt-3 p-6 text-center text-muted`}>{filterName ? `Nothing for ${filterName} yet.` : "Nothing in the log yet. Add the first expense on the right."}</p>
+          ) : (
+            <ul className="mt-3 space-y-2">
+              {shown.map((e) => (
+                <FeedLine key={e.id} e={e} nameOf={nameOf}>
+                  <EntryButtons e={e} me={me.memberId} people={peopleFor(e)} />
+                </FeedLine>
+              ))}
+            </ul>
+          )}
+          {shown.length > 0 && <p className="mt-3 text-center text-xs text-muted">That&apos;s everything, oldest at the bottom.</p>}
+        </section>
+
+        {/* ---------- right: add ---------- */}
+        <aside className={`${panel} p-4 lg:col-span-2 xl:col-span-1`} aria-label="Add to the log">
+          <div className="mb-4 rounded-sm border border-line bg-page/60 p-3">
+            <p className={eyebrow}>E-board is owed</p>
+            <p className="text-3xl font-black tabular-nums">{formatCents(owed)}</p>
+          </div>
+          <AddEntry action={addEntry} myId={me.memberId} people={people} categories={EXPENSE_CATEGORIES} start={start} />
+        </aside>
+      </div>
     </>
   );
 }
 
-/** One line of the shared log, Venmo-style. */
-function LogRow({
-  e,
-  me,
-  nameOf,
-  members,
-}: {
-  e: LedgerEntry;
-  me: string;
-  nameOf: (id: string | null) => string;
-  members: { id: string; name: string }[];
-}) {
+function PersonButton({ href, on, title, sub, tag, owed }: { href: string; on: boolean; title: string; sub: string; tag?: string; owed?: boolean }) {
+  return (
+    <Link
+      href={href}
+      aria-current={on ? "true" : undefined}
+      className={`block rounded-sm border p-3 shadow-sm transition hover:-translate-y-px hover:shadow-md active:translate-y-0 active:shadow-none ${
+        on ? "border-burgundy bg-burgundy text-white" : "border-edge bg-white hover:border-burgundy"
+      }`}
+    >
+      <span className="block font-semibold">
+        {title}
+        {tag && <span className={`ml-1 text-xs font-normal ${on ? "text-white/80" : "text-muted"}`}>({tag})</span>}
+      </span>
+      <span className={`block text-sm tabular-nums ${on ? "text-white/90" : owed ? "font-semibold text-[#a3243a]" : "text-muted"}`}>{sub}</span>
+    </Link>
+  );
+}
+
+/** Edit / Delete for your own entries; "I got it" for the person paid back. */
+function EntryButtons({ e, me, people }: { e: LedgerEntry; me: string; people: Person[] }) {
   const isExpense = e.kind === "expense";
   const mine = e.entered_by_member_id === me;
-  const who = nameOf(e.member_id);
-  const amount = formatCents(e.amount_cents);
-
+  const paidMe = !isExpense && e.member_id === me;
+  if (!mine && !paidMe) return null;
   return (
-    <li className={`rounded-sm border p-4 ${isExpense ? EXPENSE_TONE : REIMBURSE_TONE}`}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-semibold">
-            <span aria-hidden>{isExpense ? "🟥" : "🟩"} </span>
-            {isExpense ? (
-              <>{who} spent {amount}{e.description && <> ({e.description})</>}</>
-            ) : (
-              <>
-                {who} received {amount}
-                {e.note && <> {e.note}</>}
-                {e.entered_by_member_id && <> (sent by {nameOf(e.entered_by_member_id)})</>}
-              </>
-            )}
-          </p>
-          <p className="text-sm text-ink/80">
-            {formatDay(e.created_at)}
-            {isExpense && e.category && <> · {e.category}</>}
-            {!isExpense && e.description && <> · for {e.description}</>}
-          </p>
-          {isExpense && e.note && <p className="mt-1 break-words text-sm text-ink/80">{e.note}</p>}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {/* The optional "I got it" (SPEC D33). Only the person paid back can tap it. */}
-          {!isExpense && e.received_confirmed_at && (
-            <span className="rounded-sm bg-white px-2 py-1 text-xs font-semibold">✓ {who} got it</span>
-          )}
-          {!isExpense && e.member_id === me && (
-            <form action={setReceived}>
-              <input type="hidden" name="id" value={e.id} />
-              <input type="hidden" name="got" value={e.received_confirmed_at ? "no" : "yes"} />
-              <button className={smallButton}>{e.received_confirmed_at ? "Undo “I got it”" : "I got it"}</button>
-            </form>
-          )}
-          {mine && (
-            <form action={deleteEntry}>
-              <input type="hidden" name="id" value={e.id} />
-              <ConfirmSubmit message="Delete this entry? This can't be undone." className={smallButton}>Delete</ConfirmSubmit>
-            </form>
-          )}
-        </div>
-      </div>
-
+    <div className="mt-2 flex flex-wrap items-start gap-2">
+      {paidMe && (
+        <form action={setReceived}>
+          <input type="hidden" name="id" value={e.id} />
+          <input type="hidden" name="got" value={e.received_confirmed_at ? "no" : "yes"} />
+          <button className={btnSm}>{e.received_confirmed_at ? "Undo “I got it”" : "✓ I got it"}</button>
+        </form>
+      )}
       {mine && (
-        <div className="mt-2">
+        <>
           <EditEntry
             action={updateEntry.bind(null, e.id)}
             kind={e.kind}
@@ -233,11 +179,17 @@ function LogRow({
               category: e.category ?? "",
               note: e.note,
             }}
-            members={members}
+            people={people}
             categories={EXPENSE_CATEGORIES}
           />
-        </div>
+          <form action={deleteEntry}>
+            <input type="hidden" name="id" value={e.id} />
+            <ConfirmSubmit message="Delete this entry? This can't be undone." className={btnSm}>
+              Delete
+            </ConfirmSubmit>
+          </form>
+        </>
       )}
-    </li>
+    </div>
   );
 }

@@ -4,6 +4,7 @@ import { BUYER_SORTS, loadBuyers, parseBuyerSort } from "@/lib/buyers";
 import { listAllEventsForAdmin } from "@/lib/events";
 import { formatCents } from "@/lib/money";
 import { formatShort } from "@/lib/time";
+import { btn, btnPrimary, btnSm } from "@/lib/ui";
 
 export const metadata = { title: "Admin · Buyers" };
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ export default async function BuyersPage(props: PageProps<"/admin/buyers">) {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="font-display text-3xl font-black">Buyers</h1>
         {result.status === "ok" && (
-          <a href={csvHref} className="font-display rounded-sm bg-burgundy px-5 py-2.5 font-bold text-white hover:bg-burgundy-bright">
+          <a href={csvHref} className={btnPrimary}>
             Download CSV
           </a>
         )}
@@ -36,7 +37,7 @@ export default async function BuyersPage(props: PageProps<"/admin/buyers">) {
         Everyone who bought tickets online, plus gift tickets. Tap an order to see each ticket&apos;s check-in. The CSV opens in Google Sheets or Excel
         {result.status === "ok" && (
           <>
-            {" "}(or <a href={ticketsCsvHref} className="text-link hover:underline">download one row per ticket</a>)
+            {" "}(or <a href={ticketsCsvHref} className={btnSm}>Download one row per ticket</a>)
           </>
         )}
         .
@@ -65,8 +66,8 @@ export default async function BuyersPage(props: PageProps<"/admin/buyers">) {
             ))}
           </select>
         </label>
-        <button className="rounded-sm border border-link px-4 py-2 text-link">Apply</button>
-        {(eventId || q || sort !== "newest") && <Link href="/admin/buyers" className="py-2 text-sm text-link hover:underline">Clear</Link>}
+        <button className={btn}>Apply</button>
+        {(eventId || q || sort !== "newest") && <Link href="/admin/buyers" className={btn}>Clear</Link>}
       </form>
 
       {result.status === "demo" && <p className="mt-6 rounded-sm border border-line bg-panel p-4">The buyer list works once the database is connected.</p>}
@@ -113,7 +114,7 @@ export default async function BuyersPage(props: PageProps<"/admin/buyers">) {
                         {r.donationCents > 0 && <span className="block text-xs text-muted">incl. {formatCents(r.donationCents)} donation</span>}
                       </td>
                       <td className="px-3 py-2 font-mono">
-                        <Link href={`/admin/orders/${r.orderNo}`} className="text-link hover:underline">{r.orderNo}</Link>
+                        <Link href={`/admin/orders/${r.orderNo}`} className={btnSm}>{r.orderNo}</Link>
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap">{formatShort(r.purchasedAt)}</td>
                       <td className="px-3 py-2 tabular-nums">{r.checkedIn}/{r.ticketCount}</td>
@@ -128,7 +129,7 @@ export default async function BuyersPage(props: PageProps<"/admin/buyers">) {
                 <li key={r.orderNo} className="rounded-sm border border-line bg-panel p-4 text-sm">
                   <p className="font-semibold">
                     {r.firstName} {r.lastName}{" "}
-                    <Link href={`/admin/orders/${r.orderNo}`} className="font-mono font-normal text-link hover:underline">· {r.orderNo}</Link>
+                    <Link href={`/admin/orders/${r.orderNo}`} className={`${btnSm} ml-1 font-mono`}>{r.orderNo}</Link>
                     {r.status === "comp" && <span className="font-normal text-muted"> · 🎁 gift tickets</span>}
                   </p>
                   <p className="break-all">{r.email}{r.phone && ` · ${r.phone}`}</p>

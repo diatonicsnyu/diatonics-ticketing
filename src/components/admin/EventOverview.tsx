@@ -17,12 +17,15 @@ export function EventOverview({
   m,
   reminders,
   onDashboard = false,
+  reminderActions,
 }: {
   event: EventRow;
   m: EventMetrics | null;
   reminders: ReminderStatus | null;
-  /** On the dashboard: a big title and an "Open this show" button. */
+  /** On the dashboard: the show's name + an "Open this show" button (the show page has its own title). */
   onDashboard?: boolean;
+  /** Buttons under the reminder status (the show page's Preview / Send now). */
+  reminderActions?: React.ReactNode;
 }) {
   const sold = m?.ticketsSold ?? 0;
   const attendance = (m?.checkedIn ?? 0) + (m?.doorSales ?? 0);
@@ -32,12 +35,16 @@ export function EventOverview({
     <div className="space-y-4">
       <div className={`${panel} p-5`}>
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0">
-            {onDashboard && <p className={eyebrow}>Current show</p>}
-            <h2 className={`font-display font-black ${onDashboard ? "text-4xl" : "text-3xl"}`}>{event.name}</h2>
-            <p className="mt-1 text-lg">{formatShort(event.starts_at)}</p>
-            <p className="text-muted">{event.venue}</p>
-          </div>
+          {onDashboard ? (
+            <div className="min-w-0">
+              <p className={eyebrow}>Current show</p>
+              <h2 className="font-display text-4xl font-black">{event.name}</h2>
+              <p className="mt-1 text-lg">{formatShort(event.starts_at)}</p>
+              <p className="text-muted">{event.venue}</p>
+            </div>
+          ) : (
+            <h2 className="font-display text-xl font-black">At a glance</h2>
+          )}
           <div className="flex flex-col items-end gap-2">
             <span className={`rounded-sm px-3 py-1 text-sm font-semibold ${event.status === "on_sale" ? "bg-sky text-ink" : "border border-edge bg-white"}`}>
               {STATUS_LABELS[event.status]}
@@ -104,6 +111,7 @@ export function EventOverview({
           ) : (
             <p className="mt-1 text-sm text-muted">Reminders appear once the show is on sale.</p>
           )}
+          {reminderActions}
           {(started || (m?.letInTwice ?? 0) > 0) && (
             <>
               <h3 className="mt-4 font-semibold">Door night</h3>

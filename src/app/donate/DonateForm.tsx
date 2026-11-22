@@ -41,7 +41,7 @@ export function DonateForm() {
         {recognize && (
           <label className="mt-3 block">
             <span className="mb-1 block text-sm font-semibold">Name to display</span>
-            <input name="display_name" maxLength={60} placeholder="e.g. The Chen Family" className="w-full rounded-sm border border-line bg-white px-3 py-2.5" />
+            <input name="display_name" maxLength={60} placeholder="e.g. The Chen Family" className="w-full rounded-sm border border-edge bg-white px-3 py-2.5" />
           </label>
         )}
       </div>

@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/auth";
 import { loadDonations, supporterNames, type DonationRow } from "@/lib/donations";
 import { formatCents } from "@/lib/money";
 import { formatShort } from "@/lib/time";
+import { btn, btnPrimary } from "@/lib/ui";
 
 export const metadata = { title: "Admin · Donations" };
 export const dynamic = "force-dynamic";
@@ -10,7 +11,6 @@ export const dynamic = "force-dynamic";
 export default async function DonationsPage() {
   await requireAdmin();
   const result = await loadDonations();
-  const btn = "font-display rounded-sm bg-burgundy px-5 py-2.5 font-bold text-white hover:bg-burgundy-bright";
 
   return (
     <>
@@ -18,8 +18,8 @@ export default async function DonationsPage() {
         <h1 className="font-display text-3xl font-black">Donations</h1>
         {result.status === "ok" && result.rows.length > 0 && (
           <div className="flex flex-wrap gap-3">
-            <a href="/admin/donations/csv" className={btn}>Download CSV</a>
-            <a href="/admin/donations/supporters-csv" className="rounded-sm border border-link px-4 py-2.5 text-link hover:bg-page">Supporters CSV</a>
+            <a href="/admin/donations/csv" className={btnPrimary}>Download CSV</a>
+            <a href="/admin/donations/supporters-csv" className={btn}>Supporters CSV</a>
           </div>
         )}
       </div>

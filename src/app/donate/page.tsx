@@ -42,13 +42,13 @@ export default async function DonatePage() {
         <p className="mt-5 text-sm font-bold uppercase tracking-wider text-muted">Your donation helps cover</p>
         <ul className="mt-2 flex flex-wrap justify-center gap-2">
           {FUNDING_NEEDS.map((item) => (
-            <li key={item} className="rounded-sm border border-line bg-white px-3 py-1.5">{item}</li>
+            <li key={item} className="rounded-sm border border-edge bg-white px-3 py-1.5">{item}</li>
           ))}
         </ul>
       </section>
 
       <div className="mt-10 grid gap-8 md:grid-cols-[1fr_16rem]">
-        <section className="rounded-sm border border-line bg-white p-5" aria-label="Donation form">
+        <section className="rounded-sm border border-edge bg-white p-5" aria-label="Donation form">
           <DonateForm />
         </section>
 

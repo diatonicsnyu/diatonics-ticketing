@@ -62,7 +62,7 @@ export default async function DonationThanksPage(props: PageProps<"/donate/thank
         )}
       </div>
 
-      <div className="mx-auto mt-8 max-w-md rounded-sm border border-line bg-white p-5 text-sm">
+      <div className="mx-auto mt-8 max-w-md rounded-sm border border-edge bg-white p-5 text-sm">
         <p className="font-semibold">Receipt (also emailed to {d.email})</p>
         <dl className="mt-3 space-y-1">
           <div className="flex justify-between"><dt>Donation to the Diatonics</dt><dd>{formatCents(d.amountCents)}</dd></div>

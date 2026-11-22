@@ -6,6 +6,7 @@ import { formatCents } from "@/lib/money";
 import { formatShort } from "@/lib/time";
 import { ConfirmSubmit } from "../../expenses/ConfirmSubmit";
 import { sendTicketEmailAction, undoCheckInAction } from "./actions";
+import { btn, btnDanger, btnSm } from "@/lib/ui";
 
 export const metadata = { title: "Admin · Order" };
 export const dynamic = "force-dynamic";
@@ -47,7 +48,7 @@ export default async function AdminOrderPage(props: PageProps<"/admin/orders/[or
   return (
     <>
       <p className="text-sm">
-        <Link href="/admin/buyers" className="text-link hover:underline">← Buyers</Link>
+        <Link href="/admin/buyers" className={btnSm}>← Buyers</Link>
       </p>
       <div className="mt-2 flex flex-wrap items-baseline justify-between gap-3">
         <h1 className="font-display text-3xl font-black">
@@ -89,7 +90,7 @@ export default async function AdminOrderPage(props: PageProps<"/admin/orders/[or
           </dl>
           {canEmail && (
             <form action={sendTicketEmailAction.bind(null, order.orderNo)} className="mt-3">
-              <button className="rounded-sm border border-link px-3 py-1.5 text-sm text-link hover:bg-page">Send the ticket email</button>
+              <button className={btn}>Send the ticket email</button>
             </form>
           )}
         </section>
@@ -146,7 +147,7 @@ function TicketItem({ t, orderNo }: { t: AdminTicket; orderNo: string }) {
             <form action={undoCheckInAction.bind(null, orderNo, t.id)}>
               <ConfirmSubmit
                 message={`Undo the check-in for ${t.shortCode}? It will scan green again at the door.`}
-                className="rounded-sm border border-burgundy px-3 py-1 text-sm text-burgundy hover:bg-page"
+                className={btnDanger}
               >
                 Undo check-in
               </ConfirmSubmit>

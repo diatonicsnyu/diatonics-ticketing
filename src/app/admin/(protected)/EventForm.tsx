@@ -2,6 +2,7 @@
 
 import { startTransition, useActionState, useState } from "react";
 import type { EventFormState } from "./actions";
+import { btn, btnPrimary, btnSm } from "@/lib/ui";
 
 /** Values used to pre-fill the form (strings, exactly as the inputs show them). */
 export type EventFormDefaults = {
@@ -125,7 +126,7 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
                 type="button"
                 onClick={() => setRows(rows.filter((_, j) => j !== i))}
                 disabled={rows.length === 1}
-                className="rounded-sm border border-line px-3 py-2.5 text-sm hover:border-link disabled:opacity-40"
+                className={btnSm}
               >
                 Remove
               </button>
@@ -135,7 +136,7 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
         <button
           type="button"
           onClick={() => setRows([...rows, { id: "", name: "", price: "", limit: "", key: `r${rowKey++}` }])}
-          className="rounded-sm border border-link px-4 py-2 text-sm text-link"
+          className={btn}
         >
           + Add ticket type
         </button>
@@ -189,7 +190,7 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
 
       <button
         disabled={pending}
-        className="font-display w-full rounded-sm bg-burgundy px-6 py-3 font-bold text-white hover:bg-burgundy-bright disabled:opacity-60 sm:w-auto"
+        className={`${btnPrimary} font-display w-full px-6 py-3 sm:w-auto`}
       >
         {pending ? "Saving…" : submitLabel}
       </button>

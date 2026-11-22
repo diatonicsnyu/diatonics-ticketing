@@ -34,14 +34,26 @@ export default async function HomePage() {
 
   return (
     <SiteChrome>
-      <section className="flex flex-col items-center gap-4 text-center">
-        <Image src={logo} alt="Diatonics logo" width={180} height={180} priority />
+      {/* Welcome band (SPEC §13: fuller, outlined boxes) */}
+      <section className="flex flex-col items-center gap-4 rounded-sm border border-edge bg-gradient-to-b from-white to-[#ddeefa] px-6 py-10 text-center">
+        <Image src={logo} alt="Diatonics logo" width={170} height={170} priority />
         <h1 className="font-display text-4xl font-black sm:text-5xl">Diatonics A Cappella</h1>
+        <p className="max-w-2xl text-lg">An independent a cappella group from New York City. Come hear us live!</p>
+        <div className="mt-2 flex flex-wrap justify-center gap-3">
+          {next && (
+            <a href="#shows" className="font-display rounded-sm bg-burgundy px-6 py-3 font-bold text-white shadow-sm transition hover:-translate-y-px hover:bg-burgundy-bright hover:shadow-md">
+              See upcoming shows
+            </a>
+          )}
+          <Link href="/donate" className="font-display rounded-sm border border-edge bg-white px-6 py-3 font-bold text-ink shadow-sm transition hover:-translate-y-px hover:border-burgundy hover:shadow-md">
+            Support us
+          </Link>
+        </div>
       </section>
 
       {/* The next show, big, with a Buy button (spec §12). */}
       {next && (
-        <section className="mt-8 flex flex-col overflow-hidden rounded-sm border border-line bg-panel sm:flex-row" aria-label="Next show">
+        <section id="shows" className="mt-8 flex scroll-mt-4 flex-col overflow-hidden rounded-sm border border-edge bg-panel shadow-sm sm:flex-row" aria-label="Next show">
           <EventThumb imagePath={next.image_path} className="h-48 w-full sm:h-auto sm:min-h-64 sm:w-64" />
           {/* Text on the left, button on the right, so the tile is balanced edge to edge.
               Stacks (text, then button) on narrower screens. */}
@@ -67,7 +79,7 @@ export default async function HomePage() {
       {later.length > 0 && <h2 className="font-display mt-10 text-2xl font-bold">More shows</h2>}
       <section className="mt-4 space-y-4" aria-label="Events">
         {events.length === 0 ? (
-          <p className="rounded-sm border border-line bg-panel p-6 text-center text-muted">
+          <p className="rounded-sm border border-edge bg-panel p-6 text-center text-muted">
             No shows on sale right now. Check back soon!
           </p>
         ) : (
@@ -78,7 +90,7 @@ export default async function HomePage() {
               <Link
                 key={e.id}
                 href={`/events/${e.slug}`}
-                className="flex overflow-hidden rounded-sm border border-line bg-panel transition hover:border-link"
+                className="flex overflow-hidden rounded-sm border border-edge bg-panel transition hover:border-link"
               >
                 <EventThumb imagePath={e.image_path} className="w-24 self-stretch sm:w-36" />
                 <div className="flex-1 p-5">
@@ -98,11 +110,40 @@ export default async function HomePage() {
         )}
       </section>
 
-      <section className="mt-12 rounded-sm border border-line bg-panel p-6 text-center">
-        <h2 className="font-display text-2xl font-bold">Support the Diatonics</h2>
-        <p className="mt-2 text-muted">Every bit helps us keep singing.</p>
-        <div className="mt-4">
+      {/* How tickets work: facts the buyer needs, so nobody's surprised at the door */}
+      <section className="mt-12" aria-labelledby="how">
+        <h2 id="how" className="font-display text-2xl font-bold">How tickets work</h2>
+        <ol className="mt-4 grid gap-4 md:grid-cols-3">
+          {[
+            ["1", "Buy online", "Pay by card, Apple Pay, Google Pay or Cash App. The price you see includes the fee."],
+            ["2", "Check your email", "Your tickets arrive right away, each with its own QR code. Lost them? Get them re-sent anytime."],
+            ["3", "Show the QR at the door", "General admission: first come, first served. Each ticket gets one person in."],
+          ].map(([n, title, text]) => (
+            <li key={n} className="flex gap-4 rounded-sm border border-edge bg-panel p-5">
+              <span className="font-display flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-sky text-xl font-black" aria-hidden>
+                {n}
+              </span>
+              <span>
+                <span className="block font-semibold">{title}</span>
+                <span className="mt-1 block text-sm text-muted">{text}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="mt-12 grid overflow-hidden rounded-sm border border-edge bg-panel md:grid-cols-[1fr_auto]">
+        <div className="p-6 sm:p-8">
+          <h2 className="font-display text-2xl font-bold">Support the Diatonics</h2>
+          <p className="mt-2 max-w-2xl">
+            We&apos;re independent, so we get no university funding. Everything it takes to put on a show is paid for by the group and its members. Every bit helps us keep singing.
+          </p>
+        </div>
+        <div className="flex items-center justify-center gap-3 border-t border-line bg-[#fdf3f5] p-6 md:border-l md:border-t-0 md:px-10">
           <DonateButton />
+          <Link href="/lost-ticket" className="rounded-sm border border-edge bg-white px-4 py-3 text-sm font-semibold shadow-sm transition hover:-translate-y-px hover:border-burgundy hover:shadow-md">
+            Lost your ticket?
+          </Link>
         </div>
       </section>
     </SiteChrome>

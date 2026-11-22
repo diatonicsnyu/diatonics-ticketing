@@ -15,7 +15,7 @@ export function LostTicketForm() {
           type="email"
           required
           autoComplete="email"
-          className="w-full rounded-sm border border-line bg-white px-3 py-3 text-ink"
+          className="w-full rounded-sm border border-edge bg-white px-3 py-3 text-ink"
         />
       </label>
       {state.done && (

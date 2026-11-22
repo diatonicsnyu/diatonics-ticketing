@@ -5,7 +5,7 @@ import { getEventForAdmin, eventImageUrl } from "@/lib/events";
 import { isoToNyInput, minutesBetween, formatShort } from "@/lib/time";
 import { reminderStatus } from "@/lib/reminders";
 import { loadEventMetrics } from "@/lib/event-metrics";
-import { btn, btnDanger, btnSm, panel } from "@/lib/ui";
+import { btnDanger, btnSm, panel } from "@/lib/ui";
 import { EventOverview } from "@/components/admin/EventOverview";
 import { EventForm } from "../../EventForm";
 import { saveEvent } from "../../actions";
@@ -61,34 +61,37 @@ export default async function ShowPage(props: PageProps<"/admin/events/[id]">) {
           </p>
         )}
         <div className="mt-5">
-          <EventOverview event={event} m={m} reminders={reminders} />
+          <EventOverview
+            event={event}
+            m={m}
+            reminders={reminders}
+            reminderActions={
+              reminders && reminders.recipients > 0 && event.status !== "cancelled" ? (
+                <div id="reminders" className="mt-3">
+                  {msg === "sent" && (
+                    <p className="mb-3 rounded-sm border border-line bg-page p-3 text-sm" role="status">
+                      Sent {String(sp.sent ?? 0)} reminder{sp.sent === "1" ? "" : "s"}
+                      {Number(sp.failed) > 0 && `, ${String(sp.failed)} failed (they'll be retried)`}.
+                      {Number(sp.left) > 0 && ` ${String(sp.left)} still to go: today's email limit is used up, so the daily job sends them tomorrow morning.`}
+                    </p>
+                  )}
+                  {msg === "not_open" && <p className="mb-3 rounded-sm border border-burgundy bg-white p-3 text-sm">Reminders only go out for shows that haven&apos;t happened yet.</p>}
+                  <p className="text-sm text-muted">They go out by themselves. You can look at one or send them early.</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <a href={`/admin/events/${event.id}/reminder-preview`} target="_blank" rel="noreferrer" className={btnSm}>
+                      Preview the email
+                    </a>
+                    {reminders.reminded < reminders.recipients && reminders.daysAway >= 0 && (
+                      <form action={sendRemindersNowAction.bind(null, event.id)}>
+                        <button className={btnSm}>Send now to everyone not reminded yet</button>
+                      </form>
+                    )}
+                  </div>
+                </div>
+              ) : null
+            }
+          />
         </div>
-
-        {/* Reminder buttons (SPEC §3.6) */}
-        {reminders && reminders.recipients > 0 && event.status !== "cancelled" && (
-          <section id="reminders" className={`${panel} mt-4 p-5`}>
-            <h2 className="font-display text-xl font-black">Reminder emails</h2>
-            {msg === "sent" && (
-              <p className="mt-3 rounded-sm border border-line bg-page p-3 text-sm" role="status">
-                Sent {String(sp.sent ?? 0)} reminder{sp.sent === "1" ? "" : "s"}
-                {Number(sp.failed) > 0 && `, ${String(sp.failed)} failed (they'll be retried)`}.
-                {Number(sp.left) > 0 && ` ${String(sp.left)} still to go: today's email limit is used up, so the daily job sends them tomorrow morning.`}
-              </p>
-            )}
-            {msg === "not_open" && <p className="mt-3 rounded-sm border border-burgundy bg-white p-3 text-sm">Reminders only go out for shows that haven&apos;t happened yet.</p>}
-            <p className="mt-2 text-sm">They go out by themselves. You don&apos;t have to do anything, but you can look at one or send them early.</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <a href={`/admin/events/${event.id}/reminder-preview`} target="_blank" rel="noreferrer" className={btn}>
-                Preview the email
-              </a>
-              {reminders.reminded < reminders.recipients && reminders.daysAway >= 0 && (
-                <form action={sendRemindersNowAction.bind(null, event.id)}>
-                  <button className={btn}>Send now to everyone not reminded yet</button>
-                </form>
-              )}
-            </div>
-          </section>
-        )}
       </>
     );
   }

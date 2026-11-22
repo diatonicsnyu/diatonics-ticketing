@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { login, type LoginState } from "./actions";
+import { btnPrimary } from "@/lib/ui";
 
 const INPUT = "w-full rounded-sm border border-line bg-white px-3 py-3 text-ink";
 
@@ -29,7 +30,7 @@ export function LoginForm() {
       {state.error && <p className="text-red-700" role="alert">{state.error}</p>}
       <button
         disabled={pending}
-        className="font-display w-full rounded-sm bg-burgundy px-6 py-3 font-bold text-white hover:bg-burgundy-bright disabled:opacity-60"
+        className={`${btnPrimary} font-display w-full px-6 py-3`}
       >
         {pending ? "Logging in…" : "Log in"}
       </button>

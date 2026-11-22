@@ -24,7 +24,7 @@ export function OrderTickets({ order }: { order: ConfirmedOrder }) {
         ))}
       </div>
 
-      <div className="mt-8 rounded-sm border border-line bg-white p-5 text-sm">
+      <div className="mt-8 rounded-sm border border-edge bg-white p-5 text-sm">
         <p>📱 <strong>At the door:</strong> turn your screen brightness up and show the QR code. Each ticket gets one person in.</p>
         <p className="mt-2">Tip: tap <strong>Download</strong> to keep your ticket on your phone, in case there&apos;s no signal at the venue.</p>
       </div>

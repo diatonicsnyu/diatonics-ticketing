@@ -74,6 +74,7 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 - **Step 3 (ticket email + "Lost your ticket?") built 2026-11-21**; see SPEC step 3 "As built". The group Gmail (Resend account owner, the only inbox Resend delivers to until a domain is verified) is in `EMAIL_TEST_TO`. The first real test payment (order EB36) worked end to end on 2026-11-21.
 - **Step 4 (door scanner, online) built 2026-11-21**; see SPEC step 4 "As built". The ticket email was confirmed working by the user on 2026-11-21, and the door scanner on 2026-11-21.
 - **Step 5 (offline mode) built 2026-11-21**; see SPEC step 5 "As built".
+- **UI round 2 built 2026-11-22** from the user's feedback (SPEC §13): full-width admin, everything clickable looks like a button, 3-panel dashboard + expense log, show page Overview/Edit tabs, expense settings with e-board vs spenders, fuller public pages.
 - **Step 8 (reminders + cancel/reschedule) built 2026-11-21**; see SPEC step 8 "As built".
 - **Step 7 (donations) built 2026-11-21**; see SPEC step 7 "As built".
 - **Step 6 (admin tools) built 2026-11-21**; see SPEC step 6 "As built". The user has dashboard / general UI feedback still to give (asked 2026-11-21); the sales chart waits on it.

@@ -34,7 +34,7 @@ export function SalesChart({ perDay }: { perDay: { day: string; tickets: number 
         </div>
         <div className="flex h-36 flex-1 items-end gap-[2px] border-b border-line" aria-hidden>
           {perDay.map((d) => (
-            <div key={d.day} tabIndex={0} className="group relative flex h-full min-w-[4px] flex-1 items-end outline-none">
+            <div key={d.day} tabIndex={0} className="group relative flex h-full min-w-[4px] max-w-12 flex-1 items-end outline-none">
               {/* hit target is the whole column, bigger than the bar */}
               <div
                 className="w-full rounded-t-[4px] transition-opacity group-hover:opacity-80 group-focus:opacity-80"

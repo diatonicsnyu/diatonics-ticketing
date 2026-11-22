@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import type { GiftFormState } from "./actions";
 import { MAX_TICKETS_PER_ORDER } from "@/lib/order";
+import { btnPrimary } from "@/lib/ui";
 
 type Action = (prev: GiftFormState, formData: FormData) => Promise<GiftFormState>;
 export type GiftEvent = { id: string; label: string; left: number | null; types: { id: string; name: string }[] };
@@ -83,7 +84,7 @@ export function GiftForm({ action, events }: { action: Action; events: GiftEvent
 
       <button
         disabled={pending || event?.left === 0}
-        className="font-display rounded-sm bg-burgundy px-5 py-2.5 font-bold text-white hover:bg-burgundy-bright disabled:opacity-60"
+        className={`${btnPrimary} font-display w-full py-3 text-lg sm:w-auto sm:px-8`}
       >
         {pending ? "Sending…" : "Give tickets"}
       </button>

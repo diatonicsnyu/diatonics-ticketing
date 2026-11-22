@@ -50,7 +50,7 @@ export default async function MyTicketsPage(props: PageProps<"/tickets/[key]">) 
         {order.tickets.length > 0 ? (
           <OrderTickets order={order} />
         ) : (
-          <p className="rounded-sm border border-line bg-white p-5 text-center">This order has no active tickets.</p>
+          <p className="rounded-sm border border-edge bg-white p-5 text-center">This order has no active tickets.</p>
         )}
       </div>
 

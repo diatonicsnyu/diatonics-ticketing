@@ -398,6 +398,14 @@ The master list, CSV, comps, etc. stay as in §3.8. On a phone, tables collapse 
 - Gift tickets: works, but make it look less plain.
 - **Public site:** outline the white boxes in light gray, and make pages look fuller (less empty space).
 
+**As built (2026-11-22):**
+- Shared button/panel styles in `src/lib/ui.ts`; box outlines are a visible light gray (`--color-line` / `--color-edge` in `globals.css`). Admin uses the full width; the menu is button-style tabs (`AdminNav.tsx`).
+- Dashboard: 4 money numbers on top + an "all shows" line; left = shows as buttons (coming up / past); middle = the current show (`EventOverview`: sold vs capacity, money, check-ins, attendance, **tickets-sold-per-day chart**, reminders, shortcuts); right = expense log (owed, + Expense / + Reimbursement, latest 6, open the full log).
+- Show page: **Overview** tab (same block + reminder Preview / Send now) and **Edit** tab (form, then Cancel or move). Saving an event now returns to its Overview with "Saved."
+- Expense log: left people buttons (owed / all square), middle notification feed (red = spent, green = paid back), right owed total + Add expense / Add reimbursement. Note required on expenses. Expenses have a "Who spent the money?" picker (defaults to you). **Settings** page (`/admin/expenses/settings`): e-board vs spenders, add / remove / bring back / switch. `supabase/migrations/0012_spenders.sql` adds the role; the admin login only accepts e-board.
+- Gift tickets: header band with totals, form on the left, "Given so far" cards on the right.
+- Public site: fuller home page (welcome band with buttons, "How tickets work" 3 steps, support section); show page left side is a box with the flyer or logo and a "Good to know" list; header/footer white; footer links are buttons.
+
 ## 10. Build steps & checkpoints
 
 Each step ends with a checklist **you** run before the next step starts.

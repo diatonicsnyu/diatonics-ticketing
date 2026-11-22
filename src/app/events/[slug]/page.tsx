@@ -1,3 +1,6 @@
+import Link from "next/link";
+import Image from "next/image";
+import logo from "../../../../public/logo.png";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SiteChrome } from "@/components/SiteChrome";
@@ -38,7 +41,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
     <SiteChrome>
       {/* Phone: one column. Laptop: details on the left (2/5), tickets on the right (3/5). */}
       <article className="grid gap-8 lg:grid-cols-5 lg:items-start">
-        <div className="lg:col-span-2">
+        <div className="rounded-sm border border-edge bg-panel p-5 sm:p-8 lg:col-span-2">
         <h1 className="font-display text-4xl font-black sm:text-5xl">{event.name}</h1>
 
         <dl className="mt-4 space-y-1 text-lg">
@@ -69,19 +72,42 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
 
         {/* Flyer fills the space under the details. Demo mode shows a sample flyer
             when none is uploaded; real events show nothing until one is uploaded. */}
-        {flyer && (
+        {flyer ? (
           <div className="mt-6">
             <Flyer src={flyer} eventName={event.name} sample={!img} />
           </div>
+        ) : (
+          <div className="mt-6 flex justify-center rounded-sm border border-line bg-gradient-to-b from-white to-[#ddeefa] p-6">
+            <Image src={logo} alt="" width={150} height={150} />
+          </div>
         )}
+
+        {/* Good to know (SPEC §13: fuller page; facts only) */}
+        <div className="mt-6 rounded-sm border border-line bg-page/60 p-4">
+          <h2 className="font-semibold">Good to know</h2>
+          <ul className="mt-2 space-y-1.5 text-sm">
+            <li>🎟️ Your tickets arrive by email right away, each with its own QR code.</li>
+            <li>📱 Show the QR code at the door. Turn your brightness up so it scans fast.</li>
+            {event.doors_at && <li>🚪 Doors open at {formatTime(event.doors_at)}. Seating is first come, first served.</li>}
+            <li>✉️ Lost your tickets? You can get them re-sent anytime.</li>
+          </ul>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a href={mapUrl} target="_blank" rel="noreferrer" className="rounded-sm border border-edge bg-white px-3 py-1.5 text-sm font-semibold shadow-sm transition hover:border-burgundy">
+              Open in Google Maps
+            </a>
+            <Link href="/lost-ticket" className="rounded-sm border border-edge bg-white px-3 py-1.5 text-sm font-semibold shadow-sm transition hover:border-burgundy">
+              Lost your ticket?
+            </Link>
+          </div>
+        </div>
         </div>
 
-        <section className="rounded-sm border border-line bg-panel p-5 sm:p-8 lg:col-span-3" aria-label="Tickets">
+        <section className="rounded-sm border border-edge bg-panel p-5 sm:p-8 lg:col-span-3" aria-label="Tickets">
           <h2 className="font-display text-3xl font-black">Tickets</h2>
 
           {/* Back from Stripe without paying (set by /checkout/cancel). */}
           {cancelled && (
-            <p className="mt-3 rounded-sm border border-line bg-page p-3" role="status">
+            <p className="mt-3 rounded-sm border border-edge bg-page p-3" role="status">
               Checkout cancelled. You weren&apos;t charged, and you can try again below.
             </p>
           )}
@@ -128,7 +154,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
                 <>
                   <ul className="mt-4 space-y-3">
                     {event.ticket_types.map((t) => (
-                      <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 rounded-sm border border-line bg-page p-4">
+                      <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 rounded-sm border border-edge bg-page p-4">
                         <span className="text-lg font-semibold">{t.name}</span>
                         <span className="text-muted">{allInLabel(t.price_cents)}</span>
                       </li>
@@ -150,7 +176,7 @@ export default async function EventPage(props: PageProps<"/events/[slug]">) {
 
 function InfoBox({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-sm border border-line bg-page p-4">
+    <div className="rounded-sm border border-edge bg-page p-4">
       <p className="text-lg font-bold uppercase tracking-wider text-muted">{label}</p>
       <p className="mt-1 text-xl font-bold tabular-nums text-burgundy">{value}</p>
       {sub && <p className="mt-0.5 text-sm text-muted">{sub}</p>}
