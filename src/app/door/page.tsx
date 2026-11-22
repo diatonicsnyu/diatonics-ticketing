@@ -4,7 +4,7 @@ import logo from "../../../public/logo.png";
 import { isDemo } from "@/lib/demo";
 import { doorStats, getDoorSession, listDoorEvents } from "@/lib/door";
 import { formatShort } from "@/lib/time";
-import { DoorApp } from "./DoorApp";
+import { DoorClient } from "./DoorClient";
 import { DoorLogin } from "./DoorLogin";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export default async function DoorPage() {
   const session = await getDoorSession();
   if (session) {
     const stats = await doorStats(session).catch(() => ({ sold: 0, checkedIn: 0, doorSales: 0, doorSalesMine: 0 }));
-    return <DoorApp eventId={session.eventId} eventName={session.eventName} deviceName={session.deviceName} initialStats={stats} />;
+    return <DoorClient eventId={session.eventId} eventName={session.eventName} deviceName={session.deviceName} initialStats={stats} />;
   }
 
   const events = (await listDoorEvents()).map((e) => ({ id: e.id, label: `${e.name} · ${formatShort(e.starts_at)}` }));

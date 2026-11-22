@@ -32,6 +32,8 @@ export type Dashboard = {
   /** Door-sale counter total (D32) and checked in + door sales. */
   doorSales: number;
   attendance: number;
+  /** Tickets let in twice while door phones were offline (flagged when they synced, step 5). */
+  duplicateCheckIns: number;
   /** Tickets sold per event and per ticket type id. */
   soldByEvent: Record<string, number>;
   checkedInByEvent: Record<string, number>;
@@ -49,7 +51,7 @@ function isMissingTable(error: { code?: string } | null): boolean {
 export async function loadDashboard(): Promise<DashboardResult> {
   if (isDemo()) return { status: "demo" };
   const db = adminDb();
-  const [orders, tickets, ledger, door] = await Promise.all([
+  const [orders, tickets, ledger, door, dupes] = await Promise.all([
     db
       .from("orders")
       .select("tickets_subtotal_cents, service_fee_cents, donation_cents, total_cents, stripe_fee_cents, payment_method")
@@ -57,6 +59,7 @@ export async function loadDashboard(): Promise<DashboardResult> {
     db.from("tickets").select("event_id, ticket_type_id, status").neq("status", "void"),
     ledgerTotals(),
     db.from("door_sale_counts").select("event_id, delta"),
+    db.from("check_in_log").select("id", { count: "exact", head: true }).eq("conflict", true),
   ]);
   if (isMissingTable(orders.error) || isMissingTable(tickets.error)) return { status: "setup_needed" };
   if (orders.error) throw orders.error;
@@ -105,6 +108,7 @@ export async function loadDashboard(): Promise<DashboardResult> {
       balanceCents: spent == null ? null : net - spent,
       doorSales,
       attendance: checkedIn + doorSales,
+      duplicateCheckIns: dupes.error ? 0 : (dupes.count ?? 0),
       soldByEvent,
       soldByType,
       checkedInByEvent,

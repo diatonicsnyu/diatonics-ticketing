@@ -8,6 +8,8 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type ScanResponse = {
   result: "ok" | "used" | "wrong_event" | "void" | "not_found" | "fake";
+  /** So the phone can update its offline copy of the list. */
+  ticketId?: string;
   name?: string;
   type?: string;
   checkedInAt?: string;
@@ -63,6 +65,7 @@ export async function POST(request: Request) {
   const stats = await doorStats(s).catch(() => undefined);
   return Response.json({
     result: r.result,
+    ticketId: ticketId ?? undefined,
     name: r.name,
     type: r.type,
     checkedInAt: r.checked_in_at,

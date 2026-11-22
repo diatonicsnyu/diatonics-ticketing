@@ -440,6 +440,14 @@ Guest list download, offline scans, sync, duplicate flags.
 - [ ] Scan the same ticket on two phones while both are offline → after sync it's flagged as a duplicate
 - [ ] A ticket bought after the list was downloaded → shows "not found offline, check online"
 
+**As built (2026-11-21):** needs `supabase/migrations/0008_offline.sql` (adds `client_id` to `check_in_log` / `door_sale_counts` and the `door_sync` function). Details:
+- **Guest list** (`/api/door/list`): this show's paid tickets (id, name, type, code, order number, status) + **this show's ticket-signing key**, so the phone can reject fake QR codes offline (§4). Emails are never sent to the phone, only a SHA-256 fingerprint, so lookup offline needs the **full** email **[assumed]**. Saved in the phone's storage; refreshed every minute while online. The top bar shows "Ready offline: N tickets loaded" and "N waiting to sync".
+- **Online vs offline**: the app checks the signal every 10 s. Online, each scan asks the server (first scan wins); if the server doesn't answer within 4 s, that scan is checked against the phone's list instead **[assumed]**. Offline scans are saved in a queue on the phone (each with a random id, so retries never count twice) and sync automatically. Logging out is hidden while anything is waiting to sync.
+- **Duplicates**: if a ticket was already let in elsewhere when an offline check-in syncs, the server records it with `conflict = true`, the phone shows a yellow "let in twice" notice, and the admin dashboard shows "Let in twice (offline)". The ticket keeps its first check-in time.
+- **"Not found offline"**: a real ticket (valid signature) that isn't on the phone's list yet shows a white ⚠️ screen, not green or red **[assumed]**: the volunteer checks the ticket email or scans again with signal.
+- **Door-sale counter** is always queued and synced (works the same online and offline). The step 4 route `/api/door/sales` was removed.
+- **Opens with no signal**: `public/door-sw.js` (a service worker, only for `/door`) saves the door page and its files on the phone. The phone must open `/door` **once with signal, logged in**, before going offline.
+
 ### Step 6: Admin tools
 Dashboard, master list, CSV export, comps, undo check-in.
 - [ ] Dashboard totals match Stripe test mode's numbers (gross, service fees, Stripe fees, net)

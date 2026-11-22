@@ -57,6 +57,7 @@ export default async function AdminDashboardPage(props: PageProps<"/admin">) {
             <Detail label="Checked in" value={`${d.checkedIn} / ${d.ticketsSold}`} />
             <Detail label="Door sales" value={String(d.doorSales)} />
             <Detail label="Total attendance" value={String(d.attendance)} />
+            {d.duplicateCheckIns > 0 && <Detail label="Let in twice (offline)" value={String(d.duplicateCheckIns)} />}
             {d.owedCents != null && <Detail label="E-board still owed" value={formatCents(d.owedCents)} />}
           </dl>
           {d.ordersMissingFee > 0 && (
