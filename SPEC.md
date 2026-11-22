@@ -467,6 +467,7 @@ Standalone donate page (works with zero events), checkout add-on, receipts, opt-
 
 ### Step 8: Reminders + cancel/reschedule
 Split-day reminders with the email budget; 3-step cancel/reschedule.
+- Note: the daily job already exists (`/api/cron/daily`, Vercel Cron, built 2026-11-21 as the Supabase keep-alive). Hook the reminders into it.
 - [ ] With ≤100 test recipients, reminders all go 1 day before. With >100 (simulated), they split across 2 days by purchase time
 - [ ] The daily email budget leaves room for new orders and re-sends
 - [ ] Cancel → refund: all 3 confirmation steps appear, typing the event name is required, test orders are refunded in Stripe, and buyers are emailed

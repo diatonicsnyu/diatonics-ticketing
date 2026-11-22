@@ -50,6 +50,12 @@ export const env = {
     if (s.length < 32) throw new Error("TICKET_SECRET must be at least 32 characters.");
     return s;
   },
+  /** Vercel Cron sends this with each daily run (api/cron/daily), so only Vercel can trigger it. */
+  get cronSecret() {
+    const s = required("CRON_SECRET", process.env.CRON_SECRET);
+    if (s.length < 32) throw new Error("CRON_SECRET must be at least 32 characters.");
+    return s;
+  },
   get resendApiKey() {
     return required("RESEND_API_KEY", process.env.RESEND_API_KEY);
   },
