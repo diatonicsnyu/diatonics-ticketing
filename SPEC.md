@@ -425,6 +425,14 @@ Deployed to `diatonics-ticketing.vercel.app` (phones need https for the camera).
 - [ ] The door-sale counter +/− works, can't go below 0, and the totals from two phones add up correctly in admin
 - [ ] **Volunteer test:** hand it to someone who has never seen it; they check in a ticket without your help
 
+**As built (2026-11-21):** needs `supabase/migrations/0007_door.sql` (tables `check_in_log`, `door_logins`, `door_sale_counts`; functions `door_check_in`, `door_stats`, `door_sale_change`). Details:
+- **`/door`**: pick the show (shows that are on sale or closed, from 12 hours ago to 2 weeks ahead **[assumed]**), type **your first name** (shows as "scanned by Maya" on 🟨 results **[assumed]**) and the show's door PIN. The login lasts 24 hours **[assumed]**; changing the show's door PIN in admin logs out every door phone. Wrong PINs lock out like the admin login: 5 per phone in 15 minutes, 30 site-wide per hour **[assumed]**.
+- **Scanning**: camera always on; Android Chrome reads QR codes natively, other phones (iPhone) use the `jsqr` library. 🟩 shows ~1.5 s, 🟨 / 🟥 ~3.5 s so there's time to read them **[assumed]**; tap to clear sooner. The same QR is ignored for 4 s after its result clears (they're still holding it up). 🟥 says whether it's a fake code, a ticket for a different show, or a cancelled ticket. A database lock makes the first scan win when two phones scan the same ticket at once (D15). The screen stays on (Wake Lock) where the phone supports it.
+- **Check-ins can't be undone from the door app** (§3.7: only the admin can undo); the admin undo comes in step 6.
+- **See history** is kept on the phone (last 300 scans). **Manual lookup** searches this show's paid tickets by name, email, order number or ticket code; emails are searched but never shown.
+- **Door-sale counter**: shows the show's total and this phone's count. A phone can only take back its own taps, so nothing goes below 0. The admin dashboard shows checked in + door sales = total attendance, per show and overall.
+- **Home screen**: `public/door.webmanifest` + `public/door-icon-*.png` (logo on pale blue). Opens full-screen at `/door`.
+
 ### Step 5: Offline mode
 Guest list download, offline scans, sync, duplicate flags.
 - [ ] Turn on airplane mode → scans still give 🟩 / 🟨 / 🟥

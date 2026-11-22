@@ -72,6 +72,7 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 - **Admin login: FIXED (2026-11-21).** It crashed because the live deploy didn't have a valid `ADMIN_PIN` yet (Vercel applies new env vars only on the next build). Verified working on the live site after a redeploy. The login now shows a clear message instead of crashing if `ADMIN_PIN` is ever missing or not 4–8 digits.
 - **Vercel API access:** `VERCEL_TOKEN` in `.env.local` (the user OK'd reading logs + changing env vars). Project `prj_dfEFAjcxRcUDNF0vrZqrZ9xKJrhv`, team `team_PdjZdzRhOR1evA6tlpPTpLEm`. The runtime-logs endpoint only streams live requests, not past errors.
 - **Step 3 (ticket email + "Lost your ticket?") built 2026-11-21**; see SPEC step 3 "As built". The group Gmail (Resend account owner, the only inbox Resend delivers to until a domain is verified) is in `EMAIL_TEST_TO`. The first real test payment (order EB36) worked end to end on 2026-11-21.
+- **Step 4 (door scanner, online) built 2026-11-21**; see SPEC step 4 "As built". The ticket email was confirmed working by the user on 2026-11-21.
 - **Stripe test-mode payment methods** are set on the account's own default config (card + Cash App only); see SPEC step 2 "As built". Stripe's bot check blocks automated browsers from pressing Pay, so a real test payment needs the user.
 - Student ticket: group vote.
 - Stripe live activation (the user, at go-live).

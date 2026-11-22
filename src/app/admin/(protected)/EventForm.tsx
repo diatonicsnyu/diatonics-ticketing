@@ -168,7 +168,9 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
             placeholder={defaults.has_pin ? "•••• (set)" : "4–8 digits"}
           />
           <span className={hint}>
-            {defaults.has_pin ? "A PIN is set. Leave blank to keep it, or type a new one to change it." : "Not set yet. Needed before the door app (Step 4)."}
+            {defaults.has_pin
+              ? "A PIN is set. Leave blank to keep it, or type a new one to change it (that logs out every door phone)."
+              : "Not set yet. Volunteers need it to open the door app at /door."}
           </span>
         </label>
         <label className="block">

@@ -55,6 +55,8 @@ export default async function AdminDashboardPage(props: PageProps<"/admin">) {
             <Detail label="Donations" value={formatCents(d.donationsCents)} />
             <Detail label="Stripe fees" value={formatCents(d.stripeFeesCents)} />
             <Detail label="Checked in" value={`${d.checkedIn} / ${d.ticketsSold}`} />
+            <Detail label="Door sales" value={String(d.doorSales)} />
+            <Detail label="Total attendance" value={String(d.attendance)} />
             {d.owedCents != null && <Detail label="E-board still owed" value={formatCents(d.owedCents)} />}
           </dl>
           {d.ordersMissingFee > 0 && (
@@ -110,6 +112,13 @@ export default async function AdminDashboardPage(props: PageProps<"/admin">) {
                     <p className="text-sm">
                       <strong>{sold}</strong> sold{e.capacity ? ` of ${e.capacity}` : " (no capacity limit)"}
                     </p>
+                    {/* Door night: scanned tickets + door-sale counter = total attendance (D32). */}
+                    {((d.checkedInByEvent[e.id] ?? 0) > 0 || (d.doorSalesByEvent[e.id] ?? 0) > 0) && (
+                      <p className="text-sm text-muted">
+                        {d.checkedInByEvent[e.id] ?? 0} checked in + {d.doorSalesByEvent[e.id] ?? 0} door sales ={" "}
+                        <strong className="text-ink">{(d.checkedInByEvent[e.id] ?? 0) + (d.doorSalesByEvent[e.id] ?? 0)} attendance</strong>
+                      </p>
+                    )}
                     {e.capacity ? (
                       <div className="mt-1 h-2 w-full overflow-hidden rounded-sm bg-page" role="progressbar" aria-valuemin={0} aria-valuemax={e.capacity} aria-valuenow={sold}>
                         <div className="h-full bg-burgundy" style={{ width: `${Math.min(100, (sold / e.capacity) * 100)}%` }} />

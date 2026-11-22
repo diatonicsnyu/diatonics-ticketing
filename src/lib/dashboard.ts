@@ -29,8 +29,13 @@ export type Dashboard = {
   spentCents: number | null;
   owedCents: number | null;
   balanceCents: number | null;
+  /** Door-sale counter total (D32) and checked in + door sales. */
+  doorSales: number;
+  attendance: number;
   /** Tickets sold per event and per ticket type id. */
   soldByEvent: Record<string, number>;
+  checkedInByEvent: Record<string, number>;
+  doorSalesByEvent: Record<string, number>;
   soldByType: Record<string, number>;
 };
 
@@ -44,13 +49,14 @@ function isMissingTable(error: { code?: string } | null): boolean {
 export async function loadDashboard(): Promise<DashboardResult> {
   if (isDemo()) return { status: "demo" };
   const db = adminDb();
-  const [orders, tickets, ledger] = await Promise.all([
+  const [orders, tickets, ledger, door] = await Promise.all([
     db
       .from("orders")
       .select("tickets_subtotal_cents, service_fee_cents, donation_cents, total_cents, stripe_fee_cents, payment_method")
       .eq("status", "paid"),
     db.from("tickets").select("event_id, ticket_type_id, status").neq("status", "void"),
     ledgerTotals(),
+    db.from("door_sale_counts").select("event_id, delta"),
   ]);
   if (isMissingTable(orders.error) || isMissingTable(tickets.error)) return { status: "setup_needed" };
   if (orders.error) throw orders.error;
@@ -64,20 +70,29 @@ export async function loadDashboard(): Promise<DashboardResult> {
 
   const soldByEvent: Record<string, number> = {};
   const soldByType: Record<string, number> = {};
+  const checkedInByEvent: Record<string, number> = {};
+  const doorSalesByEvent: Record<string, number> = {};
+  // Before 0007_door.sql is run the door table is missing: count it as 0.
+  for (const r of door.error ? [] : (door.data ?? [])) {
+    doorSalesByEvent[r.event_id as string] = (doorSalesByEvent[r.event_id as string] ?? 0) + (r.delta as number);
+  }
   for (const t of tickets.data ?? []) {
     soldByEvent[t.event_id as string] = (soldByEvent[t.event_id as string] ?? 0) + 1;
+    if (t.status === "checked_in") checkedInByEvent[t.event_id as string] = (checkedInByEvent[t.event_id as string] ?? 0) + 1;
     soldByType[t.ticket_type_id as string] = (soldByType[t.ticket_type_id as string] ?? 0) + 1;
   }
 
   const revenue = sum("total_cents");
   const net = revenue - stripeFees;
   const spent = ledger?.spentCents ?? null;
+  const checkedIn = (tickets.data ?? []).filter((t) => t.status === "checked_in").length;
+  const doorSales = Object.values(doorSalesByEvent).reduce((a, b) => a + b, 0);
 
   return {
     status: "ok",
     data: {
       ticketsSold: (tickets.data ?? []).length,
-      checkedIn: (tickets.data ?? []).filter((t) => t.status === "checked_in").length,
+      checkedIn,
       ticketSalesCents: sum("tickets_subtotal_cents"),
       serviceFeesCents: sum("service_fee_cents"),
       donationsCents: sum("donation_cents"),
@@ -88,8 +103,12 @@ export async function loadDashboard(): Promise<DashboardResult> {
       spentCents: spent,
       owedCents: ledger?.owedCents ?? null,
       balanceCents: spent == null ? null : net - spent,
+      doorSales,
+      attendance: checkedIn + doorSales,
       soldByEvent,
       soldByType,
+      checkedInByEvent,
+      doorSalesByEvent,
     },
   };
 }
