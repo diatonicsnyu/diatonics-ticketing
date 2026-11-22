@@ -1,6 +1,7 @@
 import "server-only";
 import { adminDb } from "@/lib/supabase/clients";
 import { isDemo } from "@/lib/demo";
+import { csvMoney as money, csvText, csvWhen as when } from "@/lib/csv";
 
 /*
  * Buyer list (SPEC D19, §3.8): everyone who bought tickets, for every admin.
@@ -120,20 +121,6 @@ export async function loadBuyers(opts: { eventId?: string; q?: string; sort?: Bu
   rows.sort(sorters[opts.sort ?? "newest"]);
   return { status: "ok", rows };
 }
-
-// ---------- CSV (opens cleanly in Google Sheets / Excel) ----------
-const money = (c: number) => (c / 100).toFixed(2);
-const when = (iso: string) =>
-  new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "2-digit" }).format(new Date(iso));
-// Quote every cell; neutralize spreadsheet formulas (a name like "=HYPERLINK(...)").
-const cell = (v: string | number) => {
-  let s = String(v);
-  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
-  return `"${s.replace(/"/g, '""')}"`;
-};
-// The BOM makes Excel read the file as UTF-8 (names with accents stay correct).
-const csvText = (header: string[], rows: (string | number)[][]) =>
-  "﻿" + [header, ...rows].map((r) => r.map(cell).join(",")).join("\r\n") + "\r\n";
 
 /** One row per order. */
 export function buyersCsv(rows: BuyerRow[]): string {

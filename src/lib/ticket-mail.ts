@@ -2,7 +2,8 @@ import "server-only";
 import { adminDb } from "@/lib/supabase/clients";
 import { env } from "@/lib/env";
 import { buildTicketEmail, type EmailOrder } from "@/lib/email/ticket-email";
-import { getOrderById, getUpcomingOrdersByEmail, type ConfirmedOrder } from "@/lib/orders";
+import { buildDonationReceipt } from "@/lib/email/donation-email";
+import { getDonationById, getOrderById, getUpcomingOrdersByEmail, type ConfirmedOrder } from "@/lib/orders";
 import { orderLinkUrl } from "@/lib/ticket-token";
 
 /*
@@ -49,6 +50,7 @@ function toEmailOrder(o: ConfirmedOrder): EmailOrder {
     event: o.event,
     tickets: o.tickets.map((t) => ({ shortCode: t.shortCode, typeName: t.typeName, qrToken: t.qrToken })),
     viewUrl: orderLinkUrl(o.id),
+    donationCents: o.donationCents,
   };
 }
 
@@ -106,6 +108,55 @@ export async function sendTicketEmail(orderId: string): Promise<"sent" | "alread
     .eq("id", claim.id);
   if (!res.ok) {
     console.error(`Ticket email for order ${order.orderNo} failed: ${res.error}`);
+    return "failed";
+  }
+  return "sent";
+}
+
+/**
+ * Emails a Donate-page donation's receipt, once (spec §3.3). Same once-only
+ * rule as the ticket email (unique index in 0010_donations.sql).
+ */
+export async function sendDonationReceipt(orderId: string): Promise<"sent" | "already" | "failed" | "skipped"> {
+  const db = adminDb();
+  const d = await getDonationById(orderId);
+  if (!d || d.status !== "paid") return "skipped";
+
+  await db
+    .from("email_log")
+    .update({ status: "failed", error: "timed out while sending" })
+    .eq("order_id", orderId)
+    .eq("type", "donation_receipt")
+    .eq("status", "sending")
+    .lt("created_at", new Date(Date.now() - 10 * 60_000).toISOString());
+
+  const { to, testFor } = recipient(d.email);
+  const { data: claim, error: claimError } = await db
+    .from("email_log")
+    .insert({ order_id: orderId, type: "donation_receipt", to_email: to })
+    .select("id")
+    .single();
+  if (claimError) {
+    if (claimError.code === "23505") return "already";
+    throw claimError;
+  }
+
+  const mail = buildDonationReceipt({
+    siteUrl: env.siteUrl,
+    firstName: d.firstName,
+    amountCents: d.amountCents,
+    paidAt: d.paidAt ?? d.createdAt,
+    reference: d.orderNo,
+    displayName: d.recognize ? d.displayName : "",
+    testFor,
+  });
+  const res = await resendSend({ to, ...mail });
+  await db
+    .from("email_log")
+    .update(res.ok ? { status: "sent", resend_id: res.id, sent_at: new Date().toISOString() } : { status: "failed", error: res.error })
+    .eq("id", claim.id);
+  if (!res.ok) {
+    console.error(`Donation receipt for ${d.orderNo} failed: ${res.error}`);
     return "failed";
   }
   return "sent";

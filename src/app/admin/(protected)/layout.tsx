@@ -27,6 +27,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             <Link href="/admin/expenses" className="text-link hover:underline">Expense log</Link>
             <Link href="/admin/buyers" className="text-link hover:underline">Buyers</Link>
             <Link href="/admin/gift-tickets" className="text-link hover:underline">Gift tickets</Link>
+            <Link href="/admin/donations" className="text-link hover:underline">Donations</Link>
             <Link href="/" className="text-link hover:underline">View site</Link>
           </nav>
           <form action={logout} className="flex items-center gap-3 text-sm text-muted">

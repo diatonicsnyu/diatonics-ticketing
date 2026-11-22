@@ -1,4 +1,5 @@
 import { formatDate, formatTime } from "@/lib/time";
+import { formatCents } from "@/lib/money";
 
 /*
  * The ticket email (spec §3.4, §12 "Ticket email"). Plain HTML tables with
@@ -14,6 +15,8 @@ export type EmailOrder = {
   event: { name: string; starts_at: string; doors_at: string | null; venue: string };
   tickets: EmailTicket[];
   viewUrl: string;
+  /** Add-on donation at ticket checkout (thanked in the first email only). */
+  donationCents?: number;
 };
 
 const C = {
@@ -104,6 +107,9 @@ export function buildTicketEmail(opts: {
       ? "Thanks for getting tickets! Show the QR code at the door. Each ticket gets one person in."
       : `Someone (hopefully you) asked us to re-send your tickets. Show the QR code at the door. Each ticket gets one person in.`;
 
+  // Never say "tax-deductible": the group isn't a 501(c)(3).
+  const donation = kind === "ticket" ? (first.donationCents ?? 0) : 0;
+
   const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>${esc(subject)}</title></head>
 <body style="margin:0;padding:0;background:${C.page}">
@@ -116,6 +122,7 @@ export function buildTicketEmail(opts: {
   <tr><td style="padding:8px 24px 8px;font-family:${SANS};color:${C.ink}">
     <p style="margin:0 0 8px;font-size:20px;font-weight:700">${hello}</p>
     <p style="margin:0 0 16px;font-size:15px;line-height:1.5">${intro}</p>
+    ${donation ? `<p style="margin:0 0 16px;padding:12px 16px;border:1px solid ${C.burgundy};border-radius:4px;font-size:15px;line-height:1.5">💛 <strong>Thank you for your ${esc(formatCents(donation))} donation!</strong> It goes straight to our uniforms, venues, mics and everything else that keeps the Diatonics singing.</p>` : ""}
     ${orders.map((o) => orderBlock(siteUrl, o)).join("")}
     <p style="margin:0 0 12px;font-size:14px;line-height:1.5">💡 <strong>Tip:</strong> turn your screen brightness up at the door so the QR code scans fast. The venue might not have signal, so open this email (or tap <strong>View my tickets</strong> and then <strong>Download</strong>) before you go.</p>
     <p style="margin:0 0 24px;font-size:12px;line-height:1.5;color:${C.muted}">All sales final, no refunds. Lost this email? Go to <a href="${esc(siteUrl)}/lost-ticket" style="color:${C.burgundy}">Lost your ticket?</a> to get it again.</p>
@@ -129,6 +136,8 @@ export function buildTicketEmail(opts: {
     testFor ? `[TEST MODE: this email was for ${testFor}]\n` : "",
     kind === "ticket" ? `Hi ${firstName}, you're going!` : `Hi ${firstName}, here are your tickets again.`,
     "",
+    donation ? `Thank you for your ${formatCents(donation)} donation!
+` : "",
     ...orders.flatMap((o) => [
       o.event.name,
       whenLine(o.event),

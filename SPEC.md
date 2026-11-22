@@ -462,9 +462,7 @@ Dashboard, master list, CSV export, comps, undo check-in.
 - **Gift tickets** (the user's name for comps, 2026-11-21; the database still calls them `comp`) at `/admin/gift-tickets` (nav: Gift tickets): show, ticket type, how many (1–10, capped at tickets left), name, email, optional phone and note. Allowed for shows on sale or with sales closed, until a day after the start. **They can be given after online sales close, but only if there are tickets left** (user, 2026-11-21): capacity is always checked. Emailed right away like a normal order; the list below shows who gave each.
 - **Order page** `/admin/orders/<order no>` (linked from the buyer list): buyer, amounts, Stripe fee, ticket-email status (with a "Send the ticket email" button if it never went out or failed), every ticket with its check-in history, and **Undo check-in** (with an "are you sure"). Door phones pick up an undo on their next list refresh (within a minute).
 - **Buyer list** = the master list: now sortable (newest, oldest, last name, show, biggest total), includes gift tickets (🎁), order numbers link to the order page, plus a second CSV with one row per ticket (`/admin/buyers/tickets-csv`). Donation / donor-recognition CSVs come with step 7.
-- Dashboard: "Tickets sold" says "incl. N gift" when there are gift tickets. Checked 2026-11-21: dashboard totals = Stripe test mode (3 orders, $20.50 gross, - [ ] Undoing a check-in lets the ticket scan 🟩 again
-.50 fees, - [ ] Undoing a check-in lets the ticket scan 🟩 again
-9.00 net).
+- Dashboard: "Tickets sold" says "incl. N gift" when there are gift tickets. Checked 2026-11-21: dashboard totals = Stripe test mode (3 orders, $20.50 gross, $1.50 fees, $19.00 net).
 - Not built yet: the "Sales over time" chart (§12 Admin); waiting on the user's dashboard feedback.
 
 ### Step 7: Donations
@@ -474,6 +472,14 @@ Standalone donate page (works with zero events), checkout add-on, receipts, opt-
 - [ ] Adding a donation at ticket checkout shows it as its own line
 - [ ] The receipt email arrives and does **not** say "tax-deductible"
 - [ ] Opt-in names appear in the recognition export; opted-out donors don't
+
+**As built (2026-11-21):**
+- **Donate page checkout is live** (Stripe test mode): a pending order with `kind = 'donation'` (no event, no tickets), then Stripe Checkout with one line "Donation to the Diatonics" for exactly the amount picked, button text "Donate". The page expires after 31 minutes like ticket checkouts. Back on Stripe returns to `/donate`.
+- **Thank-you page** `/donate/thanks` (receipt on screen: amount, date, reference) and a **receipt email** (`src/lib/email/donation-email.ts`), sent once per donation (`supabase/migrations/0010_donations.sql` adds the once-only index). Neither mentions taxes at all.
+- **Add-on donation at ticket checkout:** its own line on Stripe's page and the confirmation page (already), and now a thank-you line in the ticket email. No separate receipt email for add-ons **[assumed: saves Resend's daily budget; the ticket email shows the amount]**.
+- **Supporters list** on the Donate page now comes from the database: opt-in names only (Donate page "Name to display", or the buyer's name at ticket checkout), each once, newest first. Never amounts or emails.
+- **Admin `/admin/donations`** (nav: Donations): totals (all, Donate page with what Stripe kept, added to tickets, thanked by name), every donation, the supporters list, and two CSVs: all donations, and the donor-recognition list (opted-in names with their totals).
+- Tested 2026-11-21 against Stripe test mode: a $10 donation opens Stripe's page at exactly $10.00, saves correctly, and expires cleanly (test row removed).
 
 ### Step 8: Reminders + cancel/reschedule
 Split-day reminders with the email budget; 3-step cancel/reschedule.

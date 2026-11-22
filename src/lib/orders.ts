@@ -9,7 +9,7 @@ import { formatShort } from "@/lib/time";
 import type { EventRow } from "@/lib/events";
 import type { PricedOrder } from "@/lib/order";
 import { ticketQrToken } from "@/lib/ticket-token";
-import { sendTicketEmail } from "@/lib/ticket-mail";
+import { sendDonationReceipt, sendTicketEmail } from "@/lib/ticket-mail";
 
 /*
  * Real ticket orders (Step 2). How a purchase flows:
@@ -152,6 +152,138 @@ export async function startStripeTicketCheckout(
   }
 }
 
+/**
+ * Donate page (spec §3.3): saves a pending donation and opens Stripe's
+ * checkout. The donor pays exactly `amountCents`; the group absorbs Stripe's
+ * fee (D11). No event, no tickets, nothing to hold.
+ */
+export async function startStripeDonationCheckout(
+  amountCents: number,
+  buyer: Buyer,
+  recognize: boolean,
+  displayName: string,
+): Promise<{ url: string } | { error: string }> {
+  const db = adminDb();
+  const expiresAt = new Date(Date.now() + HOLD_MINUTES * 60_000);
+
+  let orderId: string | null = null;
+  let orderNo = "";
+  for (let attempt = 0; attempt < 5 && !orderId; attempt++) {
+    orderNo = newOrderNumber();
+    const { data, error } = await db
+      .from("orders")
+      .insert({
+        order_no: orderNo,
+        kind: "donation",
+        event_id: null,
+        status: "pending",
+        payment_method: "stripe",
+        buyer_first_name: buyer.firstName,
+        buyer_last_name: buyer.lastName,
+        buyer_email: buyer.email,
+        buyer_phone: buyer.phone,
+        donation_cents: amountCents,
+        total_cents: amountCents,
+        recognize,
+        display_name: recognize ? displayName : "",
+        hold_expires_at: expiresAt.toISOString(),
+      })
+      .select("id")
+      .single();
+    if (!error) {
+      orderId = data.id as string;
+      break;
+    }
+    if (error.code === "23505") continue; // that reference number is taken: pick another
+    console.error("donation order insert failed:", error);
+    return { error: "Something went wrong. Please try again." };
+  }
+  if (!orderId) return { error: "Something went wrong. Please try again." };
+
+  try {
+    const session = await stripe().checkout.sessions.create({
+      mode: "payment",
+      managed_payments: { enabled: false }, // see startStripeTicketCheckout
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: "usd",
+            unit_amount: amountCents,
+            // Never say "tax-deductible": the group isn't a 501(c)(3).
+            product_data: { name: "Donation to the Diatonics", description: "Thank you for supporting the group!" },
+          },
+        },
+      ],
+      customer_email: buyer.email,
+      client_reference_id: orderId,
+      metadata: { order_id: orderId, order_no: orderNo, kind: "donation" },
+      payment_intent_data: {
+        description: `Diatonics · Donation · Ref ${orderNo}`,
+        metadata: { order_id: orderId, order_no: orderNo, kind: "donation" },
+      },
+      submit_type: "donate",
+      expires_at: Math.floor(expiresAt.getTime() / 1000),
+      success_url: `${env.siteUrl}/donate/thanks?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${env.siteUrl}/donate`,
+    });
+    if (!session.url) throw new Error("Stripe returned no checkout URL.");
+    const { error } = await db.from("orders").update({ stripe_session_id: session.id }).eq("id", orderId);
+    if (error) throw error;
+    return { url: session.url };
+  } catch (err) {
+    await db.from("orders").update({ status: "expired" }).eq("id", orderId);
+    console.error("Stripe donation checkout failed:", err);
+    return { error: "We couldn't open the payment page. Please try again in a moment." };
+  }
+}
+
+export type DonationOrder = {
+  id: string;
+  orderNo: string;
+  status: "pending" | "paid" | "expired" | "refunded" | "comp";
+  firstName: string;
+  email: string;
+  amountCents: number;
+  paidAt: string | null;
+  createdAt: string;
+  recognize: boolean;
+  displayName: string;
+};
+
+const DONATION_FIELDS = "id, order_no, kind, status, buyer_first_name, buyer_email, donation_cents, paid_at, created_at, recognize, display_name";
+
+function toDonationOrder(row: Record<string, unknown> | null): DonationOrder | null {
+  if (!row || row.kind !== "donation") return null;
+  return {
+    id: row.id as string,
+    orderNo: row.order_no as string,
+    status: row.status as DonationOrder["status"],
+    firstName: row.buyer_first_name as string,
+    email: row.buyer_email as string,
+    amountCents: row.donation_cents as number,
+    paidAt: row.paid_at as string | null,
+    createdAt: row.created_at as string,
+    recognize: row.recognize as boolean,
+    displayName: row.display_name as string,
+  };
+}
+
+/** A Donate-page donation by its Stripe checkout id (only the donor has it). */
+export async function getDonationBySession(sessionId: string): Promise<DonationOrder | null> {
+  const { data, error } = await adminDb().from("orders").select(DONATION_FIELDS).eq("stripe_session_id", sessionId).maybeSingle();
+  if (error) throw error;
+  return toDonationOrder(data);
+}
+
+/** A Donate-page donation by id. Only call with an id from the server itself. */
+export async function getDonationById(orderId: string): Promise<DonationOrder | null> {
+  if (!UUID.test(orderId)) return null;
+  const { data, error } = await adminDb().from("orders").select(DONATION_FIELDS).eq("id", orderId).maybeSingle();
+  if (error) throw error;
+  return toDonationOrder(data);
+}
+
 /** Stripe's fee for a payment, if Stripe has worked it out yet. */
 function stripeFeeCents(pi: Stripe.PaymentIntent | string | null): number | null {
   if (!pi || typeof pi === "string") return null;
@@ -187,8 +319,13 @@ export async function finalizeCheckoutSession(sessionId: string): Promise<"paid"
     // Email the tickets (only the first call actually sends). A failed email
     // never undoes the payment: it's logged, the next call (webhook retry or
     // confirmation page refresh) tries again, and "Lost your ticket?" works.
+    // Donate-page donations get a receipt instead (same once-only rule).
     if (typeof orderId === "string") {
-      await sendTicketEmail(orderId).catch((err) => console.error("Ticket email failed:", err));
+      if (session.metadata?.kind === "donation") {
+        await sendDonationReceipt(orderId).catch((err) => console.error("Donation receipt failed:", err));
+      } else {
+        await sendTicketEmail(orderId).catch((err) => console.error("Ticket email failed:", err));
+      }
     }
     return "paid";
   }

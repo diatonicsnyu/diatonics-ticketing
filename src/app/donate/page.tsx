@@ -1,8 +1,10 @@
 import { SiteChrome } from "@/components/SiteChrome";
-import { isDemo, DEMO_SUPPORTERS } from "@/lib/demo";
+import { listPublicSupporters } from "@/lib/donations";
 import { DonateForm } from "./DonateForm";
 
 export const metadata = { title: "Donate" };
+// The supporters list changes as people donate.
+export const dynamic = "force-dynamic";
 
 /** What donations pay for. Keep this list true: remove anything the group doesn't actually spend on. */
 const FUNDING_NEEDS = [
@@ -19,9 +21,9 @@ const FUNDING_NEEDS = [
 ];
 
 // Standalone donation page (spec §3.3, §12). Works even with zero events.
-export default function DonatePage() {
-  // Step 7 loads real opt-in names from the database.
-  const supporters = isDemo() ? DEMO_SUPPORTERS : [];
+export default async function DonatePage() {
+  // Only names people chose to show (D12). Never amounts or emails.
+  const supporters = await listPublicSupporters();
 
   return (
     <SiteChrome>

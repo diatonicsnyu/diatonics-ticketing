@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { getPublicEventBySlug, salesOpen, getTicketsRemaining } from "@/lib/events";
-import { startStripeTicketCheckout } from "@/lib/orders";
+import { startStripeDonationCheckout, startStripeTicketCheckout } from "@/lib/orders";
 import { priceOrder, parseDonation, isValidEmail, MAX_TICKETS_PER_ORDER } from "@/lib/order";
 import { newOrderNumber, newShortCode } from "@/lib/shortcode";
 import { isDemo } from "@/lib/demo";
@@ -107,7 +107,11 @@ export async function startDonationCheckout(_prev: CheckoutState, formData: Form
   const displayName = String(formData.get("display_name") ?? "").trim().slice(0, 60);
   if (recognize && !displayName) return { error: "Enter the name you'd like us to display, or uncheck the box." };
 
-  if (!isDemo()) return { error: "Online donations are switched on in Step 7." };
+  if (!isDemo()) {
+    const result = await startStripeDonationCheckout(amount, buyer, recognize, recognize ? displayName : "");
+    if ("error" in result) return { error: result.error };
+    redirect(result.url);
+  }
 
   const demo: DemoOrder = {
     kind: "donation",
