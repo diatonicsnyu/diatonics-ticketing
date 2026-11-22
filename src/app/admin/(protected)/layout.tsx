@@ -1,13 +1,18 @@
+import Image from "next/image";
 import Link from "next/link";
+import logo from "../../../../public/logo.png";
 import { requireAdmin } from "@/lib/auth";
 import { logout } from "./actions";
 import { isDemo } from "@/lib/demo";
+import { btnSm } from "@/lib/ui";
+import { AdminNav } from "./AdminNav";
 
 export const metadata = { robots: { index: false } };
 
 /**
  * Wraps every admin page except /admin/login (which lives outside this
  * "(protected)" folder). Non-admins are redirected to the login page.
+ * Uses nearly the full screen width (SPEC §13).
  */
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const user = await requireAdmin();
@@ -19,24 +24,25 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           Preview with sample data. Admin is open without login and saving is off until the database is connected.
         </p>
       )}
-      <header className="border-b border-line bg-panel">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <nav className="flex flex-wrap items-center gap-x-5 gap-y-1">
-            <Link href="/admin" className="font-display font-bold">Diatonics Admin</Link>
-            <Link href="/admin" className="text-link hover:underline">Dashboard</Link>
-            <Link href="/admin/expenses" className="text-link hover:underline">Expense log</Link>
-            <Link href="/admin/buyers" className="text-link hover:underline">Buyers</Link>
-            <Link href="/admin/gift-tickets" className="text-link hover:underline">Gift tickets</Link>
-            <Link href="/admin/donations" className="text-link hover:underline">Donations</Link>
-            <Link href="/" className="text-link hover:underline">View site</Link>
-          </nav>
-          <form action={logout} className="flex items-center gap-3 text-sm text-muted">
-            <span className="hidden sm:inline">Logged in as {user.name}</span>
-            <button className="rounded-sm border border-line px-3 py-1 hover:border-link">Log out</button>
-          </form>
+      <header className="border-b border-edge bg-panel">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 lg:px-8">
+          <div className="flex flex-wrap items-center gap-4">
+            <Link href="/admin" className="flex items-center gap-2" aria-label="Admin dashboard">
+              <Image src={logo} alt="" width={36} height={36} />
+              <span className="font-display hidden font-bold sm:inline">Diatonics Admin</span>
+            </Link>
+            <AdminNav />
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted">
+            <span className="hidden md:inline">Logged in as {user.name}</span>
+            <Link href="/" className={btnSm}>View site</Link>
+            <form action={logout}>
+              <button className={btnSm}>Log out</button>
+            </form>
+          </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">{children}</main>
+      <main className="w-full flex-1 px-4 py-6 lg:px-8">{children}</main>
     </>
   );
 }

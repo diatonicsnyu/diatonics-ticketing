@@ -371,6 +371,33 @@ Dashboard shows first:
 
 The master list, CSV, comps, etc. stay as in §3.8. On a phone, tables collapse into cards.
 
+## 13. UI round 2 (your feedback, 2026-11-22)
+**Everywhere in admin**
+- Use **almost the whole screen width** (not a narrow middle column).
+- **No text links that act as buttons.** Volunteers and e-board aren't technical: anything you click must look like a button (border, fill, hover effect, pressed effect). Expense / Reimbursement especially.
+- **Three panels** (left · middle · right) on the dashboard and the expense log. On a phone they stack.
+
+**Dashboard (`/admin`)**
+- **Top, always:** Total revenue · Net profit · Total spent · Current balance.
+- **Middle:** a big block for the **current show** (the next upcoming one; if none, the most recent) with everything about that show under it (sold vs capacity, per type, money, check-ins, door sales, reminders). Show-specific numbers move out of the general totals.
+- **Left panel:** the events, each a button. **Right panel:** the expense log (what's owed + latest entries). Both clickable to see more.
+
+**A show's admin page (`/admin/events/<id>`)**
+- Opens on a **Overview** tab (all the show's metrics). An **Edit** tab has the form, saved with the button at the bottom.
+
+**Expense log (`/admin/expenses`)**
+- **Middle:** the full log, newest on top, oldest at the bottom, like a social-media notification feed ("Callum spent $20 on posters"), in clear **red** (expense) and **green** (reimbursement).
+- **Left:** a box (button) per person; click to see only their entries.
+- **Right:** Add expense / Add reimbursement.
+- **The note is required on expenses** (no random entries).
+- **Settings button:** add/remove people. Two kinds: **e-board** (can log in to admin) and **spenders** (club members who spend money but can't log in). More settings may come later.
+- **[assumed]** Since spenders can't log in, whoever logs an expense picks **who spent it** (defaults to themselves).
+
+**Other pages**
+- Buyers: fine as is (a plain view). Donations: fine.
+- Gift tickets: works, but make it look less plain.
+- **Public site:** outline the white boxes in light gray, and make pages look fuller (less empty space).
+
 ## 10. Build steps & checkpoints
 
 Each step ends with a checklist **you** run before the next step starts.

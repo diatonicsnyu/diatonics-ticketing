@@ -180,5 +180,6 @@ export async function saveEvent(
   }
 
   revalidatePath("/", "layout");
-  redirect(`/admin?saved=${id}`);
+  // Back to the show's page (Overview tab), with a "Saved" note.
+  redirect(`/admin/events/${id}?saved=1`);
 }

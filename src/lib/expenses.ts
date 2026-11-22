@@ -117,6 +117,14 @@ export function formatDay(iso: string): string {
   );
 }
 
+/** Names for the log: first names, unless two people share one (then full names). */
+export function nameLookup(members: Pick<EboardMember, "id" | "name">[]): (id: string | null) => string {
+  const firstCounts = new Map<string, number>();
+  for (const m of members) firstCounts.set(firstName(m.name), (firstCounts.get(firstName(m.name)) ?? 0) + 1);
+  const byId = new Map(members.map((m) => [m.id, (firstCounts.get(firstName(m.name)) ?? 0) > 1 ? m.name : firstName(m.name)]));
+  return (id) => (id ? (byId.get(id) ?? "Someone") : "Someone");
+}
+
 /** "Rachel Chen" -> "Rachel" (the log reads like Venmo: "Callum spent $20"). */
 export function firstName(name: string): string {
   return name.trim().split(/\s+/)[0] || name;

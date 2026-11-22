@@ -79,7 +79,12 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
   }
 
   // 2. Is that name on the e-board list? (Not a PIN guess, so not counted.)
-  const { data: members, error: mErr } = await db.from("eboard_members").select("id, name").eq("active", true);
+  // Only e-board can log in; spenders (0012_spenders.sql) are in the expense log only.
+  let { data: members, error: mErr } = await db.from("eboard_members").select("id, name").eq("active", true).eq("role", "eboard");
+  if (mErr?.code === "42703") {
+    // 0012 not run yet: there are no spenders, so everyone on the list is e-board.
+    ({ data: members, error: mErr } = await db.from("eboard_members").select("id, name").eq("active", true));
+  }
   if (isMissingTable(mErr)) return { error: SETUP_MSG };
   if (mErr) {
     console.error("Login member lookup failed:", mErr.message);

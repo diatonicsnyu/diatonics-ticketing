@@ -13,7 +13,8 @@
   --color-page: #eef6fc;         /* page background: pale sky blue */
   --color-cream: #fbf7f4;        /* alternate light section background */
   --color-panel: #ffffff;        /* cards on top of the background */
-  --color-line: #d9e6f0;         /* borders */
+  --color-line: #cbd6df;         /* borders: light gray, visible on white (SPEC §13) */
+  --color-edge: #b3c1cd;         /* stronger outline: cards and buttons people click */
   --color-ink: #1a1a1f;          /* main TEXT color (never a background) */
   --color-muted: #545460;        /* secondary text (AA contrast on white/pale blue) */
   --color-sky: #a9d6f5;          /* group sky blue: fills/badges only, never text */
