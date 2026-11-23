@@ -422,14 +422,14 @@ Each step ends with a checklist **you** run before the next step starts.
 - **Domain:** only needed so email can reach other people's inboxes.
 - **Venue signal:** offline mode gets built either way.
 
-### Step 1: Foundation + events
+### Step 1: Foundation + events ✅ built
 Project setup, Supabase (group account), admin login (name + PIN, D18), event create/edit, public home page with the event list and a Donate button placeholder.
 - [ ] You can log in with your name + the leadership PIN; a wrong PIN or a name that isn't on the e-board list is blocked; 5 wrong PINs lock that device out for 15 minutes; logged-out visitors are blocked from admin pages
 - [ ] You can create, edit, and save a test event (name, date, venue, capacity, General $5, sales close +30 min)
 - [ ] It shows on the home page, and looks good on your phone
 - [ ] A draft event does **not** show publicly
 
-### Step 2: Buying tickets (Stripe test mode)
+### Step 2: Buying tickets (Stripe test mode) ✅ built
 Event page → quantity → name/email/phone → Stripe Checkout → confirmation page.
 - [ ] Prices show all-in: "$5.50 (includes $0.50 service fee)", on the event page and in Stripe
 - [ ] Test card `4242 4242 4242 4242` completes a purchase; a declined test card does not create an order
@@ -441,7 +441,7 @@ Event page → quantity → name/email/phone → Stripe Checkout → confirmatio
 
 **As built (2026-11-21):** tables + functions in `supabase/migrations/0004_orders.sql` (`orders`, `order_lines`, `tickets`; a database lock stops two buyers getting the last ticket). Checkout saves a **pending** order that holds the tickets for 31 minutes; Stripe's page expires at the same moment. Paying marks it **paid** and creates one ticket per person (short code like `DIA-7K3F-Q9`); leaving, a declined card, or the time running out marks it **expired** and frees the tickets. Both Stripe's webhook (`/api/stripe/webhook`, needs `STRIPE_WEBHOOK_SECRET`) and the confirmation page (`/orders/confirmed`) confirm payments, so tickets appear even if one of them is slow. Stripe "back" link → `/checkout/cancel` frees the hold right away. The donation add-on is charged as its own line already (receipts/recognition list are step 7). **[assumed]** Until step 3/4, the QR code holds the short code; step 3/4 switches it to a signed token. Stripe's **Managed Payments** (on by default for new accounts; extra fees, blocks the "All sales final" text) is turned off per checkout in code. In Stripe test mode, the **account's own default payment-method configuration** (`pmc_1Ue5G7K8SpF7Crlkpld5N6h9`; there's also an app-owned config named "Default" that Checkout does NOT use) is set to exactly the decided list: **card (with Apple Pay + Google Pay) and Cash App Pay**. **Klarna, Amazon Pay and Link are off** (2026-11-21; Link added a confusing "Bank · $5 back" option). Checkout verified to offer only `card, cashapp`. Redo these settings in live mode at go-live.
 
-### Step 3: Ticket email + self re-send
+### Step 3: Ticket email + self re-send ✅ built
 Resend email with QR codes + short codes, "view my tickets" page, "Lost your ticket?" page.
 - [ ] A test purchase sends an email to **your** inbox in under a minute, not in spam
 - [ ] The QR code displays in Gmail on your phone and laptop
@@ -455,7 +455,7 @@ Resend email with QR codes + short codes, "view my tickets" page, "Lost your tic
 - **"View my tickets"** = `/tickets/<signed key>` (no login; the key can't be guessed). Linked from the email and the confirmation page.
 - **"Lost your ticket?"** (`/lost-ticket`): re-sends tickets for shows that haven't ended (up to 12 hours after the start **[assumed]**) to the email on the order, in one email. Same answer whether or not the email has tickets. Limits: 3 per email per hour, 10 per network per hour **[assumed]**, and re-sends stop at 90 emails in 24 hours so ticket emails always fit under Resend's 100/day **[assumed]**.
 
-### Step 4: Door scanner (online)
+### Step 4: Door scanner (online) ✅ built
 Deployed to `diatonics-ticketing.vercel.app` (phones need https for the camera). PIN login, always-on camera, full-screen results, manual lookup, Get help.
 - [ ] Adds to your phone's home screen and opens full-screen
 - [ ] Wrong PIN is rejected; repeated wrong PINs get locked out
@@ -474,7 +474,7 @@ Deployed to `diatonics-ticketing.vercel.app` (phones need https for the camera).
 - **Door-sale counter**: shows the show's total and this phone's count. A phone can only take back its own taps, so nothing goes below 0. The admin dashboard shows checked in + door sales = total attendance, per show and overall.
 - **Home screen**: `public/door.webmanifest` + `public/door-icon-*.png` (logo on pale blue). Opens full-screen at `/door`.
 
-### Step 5: Offline mode
+### Step 5: Offline mode ✅ built
 Guest list download, offline scans, sync, duplicate flags.
 - [ ] Turn on airplane mode → scans still give 🟩 / 🟨 / 🟥
 - [ ] Turn the signal back on → check-ins appear on the server and on a second phone
@@ -489,7 +489,7 @@ Guest list download, offline scans, sync, duplicate flags.
 - **Door-sale counter** is always queued and synced (works the same online and offline). The step 4 route `/api/door/sales` was removed.
 - **Opens with no signal**: `public/door-sw.js` (a service worker, only for `/door`) saves the door page and its files on the phone. The phone must open `/door` **once with signal, logged in**, before going offline.
 
-### Step 6: Admin tools
+### Step 6: Admin tools ✅ built
 Dashboard, master list, CSV export, comps, undo check-in.
 - [ ] Dashboard totals match Stripe test mode's numbers (gross, service fees, Stripe fees, net)
 - [ ] The master list shows every order: name, email, phone, time, quantities, amounts, check-in status. Search and sort work
@@ -506,7 +506,7 @@ Dashboard, master list, CSV export, comps, undo check-in.
 - Dashboard: "Tickets sold" says "incl. N gift" when there are gift tickets. Checked 2026-11-21: dashboard totals = Stripe test mode (3 orders, $20.50 gross, $1.50 fees, $19.00 net).
 - Not built yet: the "Sales over time" chart (§12 Admin); waiting on the user's dashboard feedback.
 
-### Step 7: Donations
+### Step 7: Donations ✅ built
 Standalone donate page (works with zero events), checkout add-on, receipts, opt-in recognition.
 - [ ] With **no events listed**, the home page Donate button still works
 - [ ] $5 / $10 / $25 / custom all work; the donor pays exactly that amount (no added fee)
@@ -522,7 +522,7 @@ Standalone donate page (works with zero events), checkout add-on, receipts, opt-
 - **Admin `/admin/donations`** (nav: Donations): totals (all, Donate page with what Stripe kept, added to tickets, thanked by name), every donation, the supporters list, and two CSVs: all donations, and the donor-recognition list (opted-in names with their totals).
 - Tested 2026-11-21 against Stripe test mode: a $10 donation opens Stripe's page at exactly $10.00, saves correctly, and expires cleanly (test row removed).
 
-### Step 8: Reminders + cancel/reschedule
+### Step 8: Reminders + cancel/reschedule ✅ built
 Split-day reminders with the email budget; 3-step cancel/reschedule.
 - Note: the daily job already exists (`/api/cron/daily`, Vercel Cron, built 2026-11-21 as the Supabase keep-alive). Hook the reminders into it.
 - [ ] With ≤100 test recipients, reminders all go 1 day before. With >100 (simulated), they split across 2 days by purchase time
@@ -540,7 +540,7 @@ Split-day reminders with the email budget; 3-step cancel/reschedule.
   - Show-change emails may use 90 of the 100 daily emails (they're urgent) **[assumed]**.
 - Dashboard: Stripe fees on refunded orders count as a loss ("Fees lost to refunds"). A refunded buyer's ticket link says the show was cancelled and refunded. The public show page says everyone was refunded.
 
-### Step 9: Go live ⏳ (waits on the group)
+### Step 9: Go live ⏳ (waits on the domain; see claude-notes "Where things stand")
 - [ ] Ticket types finalized (vote) and set in admin
 - [ ] You activate Stripe under your own name → switch to live keys
 - [ ] Buy `diatonics.com` (Cloudflare) → `ticketing.diatonics.com` → Vercel; verify the domain in Resend

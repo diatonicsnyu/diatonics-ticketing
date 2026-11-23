@@ -17,7 +17,7 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 
 - The only technical member of the Diatonics (an NYC a cappella group, **not** school-registered).
 - **Logins = username + personal 6-digit PIN** (changed 2026-11-22; SPEC D16/D18). Username = first initial + last name (`rchen`). The same login works for admin (e-board) and the door (e-board + door volunteers); spenders have no login. People and PINs are managed in admin **Settings**. The first PINs are in `private/LOGINS.md` (gitignored: **never commit or print them**). The shared `ADMIN_PIN` and the per-show door PIN are gone.
-- Volunteers (non-technical group members) run the door with a shared PIN and need zero training.
+- Volunteers (non-technical group members) run the door with **their own username + PIN** (added in admin → Settings as "Door volunteer") and need zero training (door guide at `/door/help`).
 
 ## Settled facts & decisions (with the why)
 
@@ -67,22 +67,30 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 - The scanner keeps green/yellow/red for results (not brand colors).
 - **Small corners only** (`rounded-sm`, 4px) on buttons, inputs, cards, badges. No pill buttons or big rounded cards: the user said they look "vibe coded" (2026-11-15).
 
-## Still open (don't block on these)
-- **Tonight's fix list: `issues-to-fix-tonight.md` (2026-11-21).** Its "Progress log" says what's done and what's left for the user.
-- **Admin login: FIXED (2026-11-21).** It crashed because the live deploy didn't have a valid `ADMIN_PIN` yet (Vercel applies new env vars only on the next build). Verified working on the live site after a redeploy. The login now shows a clear message instead of crashing if `ADMIN_PIN` is ever missing or not 4–8 digits.
-- **Vercel API access:** `VERCEL_TOKEN` in `.env.local` (the user OK'd reading logs + changing env vars). Project `prj_dfEFAjcxRcUDNF0vrZqrZ9xKJrhv`, team `team_PdjZdzRhOR1evA6tlpPTpLEm`. The runtime-logs endpoint only streams live requests, not past errors.
-- **Step 3 (ticket email + "Lost your ticket?") built 2026-11-21**; see SPEC step 3 "As built". The group Gmail (Resend account owner, the only inbox Resend delivers to until a domain is verified) is in `EMAIL_TEST_TO`. The first real test payment (order EB36) worked end to end on 2026-11-21.
-- **Step 4 (door scanner, online) built 2026-11-21**; see SPEC step 4 "As built". The ticket email was confirmed working by the user on 2026-11-21, and the door scanner on 2026-11-21.
-- **Step 5 (offline mode) built 2026-11-21**; see SPEC step 5 "As built".
-- **Help guides built 2026-11-22** (SPEC §14): `/help` (buyers), `/admin/help`, `/door/help`.
-- **UI round 2 built 2026-11-22** from the user's feedback (SPEC §13): full-width admin, everything clickable looks like a button, 3-panel dashboard + expense log, show page Overview/Edit tabs, expense settings with e-board vs spenders, fuller public pages.
-- **Step 8 (reminders + cancel/reschedule) built 2026-11-21**; see SPEC step 8 "As built".
-- **Step 7 (donations) built 2026-11-21**; see SPEC step 7 "As built".
-- **Step 6 (admin tools) built 2026-11-21**; see SPEC step 6 "As built". The user has dashboard / general UI feedback still to give (asked 2026-11-21); the sales chart waits on it.
+## Where things stand (updated 2026-11-23)
+
+**Built and deployed:** SPEC §10 steps 1–8, the keep-alive, UI round 2 (§13), help guides (§14) and personal logins (D16/D18). Every migration `0001`–`0013` has been run in Supabase (checked 2026-11-23; `0010` only adds indexes, so it couldn't be checked from outside). Production is on the latest commit. `issues-to-fix-tonight.md` is history now (everything in it is done).
+
+**Go live (SPEC step 9, README "Going live") — what's left:**
+1. **Domain + email (the blocker).** Buy the domain, point `ticketing.diatonics.com` at Vercel, verify it in Resend, set `EMAIL_FROM` and `NEXT_PUBLIC_SITE_URL`, and **delete `EMAIL_TEST_TO`**. Until then Resend only delivers to the group Gmail, so real buyers would never get tickets.
+2. **Clear the test data** before real sales (the user decides when; it can't be undone): the "Stripe Test Show" and its orders/tickets/emails, test donations, the test expense entry ("hi"). Real e-board people stay.
+3. **Stripe live:** the user activated Stripe and connected their bank (2026-11-22). Put the `rk_live_` key into `STRIPE_SECRET_KEY` in Vercel, create the **live-mode** webhook (same URL + 4 events) and set `STRIPE_WEBHOOK_SECRET`, check Cash App Pay is on in live mode, give Sophia the View only role. Then redeploy.
+4. One real $5.50 purchase with a real card, then a door dry run at the venue (checks the signal).
+5. Ticket types: the Student ticket is still a group vote (General $5 works today).
+6. Vercel Hobby's terms are for non-commercial use; mention once at go-live that the group may need Vercel Pro if Vercel objects (don't re-litigate the hosting choice).
+
+**Keys and access:**
+- Vercel API access: `VERCEL_TOKEN` in `.env.local` (the user OK'd reading logs + changing env vars). Project `prj_dfEFAjcxRcUDNF0vrZqrZ9xKJrhv`, team `team_PdjZdzRhOR1evA6tlpPTpLEm`. The runtime-logs endpoint only streams live requests, not past errors.
+- **Stripe live key = a restricted key (`rk_live_`)**: the user's new account only offers restricted keys. It's in `.env.local` as `STRIPE_RESTRICTED_KEY` and was checked in live mode without charging anyone (create/read/close Checkout Sessions, read PaymentIntents/Charges/Balance transactions, create Refunds all work). On go-live day it goes into `STRIPE_SECRET_KEY` in Vercel. Test mode is still what the site uses.
+- `CRON_SECRET` is in `.env.local` + Vercel. `ADMIN_PIN` is no longer used (can be deleted from Vercel).
+- First login PINs: `private/LOGINS.md` (gitignored). Never commit, print or paste them.
+
+**Things to remember:**
 - **Never press "Redeploy" on an old Vercel deployment:** on 2026-11-21 an old commit got redeployed to production and took the door app + emails offline until the latest deployment was promoted again.
-- **Supabase keep-alive built 2026-11-21:** Vercel Cron (`vercel.json`) calls `/api/cron/daily` once a day (14:00 UTC); it does one tiny database read. Protected by `CRON_SECRET` (in `.env.local` + Vercel production). Step 8 reminders should hook into the same daily route.
-- **Stripe test-mode payment methods** are set on the account's own default config (card + Cash App only); see SPEC step 2 "As built". Stripe's bot check blocks automated browsers from pressing Pay, so a real test payment needs the user.
-- Student ticket: group vote.
-- Stripe live activation (the user, at go-live).
-- Buying the domain (after localhost looks good).
-- Venue signal at the door.
+- Resend test mode: `EMAIL_TEST_TO` (the group Gmail) receives every email, with a "[Test]" subject and a yellow banner naming the real recipient.
+- Stripe's bot check blocks automated browsers from pressing Pay, so any real payment test needs the user.
+- Stripe test-mode payment methods are on the account's own default config (card + Cash App); see SPEC step 2 "As built".
+- The user said they still want "small admin changes" (not specified yet, 2026-11-22). Wait for them.
+- Still open from the group: Student ticket vote, venue signal at the door.
+
+**History (what was built when; details in each SPEC "As built"):** step 3 emails + "Lost your ticket?" (first real test payment EB36 worked 2026-11-21) · step 4 door scanner · step 5 offline · keep-alive (Vercel Cron `/api/cron/daily`, 14:00 UTC) · step 6 admin tools (gift tickets = the user's name for comps) · step 7 donations · step 8 reminders + cancel/reschedule — all 2026-11-21 · UI round 2 (§13), help guides (§14), personal logins — 2026-11-22 · Stripe live key checked — 2026-11-23.

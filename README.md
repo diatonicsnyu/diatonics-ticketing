@@ -99,7 +99,7 @@ Never commit real keys. `.env.local` is gitignored.
 Test mode works end to end. To take real money:
 
 1. **Stripe:** activate the account and switch Stripe to live mode. Then:
-   - replace `STRIPE_SECRET_KEY` and `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` with the live keys;
+   - put the live key in `STRIPE_SECRET_KEY`. A restricted key (`rk_live_`) works if it has: Checkout Sessions write, PaymentIntents read, Charges read, Balance transactions read, Refunds write;
    - create the webhook again in live mode (same URL and events) and use its new `STRIPE_WEBHOOK_SECRET`;
    - turn on the same payment methods: card, Apple Pay, Google Pay, Cash App Pay.
 2. **Domain:** point `ticketing.diatonics.com` at Vercel and set `NEXT_PUBLIC_SITE_URL` to it. Verify the domain in Resend, then:
