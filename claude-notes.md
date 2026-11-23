@@ -16,7 +16,7 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 ## Who the user is
 
 - The only technical member of the Diatonics (an NYC a cappella group, **not** school-registered).
-- **Admin login = name + leadership PIN** (changed 2026-11-21; it used to be "the user is the only admin" with an email magic link). Leadership types their name (must be on the e-board list) + **one shared PIN for all of leadership for now**, stored only as `ADMIN_PIN` in `.env.local` / Vercel (never write the PIN in the repo). It **may become one PIN per person later**. Still no admin user management: the e-board list is who can log in. Details: SPEC D18.
+- **Logins = username + personal 6-digit PIN** (changed 2026-11-22; SPEC D16/D18). Username = first initial + last name (`rchen`). The same login works for admin (e-board) and the door (e-board + door volunteers); spenders have no login. People and PINs are managed in admin **Settings**. The first PINs are in `private/LOGINS.md` (gitignored: **never commit or print them**). The shared `ADMIN_PIN` and the per-show door PIN are gone.
 - Volunteers (non-technical group members) run the door with a shared PIN and need zero training.
 
 ## Settled facts & decisions (with the why)
@@ -74,6 +74,7 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 - **Step 3 (ticket email + "Lost your ticket?") built 2026-11-21**; see SPEC step 3 "As built". The group Gmail (Resend account owner, the only inbox Resend delivers to until a domain is verified) is in `EMAIL_TEST_TO`. The first real test payment (order EB36) worked end to end on 2026-11-21.
 - **Step 4 (door scanner, online) built 2026-11-21**; see SPEC step 4 "As built". The ticket email was confirmed working by the user on 2026-11-21, and the door scanner on 2026-11-21.
 - **Step 5 (offline mode) built 2026-11-21**; see SPEC step 5 "As built".
+- **Help guides built 2026-11-22** (SPEC §14): `/help` (buyers), `/admin/help`, `/door/help`.
 - **UI round 2 built 2026-11-22** from the user's feedback (SPEC §13): full-width admin, everything clickable looks like a button, 3-panel dashboard + expense log, show page Overview/Edit tabs, expense settings with e-board vs spenders, fuller public pages.
 - **Step 8 (reminders + cancel/reschedule) built 2026-11-21**; see SPEC step 8 "As built".
 - **Step 7 (donations) built 2026-11-21**; see SPEC step 7 "As built".

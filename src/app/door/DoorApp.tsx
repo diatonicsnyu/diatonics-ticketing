@@ -694,6 +694,9 @@ export function DoorApp({
               <strong>−</strong>.
             </p>
             <p className="text-base text-muted">Logged in as {deviceName}. Only the group leader can undo a check-in.</p>
+            <a href="/door/help" className="block w-full rounded-sm border border-edge bg-white px-4 py-3 text-center text-base font-semibold shadow-sm">
+              Read the full door guide
+            </a>
             {waiting > 0 ? (
               <p className="rounded-sm border border-line bg-page p-3 text-base">
                 Don&apos;t log out yet: {waiting} check-in{waiting === 1 ? "" : "s"} / tap{waiting === 1 ? "" : "s"} still need to be sent.

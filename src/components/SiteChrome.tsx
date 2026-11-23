@@ -24,7 +24,12 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
             <Image src={logo} alt="" width={48} height={48} priority />
             <span className="font-display text-xl font-bold">Diatonics</span>
           </Link>
-          <DonateButton small />
+          <div className="flex items-center gap-2">
+            <Link href="/help" className="rounded-sm border border-edge bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:-translate-y-px hover:border-burgundy hover:shadow-md">
+              Help
+            </Link>
+            <DonateButton small />
+          </div>
         </div>
       </header>
 
@@ -38,6 +43,9 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
             </Link>
             <Link href="/donate" className="rounded-sm border border-edge bg-white px-3 py-1.5 font-semibold text-ink shadow-sm transition hover:border-burgundy">
               Donate
+            </Link>
+            <Link href="/help" className="rounded-sm border border-edge bg-white px-3 py-1.5 font-semibold text-ink shadow-sm transition hover:border-burgundy">
+              Help
             </Link>
           </span>
           <span>Diatonics A Cappella · New York City</span>

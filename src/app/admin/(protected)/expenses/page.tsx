@@ -47,10 +47,11 @@ export default async function ExpenseLogPage(props: PageProps<"/admin/expenses">
   }
 
   const { members, entries } = data;
-  const balances = balancesByMember(members, entries);
+  // Door volunteers aren't part of the expense log (unless they somehow have entries).
+  const balances = balancesByMember(members, entries).filter((b) => b.member.role !== "volunteer" || b.spent_cents > 0 || b.reimbursed_cents > 0);
   const owed = totalOwed(balances);
   const nameOf = nameLookup(members);
-  const people: Person[] = members.filter((m) => m.active).map((m) => ({ id: m.id, name: m.name, role: m.role }));
+  const people: Person[] = members.filter((m) => m.active && m.role !== "volunteer").map((m) => ({ id: m.id, name: m.name, role: m.role }));
   const shown = filterId ? entries.filter((e) => e.member_id === filterId) : entries;
   const filterName = filterId ? members.find((m) => m.id === filterId)?.name : undefined;
   const filterBalance = filterId ? balances.find((b) => b.member.id === filterId) : undefined;
@@ -68,7 +69,7 @@ export default async function ExpenseLogPage(props: PageProps<"/admin/expenses">
           <h1 className="font-display text-3xl font-black">Expense log</h1>
           <p className="mt-1 text-muted">Everyone on e-board sees the same log. Red = someone spent money. Green = someone was paid back.</p>
         </div>
-        <Link href="/admin/expenses/settings" className={btn}>
+        <Link href="/admin/settings" className={btn}>
           ⚙️ Settings
         </Link>
       </div>

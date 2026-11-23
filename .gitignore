@@ -9,3 +9,6 @@ Thumbs.db
 next-env.d.ts
 /coverage
 npm-debug.log*
+
+# Private login list (usernames + PINs). Never commit.
+/private/

@@ -29,12 +29,6 @@ export const env = {
   get supabaseSecretKey() {
     return required("SUPABASE_SECRET_KEY", process.env.SUPABASE_SECRET_KEY);
   },
-  /** Leadership PIN for /admin (4–8 digits). One shared PIN for now (SPEC D18). */
-  get adminPin() {
-    const pin = required("ADMIN_PIN", process.env.ADMIN_PIN).trim();
-    if (!/^\d{4,8}$/.test(pin)) throw new Error("ADMIN_PIN must be 4–8 digits.");
-    return pin;
-  },
   get stripeSecretKey() {
     return required("STRIPE_SECRET_KEY", process.env.STRIPE_SECRET_KEY);
   },

@@ -119,7 +119,6 @@ export default async function ShowPage(props: PageProps<"/admin/events/[id]">) {
             capacity: event.capacity == null ? "" : String(event.capacity),
             door_price: centsToInput(event.door_price_cents),
             status: event.status === "cancelled" ? "closed" : event.status,
-            has_pin: !!event.door_pin_hash,
             image_url: eventImageUrl(event.image_path),
             ticket_types: event.ticket_types.map((t) => ({
               id: t.id,

@@ -6,7 +6,7 @@ import { EXPENSE_BADGE, EXPENSE_FEED, REIMBURSE_BADGE, REIMBURSE_FEED } from "@/
 import { btn, btnPrimary, btnSm } from "@/lib/ui";
 
 type Action = (prev: EntryFormState, formData: FormData) => Promise<EntryFormState>;
-type Person = { id: string; name: string; role: "eboard" | "spender" };
+type Person = { id: string; name: string; role: "eboard" | "spender" | "volunteer" };
 
 const input = "w-full rounded-sm border border-edge bg-white px-3 py-2.5 text-ink";
 const label = "mb-1 block text-sm font-semibold";

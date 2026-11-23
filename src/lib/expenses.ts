@@ -16,8 +16,8 @@ export type EboardMember = {
   name: string;
   active: boolean;
   sort_order: number;
-  /** eboard = can log in to admin; spender = in the expense log only (0012_spenders.sql). */
-  role: "eboard" | "spender";
+  /** eboard = admin + door + log; spender = log only; volunteer = door only (0012, 0013). */
+  role: "eboard" | "spender" | "volunteer";
 };
 
 export type LedgerKind = "expense" | "reimbursement";

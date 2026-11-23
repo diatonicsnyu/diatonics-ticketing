@@ -35,6 +35,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           </div>
           <div className="flex items-center gap-2 text-sm text-muted">
             <span className="hidden md:inline">Logged in as {user.name}</span>
+            <Link href="/door" className={btnSm}>📷 Door scanner</Link>
             <Link href="/" className={btnSm}>View site</Link>
             <form action={logout}>
               <button className={btnSm}>Log out</button>

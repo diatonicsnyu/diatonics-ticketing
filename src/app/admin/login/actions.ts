@@ -3,36 +3,25 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { adminDb } from "@/lib/supabase/clients";
-import { isLeadershipPin, startAdminSession } from "@/lib/auth";
+import { startAdminSession } from "@/lib/auth";
 import { isDemo } from "@/lib/demo";
+import { verifyPin } from "@/lib/pin";
+import { CAN_ADMIN, canSignIn, findByUsername, normalizeUsername } from "@/lib/logins";
 
 export type LoginState = { error?: string };
 
-// Lockout rules [assumed]: 5 wrong PINs from one device in 15 minutes, or
-// 30 wrong PINs from anywhere in an hour (stops guessing from many devices).
+// Lockout rules [assumed]: 5 wrong tries from one device in 15 minutes, or
+// 30 wrong tries from anywhere in an hour (stops guessing from many devices).
 const PER_IP_LIMIT = 5;
 const PER_IP_MINUTES = 15;
 const GLOBAL_LIMIT = 30;
 const GLOBAL_MINUTES = 60;
 
-const SETUP_MSG = "Login isn't set up yet: run supabase/migrations/0003_admin_login.sql in Supabase.";
+const SETUP_MSG = "Login isn't set up yet: run supabase/migrations/0013_personal_logins.sql and private/set-logins.sql in Supabase.";
 
-/** "  rachel   CHEN " -> "rachel chen" */
-function normalize(name: string): string {
-  return name.trim().replace(/\s+/g, " ").toLowerCase();
-}
-
-/**
- * Finds the e-board member they typed: full name, or just a first name if
- * only one active member has it ("Rachel" -> Rachel Chen).
- */
-function matchMember<T extends { name: string }>(members: T[], typed: string): T | null {
-  const t = normalize(typed);
-  const full = members.find((m) => normalize(m.name) === t);
-  if (full) return full;
-  const byFirst = members.filter((m) => normalize(m.name).split(" ")[0] === t);
-  return byFirst.length === 1 ? byFirst[0] : null;
-}
+// A real hash to check against when the username doesn't exist, so a wrong
+// username takes as long as a wrong PIN (nobody can tell which was wrong).
+const DUMMY_HASH = "pbkdf2$100000$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
 
 async function clientIp(): Promise<string> {
   const h = await headers();
@@ -48,13 +37,14 @@ function isMissingTable(error: { code?: string } | null): boolean {
   return !!error && (error.code === "42P01" || error.code === "PGRST205");
 }
 
+/** Admin sign-in: username ("rchen") + your own 6-digit PIN. E-board only. */
 export async function login(_prev: LoginState, formData: FormData): Promise<LoginState> {
   if (isDemo()) redirect("/admin");
 
-  const typed = String(formData.get("name") ?? "").trim().slice(0, 100);
+  const typed = normalizeUsername(String(formData.get("username") ?? "")).slice(0, 40);
   const pin = String(formData.get("pin") ?? "").trim();
-  if (!typed) return { error: "Type your name." };
-  if (!pin) return { error: "Type the PIN." };
+  if (!typed) return { error: "Type your username (like rchen)." };
+  if (!/^\d{4,8}$/.test(pin)) return { error: "Your PIN is 6 digits." };
 
   const db = adminDb();
   const ip = await clientIp();
@@ -71,49 +61,39 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
     console.error("Login lockout check failed:", (mine.error ?? all.error)?.message);
     return { error: "Couldn't log in right now. Try again in a minute." };
   }
-  if ((mine.count ?? 0) >= PER_IP_LIMIT) {
-    return { error: `Too many wrong PINs. Wait ${PER_IP_MINUTES} minutes and try again.` };
-  }
-  if ((all.count ?? 0) >= GLOBAL_LIMIT) {
-    return { error: "Login is paused for up to an hour because of too many wrong PINs." };
-  }
+  if ((mine.count ?? 0) >= PER_IP_LIMIT) return { error: `Too many wrong tries. Wait ${PER_IP_MINUTES} minutes and try again.` };
+  if ((all.count ?? 0) >= GLOBAL_LIMIT) return { error: "Login is paused for up to an hour because of too many wrong tries." };
 
-  // 2. Is that name on the e-board list? (Not a PIN guess, so not counted.)
-  // Only e-board can log in; spenders (0012_spenders.sql) are in the expense log only.
-  let { data: members, error: mErr } = await db.from("eboard_members").select("id, name").eq("active", true).eq("role", "eboard");
-  if (mErr?.code === "42703") {
-    // 0012 not run yet: there are no spenders, so everyone on the list is e-board.
-    ({ data: members, error: mErr } = await db.from("eboard_members").select("id, name").eq("active", true));
-  }
-  if (isMissingTable(mErr)) return { error: SETUP_MSG };
-  if (mErr) {
-    console.error("Login member lookup failed:", mErr.message);
+  // 2. Who is it, and is the PIN right? Same answer for a wrong username or a wrong PIN.
+  let member;
+  try {
+    member = await findByUsername(typed);
+  } catch (err) {
+    const code = (err as { code?: string }).code;
+    if (code === "42703") return { error: SETUP_MSG }; // username column missing: 0013 not run
+    console.error("Login lookup failed:", err);
     return { error: "Couldn't log in right now. Try again in a minute." };
   }
-  const member = matchMember(members ?? [], typed);
-  if (!member) return { error: "That name isn't on the e-board list. Try your full name." };
+  const allowed = canSignIn(member, CAN_ADMIN);
+  const pinOk = await verifyPin(pin, member?.pin_hash ?? DUMMY_HASH);
+  const ok = allowed && pinOk;
 
-  // 3. Check the PIN and log the try either way.
-  // If ADMIN_PIN is missing or isn't 4–8 digits on the server, env.adminPin
-  // throws. Show a clear message instead of a crash page (this is what broke
-  // the live login on 2026-11-21: the deploy didn't have a valid ADMIN_PIN yet).
-  let ok: boolean;
-  try {
-    ok = isLeadershipPin(pin);
-  } catch (err) {
-    console.error("Admin login misconfigured:", err instanceof Error ? err.message : err);
-    return { error: "Admin login isn't set up on the server: ADMIN_PIN must be 4–8 digits, then redeploy." };
-  }
   const { error: logErr } = await db
     .from("admin_logins")
-    .insert({ member_id: member.id, name_typed: typed, ip, success: ok });
+    .insert({ member_id: member?.id ?? null, name_typed: typed, ip, success: ok });
   if (logErr) {
     // Fail closed: without the log, the lockout can't work.
     console.error("Login log failed:", logErr.message);
-    return { error: isMissingTable(logErr) ? SETUP_MSG : "Couldn't log in right now. Try again in a minute." };
+    return { error: "Couldn't log in right now. Try again in a minute." };
   }
-  if (!ok) return { error: "Wrong PIN." };
+  if (!ok) {
+    // A volunteer or spender with the right PIN: say why, instead of "wrong".
+    if (member && pinOk && member.active && member.role !== "eboard") {
+      return { error: member.role === "volunteer" ? "Your login is for the door app only (at /door)." : "Your name is on the expense log, but you don't have an admin login." };
+    }
+    return { error: "Wrong username or PIN." };
+  }
 
-  await startAdminSession({ memberId: member.id, name: member.name });
+  await startAdminSession({ memberId: member!.id, name: member!.name }, member!.pin_hash!);
   redirect("/admin");
 }

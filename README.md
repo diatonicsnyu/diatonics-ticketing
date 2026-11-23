@@ -16,16 +16,19 @@ Ticket sales, donations and door check-in for the Diatonics, an independent a ca
 | `/events/<slug>` | Public | One show: details, buy tickets, optional donation |
 | `/donate` | Public | Donate any amount, opt-in supporters list |
 | `/lost-ticket` | Public | Re-sends a buyer's tickets to their email |
+| `/help` | Public | Help for buyers and donors |
 | `/tickets/<key>` | Buyers | "View my tickets" (the signed link in the ticket email) |
-| `/door` | Volunteers | Ticket scanner. Log in with the show's door PIN. Works offline once loaded |
+| `/door` | Volunteers, e-board | Ticket scanner. Sign in with your username + PIN, pick the show. Works offline once loaded. Guide at `/door/help` |
 | `/admin` | E-board | Dashboard: money totals, the current show, the shows list, the expense log |
 | `/admin/events/<id>` | E-board | One show: Overview tab (numbers, reminders) and Edit tab (details, cancel or move the show) |
-| `/admin/expenses` | E-board | Expense log, with Settings to add e-board members and spenders |
+| `/admin/expenses` | E-board | Expense log |
+| `/admin/settings` | E-board | People and logins: e-board, door volunteers, spenders; New PIN |
+| `/admin/help` | E-board | The admin manual |
 | `/admin/buyers` | E-board | Everyone who bought tickets, plus CSV downloads |
 | `/admin/gift-tickets` | E-board | Free tickets for guests |
 | `/admin/donations` | E-board | Every donation, the supporters list, CSVs |
 
-Admin login is **name + leadership PIN**. The name must be an e-board member on the list (Expense log → Settings). Spenders on that list can't log in.
+Everyone signs in with a **username** (first initial + last name, e.g. `rchen`) and their **own 6-digit PIN**. E-board can use admin and the door app; door volunteers only the door app; spenders (expense log only) have no login. Manage people and PINs in admin → **Settings**. The first PINs are in `private/LOGINS.md`, which is gitignored: never commit it or share it.
 
 ## How it's built
 
@@ -75,7 +78,7 @@ npm run build
 
 ## Set up from scratch
 
-1. **Supabase:** create a project. In **SQL Editor**, run every file in `supabase/migrations/` **in number order** (`0001` → `0012`). Each file says what it needs first.
+1. **Supabase:** create a project. In **SQL Editor**, run every file in `supabase/migrations/` **in number order** (`0001` → `0013`). Each file says what it needs first. Then give the first e-board member a username and PIN (the original setup used the gitignored `private/set-logins.sql`); after that, everyone else is added in admin → Settings.
 2. **Environment:** copy `.env.example` to `.env.local` and fill it in. Each line says where the value comes from. Add the same variables in Vercel (Project → Settings → Environment Variables). Vercel only picks up a new or changed variable on the next deploy.
 3. **Stripe:** add a webhook pointing at `https://<your site>/api/stripe/webhook` with these events:
    - `checkout.session.completed`
@@ -87,7 +90,7 @@ npm run build
 4. **Resend:** create an API key with Sending access. Until a domain is verified, Resend only delivers to the account's own inbox. That's why `EMAIL_TEST_TO` redirects every email there during testing.
 5. Deploy to Vercel. Pushing to `main` deploys automatically.
 
-**Never change `TICKET_SECRET` after tickets are sold.** It signs every QR code and "view my tickets" link, so changing it breaks every ticket already sent. Changing `ADMIN_PIN` logs everyone out of admin. Changing a show's door PIN logs out every door phone.
+**Never change `TICKET_SECRET` after tickets are sold.** It signs every QR code and "view my tickets" link, so changing it breaks every ticket already sent. Giving someone a new PIN (or removing them) logs them out of admin and the door app right away.
 
 Never commit real keys. `.env.local` is gitignored.
 

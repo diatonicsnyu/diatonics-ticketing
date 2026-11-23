@@ -126,6 +126,7 @@ export function EventOverview({
           <h3 className="w-full font-semibold">Shortcuts</h3>
           <Link href={`/admin/buyers?event=${event.id}`} className={btn}>Who bought tickets</Link>
           <Link href="/admin/gift-tickets" className={btn}>Give gift tickets</Link>
+          <Link href="/door" className={btn}>Open the door scanner</Link>
           {event.status !== "draft" && (
             <Link href={`/events/${event.slug}`} className={btn}>
               See the public page

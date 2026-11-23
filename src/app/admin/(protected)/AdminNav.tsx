@@ -9,6 +9,8 @@ const ITEMS = [
   { href: "/admin/buyers", label: "Buyers", match: (p: string) => p.startsWith("/admin/buyers") || p.startsWith("/admin/orders") },
   { href: "/admin/gift-tickets", label: "Gift tickets", match: (p: string) => p.startsWith("/admin/gift-tickets") },
   { href: "/admin/donations", label: "Donations", match: (p: string) => p.startsWith("/admin/donations") },
+  { href: "/admin/settings", label: "Settings", match: (p: string) => p.startsWith("/admin/settings") },
+  { href: "/admin/help", label: "Help", match: (p: string) => p.startsWith("/admin/help") },
 ];
 
 /** The admin menu: every item is a button-looking tab; the current page is filled in. */

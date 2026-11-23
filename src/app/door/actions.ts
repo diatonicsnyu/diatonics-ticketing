@@ -4,28 +4,34 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { adminDb } from "@/lib/supabase/clients";
 import { endDoorSession, listDoorEvents, startDoorSession } from "@/lib/door";
+import { getAdminSession } from "@/lib/auth";
 import { verifyPin } from "@/lib/pin";
+import { CAN_DOOR, canSignIn, findByUsername, getLoginMember, normalizeUsername, shortName } from "@/lib/logins";
 
 export type DoorLoginState = { error?: string };
 
-// Lockout [assumed, same as the admin login]: 5 wrong PINs from one phone in
-// 15 minutes, or 30 wrong PINs from anywhere in an hour.
+// Lockout [assumed, same as the admin login]: 5 wrong tries from one phone in
+// 15 minutes, or 30 wrong tries from anywhere in an hour.
 const PER_IP_LIMIT = 5;
 const PER_IP_MINUTES = 15;
 const GLOBAL_LIMIT = 30;
 const GLOBAL_MINUTES = 60;
+
+// See the admin login: a wrong username takes as long as a wrong PIN.
+const DUMMY_HASH = "pbkdf2$100000$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
 
 async function clientIp(): Promise<string> {
   const h = await headers();
   return h.get("x-forwarded-for")?.split(",")[0].trim() || h.get("x-real-ip") || "unknown";
 }
 
+/** Door sign-in: pick the show, then your own username + PIN (volunteers and e-board). */
 export async function doorLogin(_prev: DoorLoginState, formData: FormData): Promise<DoorLoginState> {
   const eventId = String(formData.get("event_id") ?? "");
-  const name = String(formData.get("name") ?? "").trim().replace(/\s+/g, " ").slice(0, 30);
+  const typed = normalizeUsername(String(formData.get("username") ?? "")).slice(0, 40);
   const pin = String(formData.get("pin") ?? "").trim();
-  if (!name) return { error: "Type your name (it shows on check-ins, like “scanned by Maya”)." };
-  if (!/^\d{4,8}$/.test(pin)) return { error: "The door PIN is 4 to 8 digits." };
+  if (!typed) return { error: "Type your username (like rchen)." };
+  if (!/^\d{4,8}$/.test(pin)) return { error: "Your PIN is 6 digits." };
 
   const db = adminDb();
   const ip = await clientIp();
@@ -36,20 +42,38 @@ export async function doorLogin(_prev: DoorLoginState, formData: FormData): Prom
   ]);
   if (mine.error || all.error) {
     console.error("door login check failed:", mine.error ?? all.error);
-    return { error: "The door app isn't set up yet: run supabase/migrations/0007_door.sql in Supabase." };
+    return { error: "The door app isn't set up yet. Ask the group leader." };
   }
-  if ((mine.count ?? 0) >= PER_IP_LIMIT) return { error: `Too many wrong PINs. Wait ${PER_IP_MINUTES} minutes, then try again.` };
-  if ((all.count ?? 0) >= GLOBAL_LIMIT) return { error: "Too many wrong PINs. Door login is paused for a bit. Ask the group leader." };
+  if ((mine.count ?? 0) >= PER_IP_LIMIT) return { error: `Too many wrong tries. Wait ${PER_IP_MINUTES} minutes, then try again.` };
+  if ((all.count ?? 0) >= GLOBAL_LIMIT) return { error: "Too many wrong tries. Door login is paused for a bit. Ask the group leader." };
 
   const event = (await listDoorEvents()).find((e) => e.id === eventId);
   if (!event) return { error: "Pick a show from the list." };
-  if (!event.door_pin_hash) return { error: "This show has no door PIN yet. Ask the group leader to set one in admin." };
 
-  const ok = await verifyPin(pin, event.door_pin_hash);
-  await db.from("door_logins").insert({ event_id: event.id, ip, name_typed: name, success: ok });
-  if (!ok) return { error: "Wrong PIN. Check with the group leader." };
+  let member;
+  try {
+    member = await findByUsername(typed);
+  } catch (err) {
+    console.error("door login lookup failed:", err);
+    return { error: "Door logins aren't set up yet. Ask the group leader." };
+  }
+  const pinOk = await verifyPin(pin, member?.pin_hash ?? DUMMY_HASH);
+  const ok = canSignIn(member, CAN_DOOR) && pinOk;
+  await db.from("door_logins").insert({ event_id: event.id, ip, name_typed: member?.name ?? "", username_typed: typed, member_id: member?.id ?? null, success: ok });
+  if (!canSignIn(member, CAN_DOOR) || !pinOk) return { error: "Wrong username or PIN. Check with the group leader." };
 
-  await startDoorSession(event, name);
+  await startDoorSession(event, member, shortName(member.name));
+  redirect("/door");
+}
+
+/** "Scan as <name>": an e-board member already logged in to admin just picks the show. */
+export async function doorLoginAsAdmin(formData: FormData) {
+  const admin = await getAdminSession();
+  if (!admin) redirect("/door");
+  const event = (await listDoorEvents()).find((e) => e.id === String(formData.get("event_id") ?? ""));
+  const member = await getLoginMember(admin.memberId);
+  if (!event || !canSignIn(member, CAN_DOOR)) redirect("/door");
+  await startDoorSession(event, member, shortName(member.name));
   redirect("/door");
 }
 

@@ -25,7 +25,6 @@ export default async function NewEventPage() {
           capacity: "",
           door_price: "",
           status: "draft",
-          has_pin: false,
           image_url: null,
           ticket_types: [{ id: "", name: "General", price: "5", limit: "" }], // spec D2
         }}

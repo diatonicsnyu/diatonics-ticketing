@@ -6,7 +6,6 @@ import { requireAdmin, endAdminSession } from "@/lib/auth";
 import { adminDb } from "@/lib/supabase/clients";
 import { nyInputToIso, isoToNyDate, addMinutes } from "@/lib/time";
 import { dollarsToCents } from "@/lib/money";
-import { hashPin, isValidPin } from "@/lib/pin";
 import type { EventStatus } from "@/lib/events";
 import { isDemo } from "@/lib/demo";
 
@@ -71,7 +70,6 @@ export async function saveEvent(
   const capacity = optionalPositiveInt(formData.get("capacity"));
   const doorPriceRaw = String(formData.get("door_price") ?? "").trim();
   const doorPrice = doorPriceRaw ? dollarsToCents(doorPriceRaw) : null;
-  const pin = String(formData.get("door_pin") ?? "").trim();
 
   if (!name) return { error: "Event name is required." };
   if (!venue) return { error: "Venue is required." };
@@ -81,7 +79,6 @@ export async function saveEvent(
   if (!EDITABLE_STATUSES.includes(status)) return { error: "Pick a valid status." };
   if (capacity === "invalid") return { error: "Capacity must be a whole number above 0, or blank for unlimited." };
   if (doorPriceRaw && doorPrice === null) return { error: "Door price must look like 8 or 8.00, or be blank." };
-  if (pin && !isValidPin(pin)) return { error: "Door PIN must be 4 to 8 digits." };
 
   const salesCloseAt = addMinutes(startsAt, Number(closeMinutesRaw));
 
@@ -125,7 +122,6 @@ export async function saveEvent(
     door_price_cents: doorPrice,
     status,
   };
-  if (pin) fields.door_pin_hash = await hashPin(pin); // blank = keep current PIN
   if (removeImage && !hasNewImage) fields.image_path = null;
 
   let id = eventId;

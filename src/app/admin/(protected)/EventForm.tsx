@@ -15,7 +15,6 @@ export type EventFormDefaults = {
   capacity: string;
   door_price: string;
   status: "draft" | "on_sale" | "closed";
-  has_pin: boolean;
   image_url: string | null;
   ticket_types: { id: string; name: string; price: string; limit: string }[];
 };
@@ -157,23 +156,7 @@ export function EventForm({ action, defaults, submitLabel }: Props) {
 
       {/* ---------- door + visibility ---------- */}
       <fieldset className="space-y-4 rounded-sm border border-line bg-panel p-5">
-        <legend className="font-display px-1 font-bold">Door & visibility</legend>
-        <label className="block">
-          <span className={label}>Door PIN for volunteers</span>
-          <input
-            name="door_pin"
-            inputMode="numeric"
-            pattern="\d{4,8}"
-            autoComplete="off"
-            className={`${input} max-w-40`}
-            placeholder={defaults.has_pin ? "•••• (set)" : "4–8 digits"}
-          />
-          <span className={hint}>
-            {defaults.has_pin
-              ? "A PIN is set. Leave blank to keep it, or type a new one to change it (that logs out every door phone)."
-              : "Not set yet. Volunteers need it to open the door app at /door."}
-          </span>
-        </label>
+        <legend className="font-display px-1 font-bold">Visibility</legend>
         <label className="block">
           <span className={label}>Status</span>
           <select name="status" defaultValue={defaults.status} className={`${input} max-w-xs`}>
