@@ -19,6 +19,9 @@ const RESEND_DAILY_CAP = 90;
 const PER_EMAIL_PER_HOUR = 3;
 const PER_IP_PER_HOUR = 10;
 
+/** Replies go to the group Gmail (EMAIL_REPLY_TO), not to the send-only tickets@ address. */
+const replyTo = () => (env.emailReplyTo ? { reply_to: env.emailReplyTo } : {});
+
 export type OutgoingEmail = { to: string; subject: string; html: string; text: string };
 
 /**
@@ -32,7 +35,7 @@ export async function resendBatch(msgs: OutgoingEmail[]): Promise<SendResult[]> 
     const r = await fetch("https://api.resend.com/emails/batch", {
       method: "POST",
       headers: { Authorization: `Bearer ${env.resendApiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify(msgs.map((m) => ({ from: env.emailFrom, to: [m.to], subject: m.subject, html: m.html, text: m.text }))),
+      body: JSON.stringify(msgs.map((m) => ({ from: env.emailFrom, ...replyTo(), to: [m.to], subject: m.subject, html: m.html, text: m.text }))),
       signal: AbortSignal.timeout(30_000),
     });
     const body = (await r.json().catch(() => ({}))) as { data?: { id: string }[]; message?: string };
@@ -54,7 +57,7 @@ async function resendSend(msg: { to: string; subject: string; html: string; text
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${env.resendApiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: env.emailFrom, to: [msg.to], subject: msg.subject, html: msg.html, text: msg.text }),
+      body: JSON.stringify({ from: env.emailFrom, ...replyTo(), to: [msg.to], subject: msg.subject, html: msg.html, text: msg.text }),
       signal: AbortSignal.timeout(15_000),
     });
     const body = (await r.json().catch(() => ({}))) as { id?: string; message?: string };

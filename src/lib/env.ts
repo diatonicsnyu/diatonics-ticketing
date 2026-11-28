@@ -57,6 +57,10 @@ export const env = {
   get emailFrom() {
     return process.env.EMAIL_FROM?.trim() || "Diatonics Tickets <onboarding@resend.dev>";
   },
+  /** Where replies to our emails go (the group Gmail), since the sending address has no inbox of its own. Optional. */
+  get emailReplyTo() {
+    return process.env.EMAIL_REPLY_TO?.trim() || null;
+  },
   /**
    * Test mode: if set, EVERY email goes to this address instead of the buyer
    * (Resend can only deliver to the account's own inbox until a domain is
