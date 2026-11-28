@@ -543,7 +543,7 @@ Split-day reminders with the email budget; 3-step cancel/reschedule.
 ### Step 9: Go live ⏳ (waits on the domain; see claude-notes "Where things stand")
 - [ ] Ticket types finalized (vote) and set in admin
 - [ ] You activate Stripe under your own name → switch to live keys
-- [ ] `diatonics.therachelchen.com` → Vercel (CNAME on the user's Cloudflare, DNS only); verify `diatonics.therachelchen.com` in Resend (changed 2026-11-27 from buying `diatonics.com`)
+- [x] `diatonics.therachelchen.com` → Vercel (CNAME on the user's Cloudflare, DNS only); verify `diatonics.therachelchen.com` in Resend (changed 2026-11-27 from buying `diatonics.com`). Done 2026-11-27: `NEXT_PUBLIC_SITE_URL` and `EMAIL_FROM` set in Vercel, `EMAIL_TEST_TO` deleted, redeployed
 - [ ] One real $5.50 purchase end-to-end, using a real card
 - [ ] Door dry run at the venue (checks the signal too)
 - [ ] `ADMIN-GUIDE.md` written for whoever takes over
