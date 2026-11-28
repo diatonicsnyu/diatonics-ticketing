@@ -47,7 +47,7 @@ _Status: draft · Started 2026-11-15 · Last updated 2026-11-21_
 |---|---|
 | D24 | **Stripe account owner: you** (changed 2026-11-20 from the president). Activated under your name at go-live, payouts to your bank; the president gets Stripe's "View only" role (see §5.4). |
 | D25 | **Supabase: a new account under a group email.** Use the same group email for Stripe, Resend, Vercel and the domain. |
-| D26 | **URL: `diatonics-ticketing.vercel.app` (and localhost) during development.** If the build is good, you'll buy **`diatonics.com`** yourself (it's available) and use **`ticketing.diatonics.com`** (free subdomain, set up with a DNS record pointing to Vercel). Resend verifies the same domain for email, e.g. `tickets@diatonics.com`. ⚠️ Until then, email only reaches your own inbox, see §7.1. |
+| D26 | **Changed 2026-11-27 (user): the site is `diatonics.therachelchen.com`** (a free subdomain of the user's own domain, DNS on the user's Cloudflare, CNAME to Vercel), and email comes from **`tickets@diatonics.therachelchen.com`** (that subdomain verified in Resend). This replaces the `diatonics.com` plan below; nothing needs buying. Original decision: **URL: `diatonics-ticketing.vercel.app` (and localhost) during development.** If the build is good, you'll buy **`diatonics.com`** yourself (it's available) and use **`ticketing.diatonics.com`** (free subdomain, set up with a DNS record pointing to Vercel). Resend verifies the same domain for email, e.g. `tickets@diatonics.com`. ⚠️ Until then, email only reaches your own inbox, see §7.1. |
 | D27 | **Location: New York City; not school-registered.** |
 | D29 | **No Venmo on the site.** Stripe doesn't offer it (checked Stripe's payment-method docs 2026-11-15). Online payments are Stripe only. |
 | D31 | **Door sales (Venmo or cash, ~$7–8) happen outside this system.** The site doesn't sell, track, or count them. It only **displays a notice** on the event page, e.g. "Online $5.50 · At the door $8 (Venmo or cash)." The higher door price pushes people to buy online and keeps the door line fast. The door price is a per-event text/number field in admin, shown only. |
@@ -543,7 +543,7 @@ Split-day reminders with the email budget; 3-step cancel/reschedule.
 ### Step 9: Go live ⏳ (waits on the domain; see claude-notes "Where things stand")
 - [ ] Ticket types finalized (vote) and set in admin
 - [ ] You activate Stripe under your own name → switch to live keys
-- [ ] Buy `diatonics.com` (Cloudflare) → `ticketing.diatonics.com` → Vercel; verify the domain in Resend
+- [ ] `diatonics.therachelchen.com` → Vercel (CNAME on the user's Cloudflare, DNS only); verify `diatonics.therachelchen.com` in Resend (changed 2026-11-27 from buying `diatonics.com`)
 - [ ] One real $5.50 purchase end-to-end, using a real card
 - [ ] Door dry run at the venue (checks the signal too)
 - [ ] `ADMIN-GUIDE.md` written for whoever takes over

@@ -40,7 +40,7 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 - **Supabase:** free tier, on a **new account under the group Gmail** (the user's personal account is at its 2-project limit). Free projects pause after ~1 week idle, so add a keep-alive.
 - **Email: Resend free tier** (100/day, 3,000/month). The user is confident they won't exceed 100/day. **Resend can't send to other people without a verified domain**, so during development, emails go only to the user's own inbox.
 - **Hosting: Vercel**, at `diatonics-ticketing.vercel.app` during development.
-- **Domain:** the user will buy **`diatonics.com`** (it's available) **only after seeing a working localhost build**, probably on Cloudflare (~$10–11/yr). The site will be `ticketing.diatonics.com`.
+- **Domain (changed 2026-11-27):** the site is **`diatonics.therachelchen.com`**, a subdomain of the user's personal site (their Cloudflare DNS), and email comes from **`tickets@diatonics.therachelchen.com`**. The old plan to buy `diatonics.com` is dropped; don't bring it up again.
 - **Phones can't open localhost, and the camera needs https,** so test the scanner on a Vercel deploy.
 
 ### Product
@@ -72,7 +72,7 @@ These notes come from the planning chat where SPEC.md was written. The user alre
 **Built and deployed:** SPEC §10 steps 1–8, the keep-alive, UI round 2 (§13), help guides (§14) and personal logins (D16/D18). Every migration `0001`–`0013` has been run in Supabase (checked 2026-11-23; `0010` only adds indexes, so it couldn't be checked from outside). Production is on the latest commit. `issues-to-fix-tonight.md` is history now (everything in it is done).
 
 **Go live (SPEC step 9, README "Going live") — what's left:**
-1. **Domain + email (the blocker).** Buy the domain, point `ticketing.diatonics.com` at Vercel, verify it in Resend, set `EMAIL_FROM` and `NEXT_PUBLIC_SITE_URL`, and **delete `EMAIL_TEST_TO`**. Until then Resend only delivers to the group Gmail, so real buyers would never get tickets.
+1. **Domain + email (the blocker; being set up 2026-11-27).** `diatonics.therachelchen.com` is added to the Vercel project; the user adds the CNAME in Cloudflare and verifies the subdomain in Resend; then set `EMAIL_FROM` and `NEXT_PUBLIC_SITE_URL` in Vercel and **delete `EMAIL_TEST_TO`**. Until then Resend only delivers to the group Gmail, so real buyers would never get tickets.
 2. **Clear the test data** before real sales (the user decides when; it can't be undone): the "Stripe Test Show" and its orders/tickets/emails, test donations, the test expense entry ("hi"). Real e-board people stay.
 3. **Stripe live:** the user activated Stripe and connected their bank (2026-11-22). Put the `rk_live_` key into `STRIPE_SECRET_KEY` in Vercel, create the **live-mode** webhook (same URL + 4 events) and set `STRIPE_WEBHOOK_SECRET`, check Cash App Pay is on in live mode, give Sophia the View only role. Then redeploy.
 4. One real $5.50 purchase with a real card, then a door dry run at the venue (checks the signal).

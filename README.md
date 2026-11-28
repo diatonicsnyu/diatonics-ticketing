@@ -102,8 +102,8 @@ Test mode works end to end. To take real money:
    - put the live key in `STRIPE_SECRET_KEY`. A restricted key (`rk_live_`) works if it has: Checkout Sessions write, PaymentIntents read, Charges read, Balance transactions read, Refunds write;
    - create the webhook again in live mode (same URL and events) and use its new `STRIPE_WEBHOOK_SECRET`;
    - turn on the same payment methods: card, Apple Pay, Google Pay, Cash App Pay.
-2. **Domain:** point `ticketing.diatonics.com` at Vercel and set `NEXT_PUBLIC_SITE_URL` to it. Verify the domain in Resend, then:
-   - set `EMAIL_FROM`, e.g. `Diatonics Tickets <tickets@diatonics.com>`;
+2. **Domain:** the site is `https://diatonics.therachelchen.com` (a CNAME on therachelchen.com's Cloudflare DNS, set to "DNS only", pointing at Vercel). Set `NEXT_PUBLIC_SITE_URL` to it. Verify `diatonics.therachelchen.com` in Resend, then:
+   - set `EMAIL_FROM` to `Diatonics Tickets <tickets@diatonics.therachelchen.com>`;
    - **delete `EMAIL_TEST_TO`**. While it's set, buyers never get their emails.
 3. Redeploy, so Vercel picks up the new variables.
 4. Make one real $5.50 purchase with a real card: check the email, the ticket, a door scan and the dashboard.
